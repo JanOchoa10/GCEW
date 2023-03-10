@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taksi "Configuración"</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;700&display=swap"
+      re="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styleConfiguration.css" />
+    <link
+      href="https://unkpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div>
+        <h1>Configuración</h1>
+      </div>
+      <div>
+        <div>
+          <label for="togg-1" class="togg-label">
+            <span> Modo Oscuro </span>
+            <input type="checkbox" id="togg-1" />
+            <div class="toggle-container">
+              <span class="toggle"></span>
+              <span class="toggle-c"></span>
+            </div>
+          </label>
+        </div>
+
+        <div>
+          <label for="togg-2" class="togg-label">
+            <span> Mostrar Notificaciones </span>
+            <input type="checkbox" id="togg-2" />
+            <div class="toggle-container">
+              <span class="toggle"></span>
+              <span class="toggle-c"></span>
+            </div>
+          </label>
+        </div>
+
+        <div>
+          <label for="togg-3" class="togg-label">
+            <span> Mostrar Tips </span>
+            <input type="checkbox" id="togg-3" />
+            <div class="toggle-container">
+              <span class="toggle"></span>
+              <span class="toggle-c"></span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h3>Resolución</h3>
+        </div>
+
+        <div>
+          <label for="radio1" class="flex">
+            <input type="radio" name="Filter" id="radio1" />
+            <span>1920x1080</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="radio2" class="flex">
+            <input type="radio" name="Filter" id="radio2" />
+            <span>1280x720</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="radio3" class="flex">
+            <input type="radio" name="Filter" id="radio3" />
+            <span>960x540</span>
+          </label>
+        </div>
+      </div>
+      <div>
+        <div>
+          <h3>Frame Rate</h3>
+        </div>
+
+        <div>
+          <label for="radio4" class="flex">
+            <input type="radio" name="Show-Mode" id="radio4" />
+            <span> 30 FPS</span>
+          </label>
+          <div>
+            <label for="radio5" class="flex">
+              <input type="radio" name="Show-Mode" id="radio5" />
+              <span> 60 FPS</span>
+            </label>
+          </div>
+          <div>
+            <label for="radio6" class="flex">
+              <input type="radio" name="Show-Mode" id="radio6" />
+              <span> 120 FPS</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <br />
+      <div class="bottom" onclick="window.location.href='index.html';">
+        <span> Regresar al Menu...</span>
+      </div>
+    </div>
+  </body>
+</html>
