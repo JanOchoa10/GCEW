@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+*{
+    margin:0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    font-family: 'Poppins', sans-serif; 
+}
+
+h1{
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: rgb(35 35 35);
+}
+
+span{
+    font-size: .9rem;
+    color: #757373;
+}
+
+h6{
+    font-size: 1.1rem;
+    color: rgb(24,24,49);
+}
+
+nav{
+    position: fixed;
+    width: 100%;
+    background-color: #7d83f5;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1vw 3vw;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.15);
+    z-index: 999;
+}
+
+nav img{
+    width: 150px;
+    cursor: pointer;
+}
+
+nav .navigation ul{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+nav .navigation ul li{
+    list-style: none;
+    margin-left: 30px;
+}
+
+nav .navigation ul li a{
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+nav .navigation ul li a.active,
+nav .navigation ul li a:hover{
+    color:#FFE573;
+}
+
+nav .action .profile{
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+nav .action .profile img{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+nav .action .menu{
+    position: absolute;
+    top: 130px;
+    right: 35px;
+    padding: 10px 20px;
+    background-color: white;
+    width: 225px;
+    box-sizing: 0 5px 25px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    transition: 0.5s;
+    visibility: hidden;
+    opacity: 0;
+}
+
+nav .action .menu.menu-active{
+    top: 90px;
+    visibility: visible;
+    opacity: 1;
+}
+
+nav .action .menu::before{
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: 28px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    transform: rotate(45deg);
+}
+
+nav .action .menu ul li{
+    list-style: none;
+    padding: 10px 0;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+}
+
+nav .action .menu ul li i{
+    max-width: 20px;
+    margin-right: 10px;
+    opacity: 0.5;
+    transition: 0.5s;
+}
+
+nav .action .menu ul li:hover i{
+    opacity: 1;
+}
+
+nav .action .menu ul li a{
+    display: inline-block;
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: 0.5s;
+}
+
+nav .action .menu ul li:hover a{
+    color: #FF5D94;
+}
+
+#game{
+    background-image: linear-gradient(rgba(9,5,54,0.3), rgba(5,4,46,0.7)), url(/images/imgMenu2.png);
+    width: 100%;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding-top: 40px;
+}
+
+#game .screen{
+    margin-top: 50px;
+}
+
+#game .screen img{
+    padding: 5vw;
+    width: 95%;
+    height: 90%;
+}
+
+footer{
+    padding: 3vw;
+    background-color: #765CE1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+footer .footer-col{
+    padding-bottom: 25px;
+}
+
+footer h3{
+    color: #FFE573;
+    font-weight: 600;
+    padding-bottom: 10px;
+}
+
+footer li{
+    list-style: none;
+    color: black;
+    padding: 5% 0;
+    font-size: 15px;
+}
+
+footer p{
+    color: black;
+}
+
+footer .copyright{
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+@media(max-width: 769px){
+    nav {
+        padding: 15px, 20px;
+    }
+    nav img {
+        width: 130px;
+        cursor: pointer;
+    }
+    #features {
+        padding: 5vw 4vw 0 4vw;
+    }
+    #course {
+        padding: 5vw 4vw 0vw 4vw;
+        text-align: center;
+    }
+    footer {
+        padding: 3vw;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin-top: 8vw;
+    }
+}
