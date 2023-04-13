@@ -21,18 +21,21 @@ body {
   padding: 25px;
   position: relative;
   background: #f5e071;
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
 }
 
 h1 {
-  display: flex;
+  /* display: flex; */
   gap: 50px;
   max-width: 700px;
   padding: 15px;
-  position: relative;
+  
+ 
   background: #f5e071;
-  border-radius: 8px;
-  margin-left: 5%;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  width: 100%;
+  text-align: center;
 }
 
 img {

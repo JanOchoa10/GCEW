@@ -1,7 +1,109 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 
-import {FBXLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
-import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
+
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCpRLFxLUF6YMdOpTKzMWkPkNOk8JVzJAM",
+  authDomain: "proyecto-gcw.firebaseapp.com",
+  databaseURL: "https://proyecto-gcw-default-rtdb.firebaseio.com",
+  projectId: "proyecto-gcw",
+  storageBucket: "proyecto-gcw.appspot.com",
+  messagingSenderId: "836388542619",
+  appId: "1:836388542619:web:af778c42c62043faf9ce3e"
+};
+
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth();
+auth.languageCode = "es";
+const provider = new GoogleAuthProvider();
+const db = getDatabase();
+
+
+let currentUser;
+async function login() {
+  const res = await signInWithPopup(auth, provider)
+    .then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      // The signed-in user info.
+      const user = result.user;
+      currentUser = user;
+      console.log(user)
+
+      writeUserData(user.uid, { x: 0, z: 0 });
+      // IdP data available using getAdditionalUserInfo(result)
+      // ...
+    }).catch((error) => {
+      // Handle Errors here.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.customData.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      // ...
+    });
+}
+
+
+const buttonLogin = document.getElementById("button-login");
+const buttonLogout = document.getElementById("button-logout");
+
+buttonLogin.addEventListener("click", async () => {
+  const user = await login();
+});
+
+buttonLogout.addEventListener("click", async () => {
+  signOut(auth)
+    .then(() => {
+      // Sign-out successful.
+      console.log("Sign-out successful.");
+    })
+    .catch((error) => {
+      // An error happened.
+      console.log("An error happened");
+    });
+});
+
+const starCountRef = ref(db, "jugador");
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log(data)
+  Object.entries(data).forEach(([key, value]) => {
+    const jugador = scene.getObjectByName(key);
+    if (!jugador) {
+      this._LoadModels();
+
+    }
+    scene.getObjectByName(key).position.x = value.x;
+    scene.getObjectByName(key).position.z = value.z;
+
+
+    // Update the user info div with the user ID and position
+    if (key == currentUser.uid) {
+      userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
+    }
+
+  });
+});
+
+function writeUserData(userId, position) {
+  set(ref(db, "jugador/" + userId), {
+    x: position.x,
+    z: position.z,
+  });
+}
 
 
 class BasicCharacterControllerProxy {
@@ -30,7 +132,7 @@ class BasicCharacterController {
     this._animations = {};
     this._input = new BasicCharacterControllerInput();
     this._stateMachine = new CharacterFSM(
-        new BasicCharacterControllerProxy(this._animations));
+      new BasicCharacterControllerProxy(this._animations));
 
     this._LoadModels();
   }
@@ -57,7 +159,7 @@ class BasicCharacterController {
       const _OnLoad = (animName, anim) => {
         const clip = anim.animations[0];
         const action = this._mixer.clipAction(clip);
-  
+
         this._animations[animName] = {
           clip: clip,
           action: action,
@@ -85,6 +187,7 @@ class BasicCharacterController {
   }
 
   Update(timeInSeconds) {
+    // console.log(this._position)
     if (!this._stateMachine._currentState) {
       return;
     }
@@ -93,13 +196,13 @@ class BasicCharacterController {
 
     const velocity = this._velocity;
     const frameDecceleration = new THREE.Vector3(
-        velocity.x * this._decceleration.x,
-        velocity.y * this._decceleration.y,
-        velocity.z * this._decceleration.z
+      velocity.x * this._decceleration.x,
+      velocity.y * this._decceleration.y,
+      velocity.z * this._decceleration.z
     );
     frameDecceleration.multiplyScalar(timeInSeconds);
     frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
-        Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+      Math.abs(frameDecceleration.z), Math.abs(velocity.z));
 
     velocity.add(frameDecceleration);
 
@@ -163,7 +266,7 @@ class BasicCharacterController {
 
 class BasicCharacterControllerInput {
   constructor() {
-    this._Init();    
+    this._Init();
   }
 
   _Init() {
@@ -175,9 +278,11 @@ class BasicCharacterControllerInput {
       space: false,
       shift: false,
     };
+    // this._movingForward = true
     document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
     document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
   }
+
 
   _onKeyDown(event) {
     switch (event.keyCode) {
@@ -203,7 +308,7 @@ class BasicCharacterControllerInput {
   }
 
   _onKeyUp(event) {
-    switch(event.keyCode) {
+    switch (event.keyCode) {
       case 87: // w
         this._keys.forward = false;
         break;
@@ -239,7 +344,7 @@ class FiniteStateMachine {
 
   SetState(name) {
     const prevState = this._currentState;
-    
+
     if (prevState) {
       if (prevState.Name == name) {
         return;
@@ -282,9 +387,9 @@ class State {
     this._parent = parent;
   }
 
-  Enter() {}
-  Exit() {}
-  Update() {}
+  Enter() { }
+  Exit() { }
+  Update() { }
 };
 
 
@@ -309,7 +414,7 @@ class DanceState extends State {
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
 
-      curAction.reset();  
+      curAction.reset();
       curAction.setLoop(THREE.LoopOnce, 1);
       curAction.clampWhenFinished = true;
       curAction.crossFadeFrom(prevAction, 0.2, true);
@@ -326,7 +431,7 @@ class DanceState extends State {
 
   _Cleanup() {
     const action = this._parent._proxy._animations['dance'].action;
-    
+
     action.getMixer().removeEventListener('finished', this._CleanupCallback);
   }
 
@@ -564,21 +669,21 @@ class ThirdPersonCameraDemo {
 
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        './resources/Backgrounds/cityBackground.jpg',
-        './resources/Backgrounds/cityBackground.jpg',
-        './resources/Backgrounds/cityBackground.jpg',
-        './resources/Backgrounds/cityBackground.jpg',
-        './resources/Backgrounds/cityBackground.jpg',
-        './resources/Backgrounds/cityBackground.jpg',
+      './resources/Backgrounds/cityBackground.jpg',
+      './resources/Backgrounds/cityBackground.jpg',
+      './resources/Backgrounds/cityBackground.jpg',
+      './resources/Backgrounds/cityBackground.jpg',
+      './resources/Backgrounds/cityBackground.jpg',
+      './resources/Backgrounds/cityBackground.jpg',
     ]);
     texture.encoding = THREE.sRGBEncoding;
     this._scene.background = texture;
 
     const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(400, 400, 10, 10),
-        new THREE.MeshStandardMaterial({
-            color: 0x2f2f2f,    //cambio de color del plano
-          }));
+      new THREE.PlaneGeometry(400, 400, 10, 10),
+      new THREE.MeshStandardMaterial({
+        color: 0x2f2f2f,    //cambio de color del plano
+      }));
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
@@ -589,30 +694,30 @@ class ThirdPersonCameraDemo {
 
     this._LoadAnimatedModel();
     this._LoadAnimatedModelAndPlay(
-        './resources/people/', 'Character1.fbx', 'Character1.fbx', new THREE.Vector3(-57, 0, 12));
-     this._LoadAnimatedModelAndPlay(
-         './resources/people/', 'Character2_P.fbx', 'Character2_P.fbx', new THREE.Vector3(-90, 0, -150));
-     //this._LoadAnimatedModelAndPlay(
-      //    './resources/people/', 'Character3_P.fbx', 'Character3_P.fbx', new THREE.Vector3(-10, 0, -10));
-     this._LoadAnimatedModelAndPlay(
-         './resources/people/', 'Character4_P.fbx', 'Character4_P.fbx', new THREE.Vector3(-65, 0, 170));
+      './resources/people/', 'Character1.fbx', 'Character1.fbx', new THREE.Vector3(-57, 0, 12));
+    this._LoadAnimatedModelAndPlay(
+      './resources/people/', 'Character2_P.fbx', 'Character2_P.fbx', new THREE.Vector3(-90, 0, -150));
+    //this._LoadAnimatedModelAndPlay(
+    //    './resources/people/', 'Character3_P.fbx', 'Character3_P.fbx', new THREE.Vector3(-10, 0, -10));
+    this._LoadAnimatedModelAndPlay(
+      './resources/people/', 'Character4_P.fbx', 'Character4_P.fbx', new THREE.Vector3(-65, 0, 170));
 
 
     //buildings
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'redBuilding.fbx', 'redBuilding.fbx', new THREE.Vector3(90, 0, 20)); 
+      './resources/buildings/', 'redBuilding.fbx', 'redBuilding.fbx', new THREE.Vector3(90, 0, 20));
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'redBuilding.fbx', 'redBuilding.fbx', new THREE.Vector3(0, 0, 130));
+      './resources/buildings/', 'redBuilding.fbx', 'redBuilding.fbx', new THREE.Vector3(0, 0, 130));
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'greenBuilding.fbx', 'greenBuilding.fbx', new THREE.Vector3(-130, 0, 130));
+      './resources/buildings/', 'greenBuilding.fbx', 'greenBuilding.fbx', new THREE.Vector3(-130, 0, 130));
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'gasoline.fbx', 'gasoline.fbx', new THREE.Vector3(-20, 0, 150));  
+      './resources/buildings/', 'gasoline.fbx', 'gasoline.fbx', new THREE.Vector3(-20, 0, 150));
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'flowerBuilding.fbx', 'flowerBuilding.fbx', new THREE.Vector3(-90, 0, -10));
+      './resources/buildings/', 'flowerBuilding.fbx', 'flowerBuilding.fbx', new THREE.Vector3(-90, 0, -10));
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'hotel.fbx', 'hotel.fbx', new THREE.Vector3(90, 0, -120)); 
+      './resources/buildings/', 'hotel.fbx', 'hotel.fbx', new THREE.Vector3(90, 0, -120));
     this._LoadAnimatedModelAndPlay(
-          './resources/buildings/', 'libraryBuilding.fbx', 'libraryBuilding.fbx', new THREE.Vector3(-90, 0, -100)); 
+      './resources/buildings/', 'libraryBuilding.fbx', 'libraryBuilding.fbx', new THREE.Vector3(-90, 0, -100));
     this._RAF();
   }
 
@@ -712,5 +817,5 @@ function _TestLerp(t1, t2) {
 
 _TestLerp(0.01, 0.01);
 _TestLerp(1.0 / 100.0, 1.0 / 50.0);
-_TestLerp(1.0 - Math.pow(0.3, 1.0 / 100.0), 
-          1.0 - Math.pow(0.3, 1.0 / 50.0));
+_TestLerp(1.0 - Math.pow(0.3, 1.0 / 100.0),
+  1.0 - Math.pow(0.3, 1.0 / 50.0));
