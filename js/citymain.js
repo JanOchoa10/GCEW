@@ -84,69 +84,25 @@ buttonLogin.addEventListener("click", async () => {
 });
 
 buttonLogout.addEventListener("click", async () => {
-  const auth = getAuth();   //ESTA LINEA NO LA COPIO EL PROFE
-  signOut(auth).then(() => {
-    // Sign-out successful.
-    alert("Sign-out successful.");
-    console.log("Sign-out successful.");
-  }).catch((error) => {
-    // An error happened.
-    alert("An error happened");
-    console.log("An error happened");
-  });
+  const user = auth.currentUser;
+  if (user) {
+    // el usuario está autenticado, podemos cerrar la sesión
+    signOut(auth).then(() => {
+      // Sign-out successful.
+      currentUser = undefined;
+      alert("Sign-out successful.");
+      console.log("Sign-out successful.");
+    }).catch((error) => {
+      // An error happened.
+      alert("An error happened");
+      console.log("An error happened");
+    });
+  } else {
+    // el usuario no está autenticado, no hay sesión que cerrar
+    console.log('No user currently logged in');
+  }
 });
 
-// const _escena = new ThirdPersonCameraDemo();  
-// const _Scene = _escena._scene;
-const scene = new THREE.Scene();   //PARA INICIAR LA ESCENA Y YA NADAMAS PASARSELA AL CONSTRUCTOR
-
-const starCountRef = ref(db, "jugador");   //EL PROFE NO LE DEJÓ EL SLASH
-onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val();
-  //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
-  //console.log(data);
-  Object.entries(data).forEach(([key, value]) => {
-    //console.log(`${key} ${value}`);
-    //console.log(key);
-    //console.log(value);
-    const jugador = scene.getObjectByName(key);
-    if (!jugador) {
-      //this._LoadModels();
-
-      // const car = new BasicCharacterController();
-      // car._LoadModels();
-
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshPhongMaterial();
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(value.x, 0, value.z);
-      mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
-      mesh.name = key;
-      scene.add(mesh);
-
-      //mesh.position.set(3, 0, 0);
-      //mesh.castShadow = true;
-    }
-
-    scene.getObjectByName(key).position.x = value.x;
-    scene.getObjectByName(key).position.z = value.z;
-
-
-    //     // Update the user info div with the user ID and position
-    //     if (key == currentUser.uid) {
-    //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
-    //     }
-
-  });
-});
-
-function writeUserData(userId, position) {
-  //const db = getDatabase();
-  set(ref(db, "jugador/" + userId), {
-    x: position.x,
-    z: position.z
-  });
-}
 
 //     // Update the user info div with the user ID and position
 //     if (key == currentUser.uid) {
@@ -364,65 +320,132 @@ class BasicCharacterControllerInput {
   // }
 
   _onKeyDown(event) {
-    const position = this._controller.Position;
-    const jugadorActual = scene.getObjectByName(currentUser.uid);
+    try {
+      // existing code
+      const position = this._controller.Position;
+      const jugadorActual = scene.getObjectByName(currentUser.uid);
 
-    jugadorActual.position.x = position.x;
-    jugadorActual.position.z = position.z;
-    switch (event.keyCode) {
-      case 87: // w
-        this._keys.forward = true;
-        //console.log("Mi posicion" + position);
-        break;
-      case 65: // a
-        this._keys.left = true;
-        break;
-      case 83: // s
-        this._keys.backward = true;
-        break;
-      case 68: // d
-        this._keys.right = true;
-        break;
-      case 32: // SPACE
-        this._keys.space = true;
-        break;
-      case 16: // SHIFT
-        this._keys.shift = true;
-        break;
+      jugadorActual.position.x = position.x;
+      jugadorActual.position.z = position.z;
+      switch (event.keyCode) {
+        case 87: // w
+          this._keys.forward = true;
+          //console.log("Mi posicion" + position);
+          break;
+        case 65: // a
+          this._keys.left = true;
+          break;
+        case 83: // s
+          this._keys.backward = true;
+          break;
+        case 68: // d
+          this._keys.right = true;
+          break;
+        case 32: // SPACE
+          this._keys.space = true;
+          break;
+        case 16: // SHIFT
+          this._keys.shift = true;
+          break;
+      }
+      writeUserData(currentUser.uid, jugadorActual.position);
+    } catch (error) {
+      // alert("Por favor, inicia sesión");
+      console.log("Por favor, inicia sesión")
+      // console.error(error);
     }
-    writeUserData(currentUser.uid, jugadorActual.position);
+
   }
 
   _onKeyUp(event) {
-    const position = this._controller.Position;
-    const jugadorActual = scene.getObjectByName(currentUser.uid);
+    try {
+      // existing code
+      const position = this._controller.Position;
+      const jugadorActual = scene.getObjectByName(currentUser.uid);
 
-    jugadorActual.position.x = position.x;
-    jugadorActual.position.z = position.z;
-    switch (event.keyCode) {
-      case 87: // w
-        this._keys.forward = false;
-        break;
-      case 65: // a
-        this._keys.left = false;
-        break;
-      case 83: // s
-        this._keys.backward = false;
-        break;
-      case 68: // d
-        this._keys.right = false;
-        break;
-      case 32: // SPACE
-        this._keys.space = false;
-        break;
-      case 16: // SHIFT
-        this._keys.shift = false;
-        break;
+      jugadorActual.position.x = position.x;
+      jugadorActual.position.z = position.z;
+      switch (event.keyCode) {
+        case 87: // w
+          this._keys.forward = false;
+          break;
+        case 65: // a
+          this._keys.left = false;
+          break;
+        case 83: // s
+          this._keys.backward = false;
+          break;
+        case 68: // d
+          this._keys.right = false;
+          break;
+        case 32: // SPACE
+          this._keys.space = false;
+          break;
+        case 16: // SHIFT
+          this._keys.shift = false;
+          break;
+      }
+      writeUserData(currentUser.uid, jugadorActual.position);
+    } catch (error) {
+      console.log("Por favor, inicia sesión")
+      // console.error(error);
     }
-    writeUserData(currentUser.uid, jugadorActual.position);
+
   }
 };
 
+
+// const _escena = new ThirdPersonCameraDemo();  
+// const _Scene = _escena._scene;
+const scene = new THREE.Scene();   //PARA INICIAR LA ESCENA Y YA NADAMAS PASARSELA AL CONSTRUCTOR
+
+const starCountRef = ref(db, "jugador");   //EL PROFE NO LE DEJÓ EL SLASH
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
+  //console.log(data);
+  Object.entries(data).forEach(([key, value]) => {
+    //console.log(`${key} ${value}`);
+    //console.log(key);
+    //console.log(value);
+    const jugador = scene.getObjectByName(key);
+    if (!jugador) {
+      //this._LoadModels();
+
+      // const car = new BasicCharacterController();
+      // car._LoadModels();
+
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshPhongMaterial();
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(value.x, 0, value.z);
+      mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
+      mesh.name = key;
+      scene.add(mesh);
+
+      //mesh.position.set(3, 0, 0);
+      //mesh.castShadow = true;
+    }
+
+    scene.getObjectByName(key).position.x = value.x;
+    scene.getObjectByName(key).position.z = value.z;
+
+
+    //     // Update the user info div with the user ID and position
+    //     if (key == currentUser.uid) {
+    //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
+    //     }
+
+  });
+});
+
+function writeUserData(userId, position) {
+  //const db = getDatabase();
+  set(ref(db, "jugador/" + userId), {
+    x: position.x,
+    z: position.z
+  });
+}
 
 class FiniteStateMachine {
   constructor() {
