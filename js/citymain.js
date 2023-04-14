@@ -2,60 +2,79 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 
 import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
 
+// // Import the functions you need from the SDKs you need
+// import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
+// import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
+// import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
+
+
+// // Your web app's Firebase configuration
+// const firebaseConfig = {
+//   apiKey: "AIzaSyCpRLFxLUF6YMdOpTKzMWkPkNOk8JVzJAM",
+//   authDomain: "proyecto-gcw.firebaseapp.com",
+//   databaseURL: "https://proyecto-gcw-default-rtdb.firebaseio.com",
+//   projectId: "proyecto-gcw",
+//   storageBucket: "proyecto-gcw.appspot.com",
+//   messagingSenderId: "836388542619",
+//   appId: "1:836388542619:web:af778c42c62043faf9ce3e"
+// };
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js";   // AQUI PUEDE IR LA 9.19.1
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCpRLFxLUF6YMdOpTKzMWkPkNOk8JVzJAM",
-  authDomain: "proyecto-gcw.firebaseapp.com",
-  databaseURL: "https://proyecto-gcw-default-rtdb.firebaseio.com",
-  projectId: "proyecto-gcw",
-  storageBucket: "proyecto-gcw.appspot.com",
-  messagingSenderId: "836388542619",
-  appId: "1:836388542619:web:af778c42c62043faf9ce3e"
+  apiKey: "AIzaSyAD00YWnfCKIg_taz8Qsd3S5vKZDhObImE",
+  authDomain: "coordenadas-cf28f.firebaseapp.com",
+  databaseURL: "https://coordenadas-cf28f-default-rtdb.firebaseio.com",
+  projectId: "coordenadas-cf28f",
+  storageBucket: "coordenadas-cf28f.appspot.com",
+  messagingSenderId: "638534802606",
+  appId: "1:638534802606:web:faa80ee102ba93cbe9213f"
 };
-
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-const auth = getAuth();
+// Initialize Firebase Authentication and get a reference to the service
+const auth = getAuth();     //LE QUITO EL PARAMETRO APP PORQUE SE BASÓ PARA LO DE REGISTRAR USUARIOS
+//const auth = getAuth();
 auth.languageCode = "es";
 const provider = new GoogleAuthProvider();
-const db = getDatabase();
 
-
+// Initialize Realtime Database and get a reference to the service
+const db = getDatabase();  //EL PROFE NO TIENE EL PARAMETRO APP
 let currentUser;
-async function login() {
+
+async function login(){
   const res = await signInWithPopup(auth, provider)
-    .then((result) => {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
-      // The signed-in user info.
-      const user = result.user;
-      currentUser = user;
-      console.log(user)
-
-      writeUserData(user.uid, { x: 0, z: 0 });
-      // IdP data available using getAdditionalUserInfo(result)
-      // ...
-    }).catch((error) => {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // The email of the user's account used.
-      const email = error.customData.email;
-      // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      // ...
-    });
+  .then((result) => {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential.accessToken;
+    // The signed-in user info.
+    const user = result.user;
+    currentUser = user;
+    console.log(user);
+    writeUserData(user.uid, { x: 0, z: 0 });
+    // IdP data available using getAdditionalUserInfo(result)
+    // ...
+  }).catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // The email of the user's account used.
+    const email = error.customData.email;
+    // The AuthCredential type that was used.
+    const credential = GoogleAuthProvider.credentialFromError(error);
+    console.log(errorMessage);
+    // ...
+  });
 }
-
 
 const buttonLogin = document.getElementById("button-login");
 const buttonLogout = document.getElementById("button-logout");
@@ -65,46 +84,79 @@ buttonLogin.addEventListener("click", async () => {
 });
 
 buttonLogout.addEventListener("click", async () => {
-  signOut(auth)
-    .then(() => {
-      // Sign-out successful.
-      console.log("Sign-out successful.");
-    })
-    .catch((error) => {
-      // An error happened.
-      console.log("An error happened");
+  const auth = getAuth();   //ESTA LINEA NO LA COPIO EL PROFE
+  signOut(auth).then(() => {
+    // Sign-out successful.
+    alert("Sign-out successful.");
+    console.log("Sign-out successful.");
+  }).catch((error) => {
+    // An error happened.
+    alert("An error happened");
+    console.log("An error happened");
+  });
+});
+
+// const _escena = new ThirdPersonCameraDemo();  
+// const _Scene = _escena._scene;
+const scene = new THREE.Scene();   //PARA INICIAR LA ESCENA Y YA NADAMAS PASARSELA AL CONSTRUCTOR
+
+const starCountRef = ref(db, "jugador");   //EL PROFE NO LE DEJÓ EL SLASH
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
+  //console.log(data);
+  Object.entries(data).forEach(([key, value]) => {
+    //console.log(`${key} ${value}`);
+    //console.log(key);
+    //console.log(value);
+    const jugador = scene.getObjectByName(key);
+    if (!jugador) {
+      //this._LoadModels();
+
+      // const car = new BasicCharacterController();
+      // car._LoadModels();
+
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshPhongMaterial();
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(value.x, 0, value.z);
+      mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
+      mesh.name = key;
+      scene.add(mesh);
+
+      //mesh.position.set(3, 0, 0);
+      //mesh.castShadow = true;
+    }
+        
+    scene.getObjectByName(key).position.x = value.x;
+    scene.getObjectByName(key).position.z = value.z;
+    
+    
+    //     // Update the user info div with the user ID and position
+    //     if (key == currentUser.uid) {
+    //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
+    //     }
+    
     });
 });
 
-const starCountRef = ref(db, "jugador");
-onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val();
-  console.log(data)
-  Object.entries(data).forEach(([key, value]) => {
-    const jugador = scene.getObjectByName(key);
-    if (!jugador) {
-      this._LoadModels();
-
-    }
-    scene.getObjectByName(key).position.x = value.x;
-    scene.getObjectByName(key).position.z = value.z;
-
-
-    // Update the user info div with the user ID and position
-    if (key == currentUser.uid) {
-      userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
-    }
-
-  });
-});
-
 function writeUserData(userId, position) {
+  //const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
-    z: position.z,
+    z: position.z
   });
 }
 
+//     // Update the user info div with the user ID and position
+//     if (key == currentUser.uid) {
+//       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
+//     }
+
+//   });
+// });
+
+var misParams;
 
 class BasicCharacterControllerProxy {
   constructor(animations) {
@@ -118,11 +170,13 @@ class BasicCharacterControllerProxy {
 
 
 class BasicCharacterController {
+
   constructor(params) {
     this._Init(params);
   }
 
   _Init(params) {
+    
     this._params = params;
     this._decceleration = new THREE.Vector3(-0.0004, -0.0001, -3.5);
     this._acceleration = new THREE.Vector3(4, 0.08, 85.0);  //Velocidad Normal, Rotación, Nitro
@@ -130,49 +184,50 @@ class BasicCharacterController {
     this._position = new THREE.Vector3();
 
     this._animations = {};
-    this._input = new BasicCharacterControllerInput();
+    this._input = new BasicCharacterControllerInput(params, this);
     this._stateMachine = new CharacterFSM(
       new BasicCharacterControllerProxy(this._animations));
-
+    
     this._LoadModels();
+    
   }
 
   _LoadModels() {
-    const loader = new FBXLoader();
-    loader.setPath('./resources/taxi/');
-    loader.load('taximodel.fbx', (fbx) => {     //pose t
-      fbx.scale.setScalar(0.1);
-      fbx.traverse(c => {
-        c.castShadow = true;
-      });
-
-      this._target = fbx;
-      this._params.scene.add(this._target);
-
-      this._mixer = new THREE.AnimationMixer(this._target);
-
-      this._manager = new THREE.LoadingManager();
-      this._manager.onLoad = () => {
-        this._stateMachine.SetState('idle');
-      };
-
-      const _OnLoad = (animName, anim) => {
-        const clip = anim.animations[0];
-        const action = this._mixer.clipAction(clip);
-
-        this._animations[animName] = {
-          clip: clip,
-          action: action,
-        };
-      };
-
-      const loader = new FBXLoader(this._manager);
+      const loader = new FBXLoader();
       loader.setPath('./resources/taxi/');
-      loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
-      loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
-      loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
-      loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
-    });
+      loader.load('taximodel.fbx', (fbx) => {     //pose t
+        fbx.scale.setScalar(0.1);
+        fbx.traverse(c => {
+          c.castShadow = true;
+        });
+
+        this._target = fbx;
+        this._params.scene.add(this._target);
+
+        this._mixer = new THREE.AnimationMixer(this._target);
+
+        this._manager = new THREE.LoadingManager();
+        this._manager.onLoad = () => {
+          this._stateMachine.SetState('idle');
+        };
+
+        const _OnLoad = (animName, anim) => {
+          const clip = anim.animations[0];
+          const action = this._mixer.clipAction(clip);
+
+          this._animations[animName] = {
+            clip: clip,
+            action: action,
+          };
+        };
+
+        const loader = new FBXLoader(this._manager);
+        loader.setPath('./resources/taxi/');
+        loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
+        loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
+        loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
+        loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
+      });
   }
 
   get Position() {
@@ -264,12 +319,18 @@ class BasicCharacterController {
   }
 };
 
+// const characterController = new BasicCharacterController(misParams);
+// const position = characterController.Position;
+
 class BasicCharacterControllerInput {
-  constructor() {
+  constructor(params, controller) {
+    this._params = params;
+    this._controller = controller;
     this._Init();
   }
 
   _Init() {
+    
     this._keys = {
       forward: false,
       backward: false,
@@ -278,25 +339,58 @@ class BasicCharacterControllerInput {
       space: false,
       shift: false,
     };
+    // this._characterController = new BasicCharacterController(params);
+    // this._position = this._characterController.Position;
     // this._movingForward = true
     document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
     document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
   }
 
+  // document.onkeydown = function(e){
+  //   const jugadorActual = scene.getObjectByName(currentUser.uid);
+  //   if (e.keycode = 37){
+  //     jugadorActual.position.x -= 15;
+  //   }
+  //   if (e.keycode = 39){
+  //     jugadorActual.position.x += 15;
+  //   }
+  //   if (e.keycode = 38){
+  //     jugadorActual.position.z -= 15;
+  //   }
+  //   if (e.keycode = 40){
+  //     jugadorActual.position.z += 15;
+  //   }
+  //   writeUserData(currentUser.uid, jugadorActual.position);
+  // }
 
   _onKeyDown(event) {
+    const position = this._controller.Position;
+    const jugadorActual = scene.getObjectByName(currentUser.uid);
     switch (event.keyCode) {
       case 87: // w
         this._keys.forward = true;
+        jugadorActual.position.x = position.x;
+        jugadorActual.position.z = position.z;
+        console.log("Mi posicion: " + position.x + ", " + position.z);
+        //console.log("Mi posicion" + position);
         break;
       case 65: // a
         this._keys.left = true;
+        jugadorActual.position.x = position.x;
+        jugadorActual.position.z = position.z;
+        console.log("Mi posicion: " + position.x + ", " + position.z);
         break;
       case 83: // s
         this._keys.backward = true;
+        jugadorActual.position.x = position.x;
+        jugadorActual.position.z = position.z;
+        console.log("Mi posicion: " + position.x + ", " + position.z);
         break;
       case 68: // d
         this._keys.right = true;
+        jugadorActual.position.x = position.x;
+        jugadorActual.position.z = position.z;
+        console.log("Mi posicion: " + position.x + ", " + position.z);
         break;
       case 32: // SPACE
         this._keys.space = true;
@@ -305,6 +399,7 @@ class BasicCharacterControllerInput {
         this._keys.shift = true;
         break;
     }
+    writeUserData(currentUser.uid, jugadorActual.position);
   }
 
   _onKeyUp(event) {
@@ -645,7 +740,7 @@ class ThirdPersonCameraDemo {
     this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     this._camera.position.set(25, 10, 25);
 
-    this._scene = new THREE.Scene();
+    this._scene = scene;
 
     let light = new THREE.DirectionalLight(0xFFFFFF, 0.7);
     light.position.set(-100, 100, 100);
@@ -726,6 +821,7 @@ class ThirdPersonCameraDemo {
       camera: this._camera,
       scene: this._scene,
     }
+    misParams = params;
     this._controls = new BasicCharacterController(params);
 
     this._thirdPersonCamera = new ThirdPersonCamera({
