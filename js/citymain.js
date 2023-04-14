@@ -145,15 +145,17 @@ class BasicCharacterController {
     this._stateMachine = new CharacterFSM(
       new BasicCharacterControllerProxy(this._animations));
 
-    this._LoadModels();
+    // this._LoadModels();
 
   }
 
-  _LoadModels() {
+  _LoadModels(key, posX, posZ) {
     self = this;
     const loader = new FBXLoader();
     loader.setPath('./resources/taxi/');
     loader.load('taximodel.fbx', (fbx) => {     //pose t
+      fbx.name = key;
+      fbx.position.set(posX, 0, posZ);
       fbx.scale.setScalar(0.1);
       fbx.traverse(c => {
         c.castShadow = true;
@@ -190,6 +192,14 @@ class BasicCharacterController {
 
   get Position() {
     return this._position;
+  }
+
+  set Position(pos) {
+    this._position = pos;
+    // Actualizar la posición del target aquí, si lo necesitas
+    if (this._target) {
+      this._target.position.copy(pos);
+    }
   }
 
   get Rotation() {
@@ -279,7 +289,7 @@ class BasicCharacterController {
 
 // const characterController = new BasicCharacterController(misParams);
 // const position = characterController.Position;
-
+const controllers = [];
 class BasicCharacterControllerInput {
   constructor(params, controller) {
     this._params = params;
@@ -322,76 +332,88 @@ class BasicCharacterControllerInput {
   // }
 
   _onKeyDown(event) {
-    try {
-      // existing code
-      const position = this._controller.Position;
-      const jugadorActual = scene.getObjectByName(currentUser.uid);
+    // try {
+    // existing code
+    const position = this._controller.Position;
+    const jugadorActual = scene.getObjectByName(currentUser.uid);
 
-      jugadorActual.position.x = position.x;
-      jugadorActual.position.z = position.z;
-      switch (event.keyCode) {
-        case 87: // w
-          this._keys.forward = true;
-          //console.log("Mi posicion" + position);
-          break;
-        case 65: // a
-          this._keys.left = true;
-          break;
-        case 83: // s
-          this._keys.backward = true;
-          break;
-        case 68: // d
-          this._keys.right = true;
-          break;
-        case 32: // SPACE
-          this._keys.space = true;
-          break;
-        case 16: // SHIFT
-          this._keys.shift = true;
-          break;
+    scene.traverse(obj => {
+      if (obj.name.endsWith("VXPyY82") || obj.name.endsWith("RABi2") || obj.name.endsWith("cUyP2")) {
+        console.log(obj.name);
       }
-      writeUserData(currentUser.uid, jugadorActual.position);
-    } catch (error) {
-      // alert("Por favor, inicia sesión");
-      console.log("Por favor, inicia sesión")
-      // console.error(error);
+    });
+
+
+
+    console.log(jugadorActual)
+    jugadorActual.position.x = position.x;
+    jugadorActual.position.z = position.z;
+    switch (event.keyCode) {
+      case 87: // w
+        this._keys.forward = true;
+        console.log(this._keys.forward)
+        position.z += 1;
+        console.log("Mi posicion: " + position.x, ",", position.z);
+        // console.log("Mi posicion JA: " + jugadorActual.position.x, ",", jugadorActual.position.z);
+        break;
+      case 65: // a
+        this._keys.left = true;
+        break;
+      case 83: // s
+        this._keys.backward = true;
+        break;
+      case 68: // d
+        this._keys.right = true;
+        break;
+      case 32: // SPACE
+        this._keys.space = true;
+        break;
+      case 16: // SHIFT
+        this._keys.shift = true;
+        break;
     }
+    writeUserData(currentUser.uid, jugadorActual.position);
+    // } catch (error) {
+    //   // alert("Por favor, inicia sesión");
+    //   console.log("Por favor, inicia sesión")
+    //   console.error(error);
+    // }
 
   }
 
   _onKeyUp(event) {
-    try {
-      // existing code
-      const position = this._controller.Position;
-      const jugadorActual = scene.getObjectByName(currentUser.uid);
+    // try {
+    // existing code
+    // const position = this._controller.Position;
+    // const jugadorActual = scene.getObjectByName(currentUser.uid);
 
-      jugadorActual.position.x = position.x;
-      jugadorActual.position.z = position.z;
-      switch (event.keyCode) {
-        case 87: // w
-          this._keys.forward = false;
-          break;
-        case 65: // a
-          this._keys.left = false;
-          break;
-        case 83: // s
-          this._keys.backward = false;
-          break;
-        case 68: // d
-          this._keys.right = false;
-          break;
-        case 32: // SPACE
-          this._keys.space = false;
-          break;
-        case 16: // SHIFT
-          this._keys.shift = false;
-          break;
-      }
-      writeUserData(currentUser.uid, jugadorActual.position);
-    } catch (error) {
-      console.log("Por favor, inicia sesión")
-      // console.error(error);
+    // jugadorActual.position.x = position.x;
+    // jugadorActual.position.z = position.z;
+    switch (event.keyCode) {
+      case 87: // w
+        this._keys.forward = false;
+        break;
+      case 65: // a
+        this._keys.left = false;
+        break;
+      case 83: // s
+        this._keys.backward = false;
+        break;
+      case 68: // d
+        this._keys.right = false;
+        break;
+      case 32: // SPACE
+        this._keys.space = false;
+        break;
+      case 16: // SHIFT
+        this._keys.shift = false;
+        break;
     }
+    // writeUserData(currentUser.uid, jugadorActual.position);
+    // } catch (error) {
+    //   console.log("Por favor, inicia sesión")
+    //   // console.error(error);
+    // }
 
   }
 };
@@ -411,6 +433,9 @@ onValue(starCountRef, (snapshot) => {
     //console.log(key);
     //console.log(value);
     const jugador = scene.getObjectByName(key);
+    // scene.traverse(obj => {
+    //   console.log(obj.name);
+    // });
     if (!jugador) {
       //this._LoadModels();
 
@@ -422,52 +447,49 @@ onValue(starCountRef, (snapshot) => {
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.set(value.x, 0, value.z);
       mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
-      mesh.name = key;
+      mesh.name = "cube" + key;
       scene.add(mesh);
 
-      // if (key != currentUser.uid) {
-        // const loader = new FBXLoader();
-        // loader.setPath('./resources/taxi/');
-        // loader.load('taximodel.fbx', (fbx) => {
-        //   fbx.name = key; // Asignar un nombre al objeto cargado
-        //   // fbx.position.copy(mesh.position);
-        //   fbx.position.set(value.x, 0, value.z);
-        //   fbx.scale.setScalar(0.1);
-        //   fbx.traverse(c => {
-        //     c.castShadow = true;
-        //   });
 
-        //   self._target = fbx;
-        //   scene.add(self._target);
+      const controller = new BasicCharacterController(misParams);
+      controller._LoadModels(key, value.x, value.z);
+      // console.log(controller.Position)
 
-        //   self._mixer = new THREE.AnimationMixer(self._target);
+      // controller.Position = new THREE.Vector3(0, 0, 0);
+      // console.log(controller.Position)
 
-        //   self._manager = new THREE.LoadingManager();
-        //   self._manager.onLoad = () => {
-        //     self._stateMachine.SetState('idle');
-        //   };
+      // const controllerObj = {
+      //   key: key,
+      //   controller: controller
+      // };
 
-        //   const _OnLoad = (animName, anim) => {
-        //     const clip = anim.animations[0];
-        //     const action = self._mixer.clipAction(clip);
-
-        //     self._animations[animName] = {
-        //       clip: clip,
-        //       action: action,
-        //     };
-        //   };
-
-        //   const loader = new FBXLoader(self._manager);
-        //   loader.setPath('./resources/taxi/');
-        //   loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
-        //   loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
-        //   loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
-        //   loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
-        // });
-      // }
+      // controllers.push(controllerObj);
+      // scene.getObjectByName(key).position.set(value.x, 0, value.z);
     }
 
-    scene.getObjectByName(key).position.set(value.x, 0, value.z);
+    // const jugadorCuboActual = scene.getObjectByName("cube" + currentUser.uid);
+
+    // if (!jugadorCuboActual) {
+    //   const geometry = new THREE.BoxGeometry(1, 1, 1);
+    //   const material = new THREE.MeshPhongMaterial();
+    //   const mesh = new THREE.Mesh(geometry, material);
+    //   mesh.position.set(value.x, 0, value.z);
+    //   mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
+    //   mesh.name = "cube" + currentUser.uid;
+    //   scene.add(mesh);
+    // }
+
+    scene.getObjectByName("cube" + key).position.set(value.x, 0, value.z);
+    // scene.getObjectByName(key).Position = (3,0,3)
+    // if (scene.getObjectByName("cube" + key)) {
+    //   console.log("Existe: " + "cube" + key)
+    // }
+    // if (scene.getObjectByName(key)) {
+    //   console.log("Existe: " + key)
+    // } else {
+    // console.log("No existe: ", key)  
+    // }
+    // scene.getObjectByName(key).position.set(value.x, 0, value.z);
 
     //     // Update the user info div with the user ID and position
     //     if (key == currentUser.uid) {
