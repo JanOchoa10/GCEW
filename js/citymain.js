@@ -142,15 +142,19 @@ class BasicCharacterController {
 
     this._animations = {};
     this._input = new BasicCharacterControllerInput(params, this);
+    console.log(this._input)
     this._stateMachine = new CharacterFSM(
-      new BasicCharacterControllerProxy(this._animations));
+      new BasicCharacterControllerProxy(this._animations)
+    );
+    // console.log(this._stateMachine)
+    // this._stateMachine._currentState = new IdleState(this._stateMachine);
 
+    console.log("current state: ", this._stateMachine._currentState)
     // this._LoadModels();
 
   }
 
   _LoadModels(key, posX, posZ) {
-    self = this;
     const loader = new FBXLoader();
     loader.setPath('./resources/taxi/');
     loader.load('taximodel.fbx', (fbx) => {     //pose t
@@ -209,8 +213,11 @@ class BasicCharacterController {
     return this._target.quaternion;
   }
 
+
+
   Update(timeInSeconds) {
     // console.log(this._position)
+    // console.log(this._stateMachine)
     if (!this._stateMachine._currentState) {
       return;
     }
@@ -314,7 +321,7 @@ class BasicCharacterControllerInput {
     // this._position = this._characterController.Position;
     // this._movingForward = true
     this._movementSpeed = 10;
-    this._delta = 1/60
+    this._delta = 1 / 60
     document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
     document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
   }
