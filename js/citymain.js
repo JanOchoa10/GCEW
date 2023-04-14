@@ -290,6 +290,9 @@ class BasicCharacterController {
 // const characterController = new BasicCharacterController(misParams);
 // const position = characterController.Position;
 const controllers = [];
+var posicionG = new THREE.Vector3();
+
+
 class BasicCharacterControllerInput {
   constructor(params, controller) {
     this._params = params;
@@ -310,6 +313,8 @@ class BasicCharacterControllerInput {
     // this._characterController = new BasicCharacterController(params);
     // this._position = this._characterController.Position;
     // this._movingForward = true
+    this._movementSpeed = 10;
+    this._delta = 1/60
     document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
     document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
   }
@@ -335,35 +340,63 @@ class BasicCharacterControllerInput {
     // try {
     // existing code
     const position = this._controller.Position;
+    // console.log(this._controller)
+    // let positionTaxi = new THREE.Vector3();
     const jugadorActual = scene.getObjectByName(currentUser.uid);
-
-    scene.traverse(obj => {
-      if (obj.name.endsWith("VXPyY82") || obj.name.endsWith("RABi2") || obj.name.endsWith("cUyP2")) {
-        console.log(obj.name);
-      }
-    });
-
+    // for (const controllerObj of controllers) {
+    //   // console.log("Mis controller es: " + controllerObj.key + " , ")
+    //   // console.log(controllerObj.controller.Position)
+    //   if (controllerObj.key == currentUser.uid) {
+    //     // console.log(controllerObj.controller)
 
 
-    console.log(jugadorActual)
+
+    //     // console.log("Pos jA = ")
+    //     // console.log(controllerObj.posX, controllerObj.posZ)
+    //     // positionTaxi.x = controllerObj.posX;
+    //     // positionTaxi.z = controllerObj.posZ;
+
+    //     //   position = controllerObj.controller.Position;
+    //     // break;
+    //   }
+    // }
+
+    // scene.traverse(obj => {
+    //   if (obj.name.endsWith("VXPyY82") || obj.name.endsWith("RABi2") || obj.name.endsWith("cUyP2")) {
+    //     // console.log(obj.name);
+    //   }
+    // });
+
+
+
+    // console.log(jugadorActual)
     jugadorActual.position.x = position.x;
     jugadorActual.position.z = position.z;
     switch (event.keyCode) {
       case 87: // w
         this._keys.forward = true;
-        console.log(this._keys.forward)
+        // console.log(this._keys.forward)
+        // position.z += 1;
+        // const moveDirection = new THREE.Vector3(0, 0, -1);
+        // moveDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), jugadorActual.rotation.y);
+        // moveDirection.multiplyScalar(this._movementSpeed * this._delta);
+        // jugadorActual.position.add(moveDirection);
+        // position.z += moveDirection;
         position.z += 1;
-        console.log("Mi posicion: " + position.x, ",", position.z);
+        // console.log("Mi posicion: " + position.x, ",", position.z);
         // console.log("Mi posicion JA: " + jugadorActual.position.x, ",", jugadorActual.position.z);
         break;
       case 65: // a
         this._keys.left = true;
+        position.x += 1;
         break;
       case 83: // s
         this._keys.backward = true;
+        position.z -= 1;
         break;
       case 68: // d
         this._keys.right = true;
+        position.x -= 1;
         break;
       case 32: // SPACE
         this._keys.space = true;
@@ -458,12 +491,14 @@ onValue(starCountRef, (snapshot) => {
       // controller.Position = new THREE.Vector3(0, 0, 0);
       // console.log(controller.Position)
 
-      // const controllerObj = {
-      //   key: key,
-      //   controller: controller
-      // };
+      const controllerObj = {
+        key: key,
+        posX: value.x,
+        posZ: value.z,
+        controller: controller
+      };
 
-      // controllers.push(controllerObj);
+      controllers.push(controllerObj);
       // scene.getObjectByName(key).position.set(value.x, 0, value.z);
     }
 
@@ -480,6 +515,13 @@ onValue(starCountRef, (snapshot) => {
     // }
 
     scene.getObjectByName("cube" + key).position.set(value.x, 0, value.z);
+    scene.getObjectByName(key).position.set(value.x, 0, value.z)
+
+    // if (key = "I8COjYTdYVUqDX5Dr2vyaVXPyY82") {
+
+    //   console.log(scene.getObjectByName(key).position)
+    // }
+
     // scene.getObjectByName(key).Position = (3,0,3)
     // if (scene.getObjectByName("cube" + key)) {
     //   console.log("Existe: " + "cube" + key)
@@ -497,6 +539,14 @@ onValue(starCountRef, (snapshot) => {
     //     }
 
   });
+  // for (const controllerObj of controllers) {
+  //   console.log("Mis controller es: " + controllerObj.key + " , ")
+  //   console.log(controllerObj.controller.Position)
+  //   // if (controllerObj.key === currentUser.uid) {
+  //   //   position = controllerObj.controller.Position;
+  //   //   break;
+  //   // }
+  // }
 });
 
 function writeUserData(userId, position) {
