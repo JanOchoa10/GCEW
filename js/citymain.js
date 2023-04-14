@@ -3,40 +3,40 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
 
-// // Import the functions you need from the SDKs you need
-// import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
-// import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
-// import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
-
-
-// // Your web app's Firebase configuration
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCpRLFxLUF6YMdOpTKzMWkPkNOk8JVzJAM",
-//   authDomain: "proyecto-gcw.firebaseapp.com",
-//   databaseURL: "https://proyecto-gcw-default-rtdb.firebaseio.com",
-//   projectId: "proyecto-gcw",
-//   storageBucket: "proyecto-gcw.appspot.com",
-//   messagingSenderId: "836388542619",
-//   appId: "1:836388542619:web:af778c42c62043faf9ce3e"
-// };
-
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js";   // AQUI PUEDE IR LA 9.19.1
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAD00YWnfCKIg_taz8Qsd3S5vKZDhObImE",
-  authDomain: "coordenadas-cf28f.firebaseapp.com",
-  databaseURL: "https://coordenadas-cf28f-default-rtdb.firebaseio.com",
-  projectId: "coordenadas-cf28f",
-  storageBucket: "coordenadas-cf28f.appspot.com",
-  messagingSenderId: "638534802606",
-  appId: "1:638534802606:web:faa80ee102ba93cbe9213f"
+  apiKey: "AIzaSyCpRLFxLUF6YMdOpTKzMWkPkNOk8JVzJAM",
+  authDomain: "proyecto-gcw.firebaseapp.com",
+  databaseURL: "https://proyecto-gcw-default-rtdb.firebaseio.com",
+  projectId: "proyecto-gcw",
+  storageBucket: "proyecto-gcw.appspot.com",
+  messagingSenderId: "836388542619",
+  appId: "1:836388542619:web:af778c42c62043faf9ce3e"
 };
+
+// // Import the functions you need from the SDKs you need
+// import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js";   // AQUI PUEDE IR LA 9.19.1
+// import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js";
+// // TODO: Add SDKs for Firebase products that you want to use
+// // https://firebase.google.com/docs/web/setup#available-libraries
+// import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-database.js";
+
+// // Your web app's Firebase configuration
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAD00YWnfCKIg_taz8Qsd3S5vKZDhObImE",
+//   authDomain: "coordenadas-cf28f.firebaseapp.com",
+//   databaseURL: "https://coordenadas-cf28f-default-rtdb.firebaseio.com",
+//   projectId: "coordenadas-cf28f",
+//   storageBucket: "coordenadas-cf28f.appspot.com",
+//   messagingSenderId: "638534802606",
+//   appId: "1:638534802606:web:faa80ee102ba93cbe9213f"
+// };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -50,30 +50,30 @@ const provider = new GoogleAuthProvider();
 const db = getDatabase();  //EL PROFE NO TIENE EL PARAMETRO APP
 let currentUser;
 
-async function login(){
+async function login() {
   const res = await signInWithPopup(auth, provider)
-  .then((result) => {
-    // This gives you a Google Access Token. You can use it to access the Google API.
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential.accessToken;
-    // The signed-in user info.
-    const user = result.user;
-    currentUser = user;
-    console.log(user);
-    writeUserData(user.uid, { x: 0, z: 0 });
-    // IdP data available using getAdditionalUserInfo(result)
-    // ...
-  }).catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // The email of the user's account used.
-    const email = error.customData.email;
-    // The AuthCredential type that was used.
-    const credential = GoogleAuthProvider.credentialFromError(error);
-    console.log(errorMessage);
-    // ...
-  });
+    .then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      // The signed-in user info.
+      const user = result.user;
+      currentUser = user;
+      console.log(user);
+      writeUserData(user.uid, { x: 0, z: 0 });
+      // IdP data available using getAdditionalUserInfo(result)
+      // ...
+    }).catch((error) => {
+      // Handle Errors here.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.customData.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      console.log(errorMessage);
+      // ...
+    });
 }
 
 const buttonLogin = document.getElementById("button-login");
@@ -127,17 +127,17 @@ onValue(starCountRef, (snapshot) => {
       //mesh.position.set(3, 0, 0);
       //mesh.castShadow = true;
     }
-        
+
     scene.getObjectByName(key).position.x = value.x;
     scene.getObjectByName(key).position.z = value.z;
-    
-    
+
+
     //     // Update the user info div with the user ID and position
     //     if (key == currentUser.uid) {
     //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
     //     }
-    
-    });
+
+  });
 });
 
 function writeUserData(userId, position) {
@@ -176,7 +176,7 @@ class BasicCharacterController {
   }
 
   _Init(params) {
-    
+
     this._params = params;
     this._decceleration = new THREE.Vector3(-0.0004, -0.0001, -3.5);
     this._acceleration = new THREE.Vector3(4, 0.08, 85.0);  //Velocidad Normal, Rotación, Nitro
@@ -187,47 +187,47 @@ class BasicCharacterController {
     this._input = new BasicCharacterControllerInput(params, this);
     this._stateMachine = new CharacterFSM(
       new BasicCharacterControllerProxy(this._animations));
-    
+
     this._LoadModels();
-    
+
   }
 
   _LoadModels() {
-      const loader = new FBXLoader();
-      loader.setPath('./resources/taxi/');
-      loader.load('taximodel.fbx', (fbx) => {     //pose t
-        fbx.scale.setScalar(0.1);
-        fbx.traverse(c => {
-          c.castShadow = true;
-        });
-
-        this._target = fbx;
-        this._params.scene.add(this._target);
-
-        this._mixer = new THREE.AnimationMixer(this._target);
-
-        this._manager = new THREE.LoadingManager();
-        this._manager.onLoad = () => {
-          this._stateMachine.SetState('idle');
-        };
-
-        const _OnLoad = (animName, anim) => {
-          const clip = anim.animations[0];
-          const action = this._mixer.clipAction(clip);
-
-          this._animations[animName] = {
-            clip: clip,
-            action: action,
-          };
-        };
-
-        const loader = new FBXLoader(this._manager);
-        loader.setPath('./resources/taxi/');
-        loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
-        loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
-        loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
-        loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
+    const loader = new FBXLoader();
+    loader.setPath('./resources/taxi/');
+    loader.load('taximodel.fbx', (fbx) => {     //pose t
+      fbx.scale.setScalar(0.1);
+      fbx.traverse(c => {
+        c.castShadow = true;
       });
+
+      this._target = fbx;
+      this._params.scene.add(this._target);
+
+      this._mixer = new THREE.AnimationMixer(this._target);
+
+      this._manager = new THREE.LoadingManager();
+      this._manager.onLoad = () => {
+        this._stateMachine.SetState('idle');
+      };
+
+      const _OnLoad = (animName, anim) => {
+        const clip = anim.animations[0];
+        const action = this._mixer.clipAction(clip);
+
+        this._animations[animName] = {
+          clip: clip,
+          action: action,
+        };
+      };
+
+      const loader = new FBXLoader(this._manager);
+      loader.setPath('./resources/taxi/');
+      loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
+      loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
+      loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
+      loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
+    });
   }
 
   get Position() {
@@ -330,7 +330,7 @@ class BasicCharacterControllerInput {
   }
 
   _Init() {
-    
+
     this._keys = {
       forward: false,
       backward: false,
@@ -366,31 +366,22 @@ class BasicCharacterControllerInput {
   _onKeyDown(event) {
     const position = this._controller.Position;
     const jugadorActual = scene.getObjectByName(currentUser.uid);
+
+    jugadorActual.position.x = position.x;
+    jugadorActual.position.z = position.z;
     switch (event.keyCode) {
       case 87: // w
         this._keys.forward = true;
-        jugadorActual.position.x = position.x;
-        jugadorActual.position.z = position.z;
-        console.log("Mi posicion: " + position.x + ", " + position.z);
         //console.log("Mi posicion" + position);
         break;
       case 65: // a
         this._keys.left = true;
-        jugadorActual.position.x = position.x;
-        jugadorActual.position.z = position.z;
-        console.log("Mi posicion: " + position.x + ", " + position.z);
         break;
       case 83: // s
         this._keys.backward = true;
-        jugadorActual.position.x = position.x;
-        jugadorActual.position.z = position.z;
-        console.log("Mi posicion: " + position.x + ", " + position.z);
         break;
       case 68: // d
         this._keys.right = true;
-        jugadorActual.position.x = position.x;
-        jugadorActual.position.z = position.z;
-        console.log("Mi posicion: " + position.x + ", " + position.z);
         break;
       case 32: // SPACE
         this._keys.space = true;
@@ -403,6 +394,11 @@ class BasicCharacterControllerInput {
   }
 
   _onKeyUp(event) {
+    const position = this._controller.Position;
+    const jugadorActual = scene.getObjectByName(currentUser.uid);
+
+    jugadorActual.position.x = position.x;
+    jugadorActual.position.z = position.z;
     switch (event.keyCode) {
       case 87: // w
         this._keys.forward = false;
@@ -423,6 +419,7 @@ class BasicCharacterControllerInput {
         this._keys.shift = false;
         break;
     }
+    writeUserData(currentUser.uid, jugadorActual.position);
   }
 };
 
