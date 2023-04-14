@@ -425,45 +425,46 @@ onValue(starCountRef, (snapshot) => {
       mesh.name = key;
       scene.add(mesh);
 
+      // if (key != currentUser.uid) {
+        // const loader = new FBXLoader();
+        // loader.setPath('./resources/taxi/');
+        // loader.load('taximodel.fbx', (fbx) => {
+        //   fbx.name = key; // Asignar un nombre al objeto cargado
+        //   // fbx.position.copy(mesh.position);
+        //   fbx.position.set(value.x, 0, value.z);
+        //   fbx.scale.setScalar(0.1);
+        //   fbx.traverse(c => {
+        //     c.castShadow = true;
+        //   });
 
-      const loader = new FBXLoader();
-      loader.setPath('./resources/taxi/');
-      loader.load('taximodel.fbx', (fbx) => {
-        // fbx.name = key; // Asignar un nombre al objeto cargado
-        fbx.position.copy(mesh.position);
-        // fbx.position.set(value.x, 0, value.z);
-        fbx.scale.setScalar(0.1);
-        fbx.traverse(c => {
-          c.castShadow = true;
-        });
+        //   self._target = fbx;
+        //   scene.add(self._target);
 
-        self._target = fbx;
-        scene.add(self._target);
+        //   self._mixer = new THREE.AnimationMixer(self._target);
 
-        self._mixer = new THREE.AnimationMixer(self._target);
+        //   self._manager = new THREE.LoadingManager();
+        //   self._manager.onLoad = () => {
+        //     self._stateMachine.SetState('idle');
+        //   };
 
-        self._manager = new THREE.LoadingManager();
-        self._manager.onLoad = () => {
-          self._stateMachine.SetState('idle');
-        };
+        //   const _OnLoad = (animName, anim) => {
+        //     const clip = anim.animations[0];
+        //     const action = self._mixer.clipAction(clip);
 
-        const _OnLoad = (animName, anim) => {
-          const clip = anim.animations[0];
-          const action = self._mixer.clipAction(clip);
+        //     self._animations[animName] = {
+        //       clip: clip,
+        //       action: action,
+        //     };
+        //   };
 
-          self._animations[animName] = {
-            clip: clip,
-            action: action,
-          };
-        };
-
-        const loader = new FBXLoader(self._manager);
-        loader.setPath('./resources/taxi/');
-        loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
-        loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
-        loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
-        loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
-      });
+        //   const loader = new FBXLoader(self._manager);
+        //   loader.setPath('./resources/taxi/');
+        //   loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
+        //   loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
+        //   loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
+        //   loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
+        // });
+      // }
     }
 
     scene.getObjectByName(key).position.set(value.x, 0, value.z);
