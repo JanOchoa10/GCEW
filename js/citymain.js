@@ -133,27 +133,26 @@ class BasicCharacterController {
   }
 
   _Init(params) {
-
     this._params = params;
     this._decceleration = new THREE.Vector3(-0.0004, -0.0001, -3.5);
     this._acceleration = new THREE.Vector3(4, 0.08, 85.0);  //Velocidad Normal, Rotación, Nitro
     this._velocity = new THREE.Vector3(0, 0, 0);
     this._position = new THREE.Vector3();
-
+  
     this._animations = {};
     this._input = new BasicCharacterControllerInput(params, this);
     console.log(this._input)
     this._stateMachine = new CharacterFSM(
       new BasicCharacterControllerProxy(this._animations)
     );
-    // console.log(this._stateMachine)
-    // this._stateMachine._currentState = new IdleState(this._stateMachine);
-
+    console.log(this._stateMachine)
+    this._stateMachine._currentState = new IdleState(this._stateMachine);
+  
     console.log("current state: ", this._stateMachine._currentState)
-    // this._LoadModels();
-
+  
+    this._LoadModels("taxi", 0, 0);
   }
-
+  
   _LoadModels(key, posX, posZ) {
     const loader = new FBXLoader();
     loader.setPath('./resources/taxi/');
@@ -164,27 +163,27 @@ class BasicCharacterController {
       fbx.traverse(c => {
         c.castShadow = true;
       });
-
+  
       this._target = fbx;
       this._params.scene.add(this._target);
-
+  
       this._mixer = new THREE.AnimationMixer(this._target);
-
+  
       this._manager = new THREE.LoadingManager();
       this._manager.onLoad = () => {
         this._stateMachine.SetState('idle');
       };
-
+  
       const _OnLoad = (animName, anim) => {
         const clip = anim.animations[0];
         const action = this._mixer.clipAction(clip);
-
+  
         this._animations[animName] = {
           clip: clip,
           action: action,
         };
       };
-
+  
       const loader = new FBXLoader(this._manager);
       loader.setPath('./resources/taxi/');
       loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
@@ -193,6 +192,8 @@ class BasicCharacterController {
       loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
     });
   }
+  
+
 
   get Position() {
     return this._position;
@@ -377,8 +378,16 @@ class BasicCharacterControllerInput {
 
 
     // console.log(jugadorActual)
-    jugadorActual.position.x = position.x;
-    jugadorActual.position.z = position.z;
+    if (position.x != 0 && position.z !=0) {
+      jugadorActual.position.x = position.x;
+      jugadorActual.position.z = position.z;
+      console.log(position.x);
+      console.log(position.z);
+    }
+    //console.log(jugadorActual.position.x);
+    //console.log(jugadorActual.position.z);
+    //console.log(position.x);
+    //console.log(position.z);
     switch (event.keyCode) {
       case 87: // w
         this._keys.forward = true;
@@ -389,21 +398,21 @@ class BasicCharacterControllerInput {
         // moveDirection.multiplyScalar(this._movementSpeed * this._delta);
         // jugadorActual.position.add(moveDirection);
         // position.z += moveDirection;
-        position.z += 1;
+        //position.z += 1;
         // console.log("Mi posicion: " + position.x, ",", position.z);
         // console.log("Mi posicion JA: " + jugadorActual.position.x, ",", jugadorActual.position.z);
         break;
       case 65: // a
         this._keys.left = true;
-        position.x += 1;
+        //position.x += 1;
         break;
       case 83: // s
         this._keys.backward = true;
-        position.z -= 1;
+        //position.z -= 1;
         break;
       case 68: // d
         this._keys.right = true;
-        position.x -= 1;
+        //position.x -= 1;
         break;
       case 32: // SPACE
         this._keys.space = true;
@@ -424,11 +433,13 @@ class BasicCharacterControllerInput {
   _onKeyUp(event) {
     // try {
     // existing code
-    // const position = this._controller.Position;
-    // const jugadorActual = scene.getObjectByName(currentUser.uid);
+     const position = this._controller.Position;
+     const jugadorActual = scene.getObjectByName(currentUser.uid);
 
-    // jugadorActual.position.x = position.x;
-    // jugadorActual.position.z = position.z;
+    if (position.x != 0 && position.z !=0) {
+      jugadorActual.position.x = position.x;
+      jugadorActual.position.z = position.z;
+    }
     switch (event.keyCode) {
       case 87: // w
         this._keys.forward = false;
@@ -449,7 +460,7 @@ class BasicCharacterControllerInput {
         this._keys.shift = false;
         break;
     }
-    // writeUserData(currentUser.uid, jugadorActual.position);
+     writeUserData(currentUser.uid, jugadorActual.position);
     // } catch (error) {
     //   console.log("Por favor, inicia sesión")
     //   // console.error(error);
@@ -490,7 +501,7 @@ onValue(starCountRef, (snapshot) => {
       mesh.name = "cube" + key;
       scene.add(mesh);
 
-
+      
       const controller = new BasicCharacterController(misParams);
       controller._LoadModels(key, value.x, value.z);
       // console.log(controller.Position)
