@@ -1,7 +1,11 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
+import * as THREE2 from "../three.module.js";
+
 
 import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from '../GLTFLoader.js';
+import { STLLoader } from '../STLLoader.js';
+
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
@@ -114,6 +118,12 @@ buttonLogout.addEventListener("click", async () => {
 // });
 
 var misParams;
+let collisionDetected = false;
+const fov = 70;
+    const aspect = 1920 / 1080;
+    const near = 1.0;
+    const far = 1000.0;
+const cameraglobal = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
 class BasicCharacterControllerProxy {
   constructor(animations) {
@@ -325,6 +335,8 @@ class BasicCharacterControllerInput {
     this._delta = 1 / 60
     document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
     document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
+
+    
   }
 
   // document.onkeydown = function(e){
@@ -343,6 +355,8 @@ class BasicCharacterControllerInput {
   //   }
   //   writeUserData(currentUser.uid, jugadorActual.position);
   // }
+
+  
 
   _onKeyDown(event) {
     // try {
@@ -374,8 +388,7 @@ class BasicCharacterControllerInput {
     //     // console.log(obj.name);
     //   }
     // });
-
-
+  
 
     // console.log(jugadorActual)
     if (position.x != 0 && position.z !=0) {
@@ -427,12 +440,13 @@ class BasicCharacterControllerInput {
     //   console.log("Por favor, inicia sesión")
     //   console.error(error);
     // }
-
+  
   }
 
   _onKeyUp(event) {
     // try {
     // existing code
+    
      const position = this._controller.Position;
      const jugadorActual = scene.getObjectByName(currentUser.uid);
 
@@ -487,11 +501,13 @@ onValue(starCountRef, (snapshot) => {
     // scene.traverse(obj => {
     //   console.log(obj.name);
     // });
+    
     if (!jugador) {
       //this._LoadModels();
 
       // const car = new BasicCharacterController();
       // car._LoadModels();
+      
 
       const geometry = new THREE.BoxGeometry(1, 1, 1);
       const material = new THREE.MeshPhongMaterial();
@@ -500,10 +516,15 @@ onValue(starCountRef, (snapshot) => {
       mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
       mesh.name = "cube" + key;
       scene.add(mesh);
-
-      
+  
+           
       const controller = new BasicCharacterController(misParams);
       controller._LoadModels(key, value.x, value.z);
+      
+      
+       
+      
+
       // console.log(controller.Position)
 
       // controller.Position = new THREE.Vector3(0, 0, 0);
@@ -514,11 +535,15 @@ onValue(starCountRef, (snapshot) => {
         posX: value.x,
         posZ: value.z,
         controller: controller
+        
       };
-
+    
       controllers.push(controllerObj);
+     
+      
       // scene.getObjectByName(key).position.set(value.x, 0, value.z);
     }
+
 
     // const jugadorCuboActual = scene.getObjectByName("cube" + currentUser.uid);
 
@@ -534,6 +559,132 @@ onValue(starCountRef, (snapshot) => {
 
     scene.getObjectByName("cube" + key).position.set(value.x, 0, value.z);
     scene.getObjectByName(key).position.set(value.x, 0, value.z)
+
+
+
+    const fourGeometry = new THREE2.SphereGeometry(10.0);
+    const fourMaterial = new THREE2.MeshPhongMaterial({ color: "green" });
+    const four = new THREE2.Mesh(fourGeometry, fourMaterial );
+    four.position.set(-19, -0.5, 0);
+
+    if (collisionDetected == false) {
+      scene.add(four);
+    } else {
+      scene.remove(four);
+    }
+
+
+      /*const loaderSTLL = new STLLoader();
+      loaderSTLL.load("deadMouse.stl", function (model) {
+        const meshModel = new THREE.Mesh(
+            model,
+            new THREE.MeshPhongMaterial({ color: "red" })
+          );
+        meshModel.scale.set(0.5, 0.5, 0.5);
+        meshModel.position.set(-19, -0.5, 0);
+        meshModel.rotateX(-Math.PI / 2);
+        scene.add(meshModel);
+        });*/
+        
+
+    // const fourBB = new THREE2.Box3();
+    // console.log(fourBB);
+    // fourBB.setFromObject(four);
+
+
+    const fourBB = new THREE.Sphere(four.position, 0.3);
+
+    const fourGeometry2 = new THREE2.SphereGeometry(10.0);
+    const fourMaterial2 = new THREE2.MeshPhongMaterial({ color: "white", transparent: true, opacity: 0.0 });  //Cambiar opacidad para ver si no se crean más
+    const four2 = new THREE2.Mesh(fourGeometry2, fourMaterial2 );
+    four2.position.set(value.x, 0 , value.z);
+    scene.add(four2)
+  
+
+    // const fourBB2 = new THREE2.Box3();
+    // console.log(fourBB2);
+    // fourBB2.setFromObject(four2);
+    // scene.add(four2);
+
+    const fourBB2 = new THREE.Sphere(four2.position, 3);
+
+    
+
+     if (fourBB2.intersectsSphere(fourBB)) {
+     if (!collisionDetected) {
+       console.log("Hubo Colision");
+
+         //Audio
+          const listener = new THREE.AudioListener();
+          cameraglobal.add(listener);
+
+          // create a global audio source
+          const sound = new THREE.Audio(listener);
+
+          const audioLoader = new THREE.AudioLoader();
+          audioLoader.load('./resources/sonidoF.mp3', function (buffer) {
+          sound.setBuffer(buffer);
+          sound.setLoop(false);
+          sound.setVolume(0.1);
+          sound.play();
+        });
+
+        four.position.x = 20;
+        collisionDetected = true;
+      }
+      } else {
+      collisionDetected = false;
+     }
+
+    
+    /*
+    if (fourBB2.intersectsSphere(fourBB)) {
+      console.log("Hubo Colision");
+      
+      //Audio
+      const listener = new THREE.AudioListener();
+      cameraglobal.add( listener );
+  
+       // create a global audio source
+       const sound = new THREE.Audio( listener );
+  
+       const audioLoader = new THREE.AudioLoader();
+        audioLoader.load( './resources/sonidoF.mp3', function( buffer ) {
+        sound.setBuffer( buffer );
+        sound.setLoop(false);
+         sound.setVolume(0.1);
+          sound.play();
+        });
+
+        four.position.x=20;
+     }*/
+    
+    
+     /*
+     const loaderCan = new GLTFLoader();
+        loaderCan.load(
+          "./resources/taxi/gasoline_CanEfe3.glb",
+          function (gltf) {
+            const obj = gltf.scene;
+            obj.position.set(-19,0,0);
+            obj.scale.set(0.5, 0.5, 0.5);  //0.15
+            scene.add(obj);
+            const fourBB = new THREE.Sphere(obj.position, 3);
+
+            //_CheckCollisions(fourBB2, fourBB, obj);
+             
+            if (fourBB2.intersectsSphere(fourBB)) {
+              console.log("Hubo Colision");
+              obj.position.set(0, -20, 0); // Asigna una nueva posición al modelo
+            }
+            
+          }
+        );
+        */
+    
+    
+    //_CheckCollisions(fourBB2, fourBB);
+  
 
     // if (key = "I8COjYTdYVUqDX5Dr2vyaVXPyY82") {
 
@@ -556,6 +707,7 @@ onValue(starCountRef, (snapshot) => {
     //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
     //     }
 
+    
   });
   // for (const controllerObj of controllers) {
   //   console.log("Mis controller es: " + controllerObj.key + " , ")
@@ -565,7 +717,33 @@ onValue(starCountRef, (snapshot) => {
   //   //   break;
   //   // }
   // }
+
+
 });
+
+function _CheckCollisions(four2, fourBB , mesh){
+  console.log("Entró a la función");
+  
+  if (four2.intersectsSphere(fourBB)) {
+    console.log("Hubo Colision");
+    
+    //Audio
+    const listener = new THREE.AudioListener();
+    cameraglobal.add( listener );
+
+     // create a global audio source
+     const sound = new THREE.Audio( listener );
+
+     const audioLoader = new THREE.AudioLoader();
+      audioLoader.load( './resources/sonidoF.mp3', function( buffer ) {
+	    sound.setBuffer( buffer );
+	    sound.setLoop(false);
+	     sound.setVolume(0.1);
+	      sound.play();
+      });
+      mesh.position.set(0,-20,0);
+   }
+}
 
 function writeUserData(userId, position) {
   //const db = getDatabase();
@@ -573,8 +751,11 @@ function writeUserData(userId, position) {
     x: position.x,
     z: position.z
   });
+  
+  
 }
 
+/*
 class FiniteStateMachine {
   constructor() {
     this._states = {};
@@ -606,9 +787,72 @@ class FiniteStateMachine {
       this._currentState.Update(timeElapsed, input);
     }
   }
-};
+};*/
 
 
+function createFiniteStateMachine() {
+  const states = {};
+  let currentState = null;
+
+  function addState(name, type) {
+    states[name] = type;
+  }
+
+  function setState(name) {
+    const prevState = currentState;
+
+    if (prevState) {
+      if (prevState.Name == name) {
+        return;
+      }
+      prevState.Exit();
+    }
+
+    const state = new states[name](this);
+
+    currentState = state;
+    state.Enter(prevState);
+  }
+
+  function update(timeElapsed, input) {
+    if (currentState) {
+      currentState.Update(timeElapsed, input);
+    }
+  }
+
+  return {
+    _states: states,
+    _currentState: currentState,
+    _AddState: addState,
+    SetState: setState,
+    Update: update
+  };
+}
+
+class CharacterFSM {
+  constructor(proxy) {
+    this._proxy = proxy;
+    this._fsm = createFiniteStateMachine();
+    this._Init();
+  }
+
+  _Init() {
+    this._fsm._AddState('idle', IdleState);
+    this._fsm._AddState('walk', WalkState);
+    this._fsm._AddState('run', RunState);
+    this._fsm._AddState('dance', DanceState);
+  }
+
+  SetState(name) {
+    this._fsm.SetState(name);
+  }
+
+  Update(timeElapsed, input) {
+    this._fsm.Update(timeElapsed, input);
+  }
+}
+
+/*
 class CharacterFSM extends FiniteStateMachine {
   constructor(proxy) {
     super();
@@ -622,7 +866,7 @@ class CharacterFSM extends FiniteStateMachine {
     this._AddState('run', RunState);
     this._AddState('dance', DanceState);
   }
-};
+};*/
 
 
 class State {
@@ -860,12 +1104,14 @@ class ThirdPersonCamera {
 }
 
 
+
+
 class ThirdPersonCameraDemo {
   constructor() {
     this._Initialize();
   }
 
-  _Initialize() {
+  _Initialize = function() {
     this._threejs = new THREE.WebGLRenderer({
       antialias: true,
     });
@@ -876,6 +1122,7 @@ class ThirdPersonCameraDemo {
     this._threejs.setSize(window.innerWidth, window.innerHeight);
 
     document.body.appendChild(this._threejs.domElement);
+    
 
     window.addEventListener('resize', () => {
       this._OnWindowResize();
@@ -885,7 +1132,7 @@ class ThirdPersonCameraDemo {
     const aspect = 1920 / 1080;
     const near = 1.0;
     const far = 1000.0;
-    this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    this._camera = cameraglobal;
     this._camera.position.set(25, 10, 25);
 
     this._scene = scene;
@@ -922,6 +1169,8 @@ class ThirdPersonCameraDemo {
     texture.encoding = THREE.sRGBEncoding;
     this._scene.background = texture;
 
+      
+
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(400, 400, 10, 10),
       new THREE.MeshStandardMaterial({
@@ -931,10 +1180,13 @@ class ThirdPersonCameraDemo {
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
-
+    
+  
+    
     this._mixers = [];
     this._previousRAF = null;
-
+    
+    //this._CheckCollisions(four2, fourBB);
     this._LoadAnimatedModel();
     this._LoadAnimatedModelAndPlay(
       './resources/people/', 'Character1.fbx', 'Character1.fbx', new THREE.Vector3(-57, 0, 12));
@@ -963,7 +1215,7 @@ class ThirdPersonCameraDemo {
       './resources/buildings/', 'libraryBuilding.fbx', 'libraryBuilding.fbx', new THREE.Vector3(-90, 0, -100));
     this._RAF();
   }
-
+  
   _LoadAnimatedModel() {
     const params = {
       camera: this._camera,
@@ -976,6 +1228,12 @@ class ThirdPersonCameraDemo {
       camera: this._camera,
       target: this._controls,
     });
+  }
+
+  _CheckCollisions(homer , oneBB) {
+        if(homer.intersectsSphere(oneBB)){
+          console.log("Hubo colision")
+        }
   }
 
   _LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
@@ -1033,7 +1291,6 @@ class ThirdPersonCameraDemo {
     this._thirdPersonCamera.Update(timeElapsedS);
   }
 }
-
 
 let _APP = null;
 

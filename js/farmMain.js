@@ -64,12 +64,15 @@ class BasicCharacterController {
         };
       };
 
+
       const loader = new FBXLoader(this._manager);
       loader.setPath('./resources/taxi/');
       loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
       loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
       loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
       loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
+
+      
     });
   }
 
@@ -340,8 +343,11 @@ class DanceState extends State {
 
 
 class WalkState extends State {
+  
   constructor(parent) {
     super(parent);
+
+    
   }
 
   get Name() {
@@ -350,10 +356,13 @@ class WalkState extends State {
 
   Enter(prevState) {
     const curAction = this._parent._proxy._animations['walk'].action;
+    
+    
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
 
       curAction.enabled = true;
+      
 
       if (prevState.Name == 'run') {
         const ratio = curAction.getClip().duration / prevAction.getClip().duration;
@@ -362,20 +371,28 @@ class WalkState extends State {
         curAction.time = 0.0;
         curAction.setEffectiveTimeScale(1.0);
         curAction.setEffectiveWeight(1.0);
+        
       }
-
+      
       curAction.crossFadeFrom(prevAction, 0.5, true);
       curAction.play();
+      
+      
     } else {
       curAction.play();
+      
     }
+
+    
   }
 
   Exit() {
+    
   }
 
   Update(timeElapsed, input) {
     if (input._keys.forward || input._keys.backward) {
+      
       if (input._keys.shift) {
         this._parent.SetState('run');
       }
@@ -406,6 +423,7 @@ class RunState extends State {
       if (prevState.Name == 'walk') {
         const ratio = curAction.getClip().duration / prevAction.getClip().duration;
         curAction.time = prevAction.time * ratio;
+
       } else {
         curAction.time = 0.0;
         curAction.setEffectiveTimeScale(1.0);
@@ -573,6 +591,22 @@ class ThirdPersonCameraDemo {
     ]);
     texture.encoding = THREE.sRGBEncoding;
     this._scene.background = texture;
+    
+    const fourGeometry = new THREE.SphereGeometry(8.0);
+        const fourMaterial = new THREE.MeshPhongMaterial({ color: "green" });
+        const four = new THREE.Mesh(fourGeometry, fourMaterial );
+        four.position.set(-19, -0.5, 0);
+
+        const fourBB = new THREE.Box3();
+        console.log(fourBB);
+        fourBB.setFromObject(four);
+     
+
+    this._fourCase = fourBB;
+
+    this._scene.add(four);
+
+   
 
     const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(400, 400, 10, 10),
@@ -648,6 +682,30 @@ class ThirdPersonCameraDemo {
       target: this._controls,
     });
   }
+
+  _InitializeSound1() {
+    //Audio
+    const listener = new THREE.AudioListener();
+    this._camera.add( listener );
+
+    // create a global audio source
+    const sound = new THREE.Audio( listener );
+
+    const audioLoader = new THREE.AudioLoader();
+     audioLoader.load( './resources/car_Slow.mp3', function( buffer ) {
+     sound.setBuffer( buffer );
+     sound.setLoop(true);
+      sound.setVolume(0.5);
+       sound.play();
+     });
+  }
+
+  _CheckCollisions(_target, _fourCase){
+    if(_target.intersectsSphere(_fourCase)) {
+      this._InitializeSound1();
+    } 
+  }
+
 
   _LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
     const loader = new FBXLoader();
@@ -730,7 +788,10 @@ function _TestLerp(t1, t2) {
   console.log(v1.x + ' | ' + v2.x);
 }
 
+
 _TestLerp(0.01, 0.01);
 _TestLerp(1.0 / 100.0, 1.0 / 50.0);
 _TestLerp(1.0 - Math.pow(0.3, 1.0 / 100.0), 
           1.0 - Math.pow(0.3, 1.0 / 50.0));
+
+          
