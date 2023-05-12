@@ -1,17 +1,24 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js";
 import * as THREE2 from "../three.module.js";
 
-
-import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
-import { GLTFLoader } from '../GLTFLoader.js';
-import { STLLoader } from '../STLLoader.js';
-
+import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js";
+import { GLTFLoader } from "../GLTFLoader.js";
+import { STLLoader } from "../STLLoader.js";
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
-
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.18.0/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+} from "https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -21,7 +28,7 @@ const firebaseConfig = {
   projectId: "proyecto-gcw",
   storageBucket: "proyecto-gcw.appspot.com",
   messagingSenderId: "836388542619",
-  appId: "1:836388542619:web:af778c42c62043faf9ce3e"
+  appId: "1:836388542619:web:af778c42c62043faf9ce3e",
 };
 
 // // Import the functions you need from the SDKs you need
@@ -45,13 +52,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication and get a reference to the service
-const auth = getAuth();     //LE QUITO EL PARAMETRO APP PORQUE SE BASÓ PARA LO DE REGISTRAR USUARIOS
+const auth = getAuth(); //LE QUITO EL PARAMETRO APP PORQUE SE BASÓ PARA LO DE REGISTRAR USUARIOS
 //const auth = getAuth();
 auth.languageCode = "es";
 const provider = new GoogleAuthProvider();
 
 // Initialize Realtime Database and get a reference to the service
-const db = getDatabase();  //EL PROFE NO TIENE EL PARAMETRO APP
+const db = getDatabase(); //EL PROFE NO TIENE EL PARAMETRO APP
 let currentUser;
 let self; // declarar una variable self y asignarle el valor de this
 
@@ -68,7 +75,8 @@ async function login() {
       writeUserData(user.uid, { x: 0, z: 0 });
       // IdP data available using getAdditionalUserInfo(result)
       // ...
-    }).catch((error) => {
+    })
+    .catch((error) => {
       // Handle Errors here.
       const errorCode = error.code;
       const errorMessage = error.message;
@@ -92,22 +100,23 @@ buttonLogout.addEventListener("click", async () => {
   const user = auth.currentUser;
   if (user) {
     // el usuario está autenticado, podemos cerrar la sesión
-    signOut(auth).then(() => {
-      // Sign-out successful.
-      currentUser = undefined;
-      alert("Sign-out successful.");
-      console.log("Sign-out successful.");
-    }).catch((error) => {
-      // An error happened.
-      alert("An error happened");
-      console.log("An error happened");
-    });
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        currentUser = undefined;
+        alert("Sign-out successful.");
+        console.log("Sign-out successful.");
+      })
+      .catch((error) => {
+        // An error happened.
+        alert("An error happened");
+        console.log("An error happened");
+      });
   } else {
     // el usuario no está autenticado, no hay sesión que cerrar
-    console.log('No user currently logged in');
+    console.log("No user currently logged in");
   }
 });
-
 
 //     // Update the user info div with the user ID and position
 //     if (key == currentUser.uid) {
@@ -120,9 +129,9 @@ buttonLogout.addEventListener("click", async () => {
 var misParams;
 let collisionDetected = false;
 const fov = 70;
-    const aspect = 1920 / 1080;
-    const near = 1.0;
-    const far = 1000.0;
+const aspect = 1920 / 1080;
+const near = 1.0;
+const far = 1000.0;
 const cameraglobal = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
 class BasicCharacterControllerProxy {
@@ -133,11 +142,9 @@ class BasicCharacterControllerProxy {
   get animations() {
     return this._animations;
   }
-};
-
+}
 
 class BasicCharacterController {
-
   constructor(params) {
     this._Init(params);
   }
@@ -145,65 +152,72 @@ class BasicCharacterController {
   _Init(params) {
     this._params = params;
     this._decceleration = new THREE.Vector3(-0.0004, -0.0001, -3.5);
-    this._acceleration = new THREE.Vector3(4, 0.08, 85.0);  //Velocidad Normal, Rotación, Nitro
+    this._acceleration = new THREE.Vector3(4, 0.08, 85.0); //Velocidad Normal, Rotación, Nitro
     this._velocity = new THREE.Vector3(0, 0, 0);
     this._position = new THREE.Vector3();
-  
+
     this._animations = {};
     this._input = new BasicCharacterControllerInput(params, this);
-    console.log(this._input)
+    console.log(this._input);
     this._stateMachine = new CharacterFSM(
       new BasicCharacterControllerProxy(this._animations)
     );
-    console.log(this._stateMachine)
+    console.log(this._stateMachine);
     this._stateMachine._currentState = new IdleState(this._stateMachine);
-  
-    console.log("current state: ", this._stateMachine._currentState)
-  
+
+    console.log("current state: ", this._stateMachine._currentState);
+
     this._LoadModels("taxi", 0, 0);
   }
-  
+
   _LoadModels(key, posX, posZ) {
     const loader = new FBXLoader();
-    loader.setPath('./resources/taxi/');
-    loader.load('taximodel.fbx', (fbx) => {     //pose t
+    loader.setPath("./resources/taxi/");
+    loader.load("taximodel.fbx", (fbx) => {
+      //pose t
       fbx.name = key;
       fbx.position.set(posX, 0, posZ);
       fbx.scale.setScalar(0.1);
-      fbx.traverse(c => {
+      fbx.traverse((c) => {
         c.castShadow = true;
       });
-  
+
       this._target = fbx;
       this._params.scene.add(this._target);
-  
+
       this._mixer = new THREE.AnimationMixer(this._target);
-  
+
       this._manager = new THREE.LoadingManager();
       this._manager.onLoad = () => {
-        this._stateMachine.SetState('idle');
+        this._stateMachine.SetState("idle");
       };
-  
+
       const _OnLoad = (animName, anim) => {
         const clip = anim.animations[0];
         const action = this._mixer.clipAction(clip);
-  
+
         this._animations[animName] = {
           clip: clip,
           action: action,
         };
       };
-  
+
       const loader = new FBXLoader(this._manager);
-      loader.setPath('./resources/taxi/');
-      loader.load('walkTaxi.fbx', (a) => { _OnLoad('walk', a); });
-      loader.load('runTaxi.fbx', (a) => { _OnLoad('run', a); });
-      loader.load('idleTaxi.fbx', (a) => { _OnLoad('idle', a); });
-      loader.load('jumpTaxi.fbx', (a) => { _OnLoad('dance', a); });
+      loader.setPath("./resources/taxi/");
+      loader.load("walkTaxi.fbx", (a) => {
+        _OnLoad("walk", a);
+      });
+      loader.load("runTaxi.fbx", (a) => {
+        _OnLoad("run", a);
+      });
+      loader.load("idleTaxi.fbx", (a) => {
+        _OnLoad("idle", a);
+      });
+      loader.load("jumpTaxi.fbx", (a) => {
+        _OnLoad("dance", a);
+      });
     });
   }
-  
-
 
   get Position() {
     return this._position;
@@ -224,8 +238,6 @@ class BasicCharacterController {
     return this._target.quaternion;
   }
 
-
-
   Update(timeInSeconds) {
     // console.log(this._position)
     // console.log(this._stateMachine)
@@ -242,8 +254,9 @@ class BasicCharacterController {
       velocity.z * this._decceleration.z
     );
     frameDecceleration.multiplyScalar(timeInSeconds);
-    frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
-      Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+    frameDecceleration.z =
+      Math.sign(frameDecceleration.z) *
+      Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
 
     velocity.add(frameDecceleration);
 
@@ -257,7 +270,7 @@ class BasicCharacterController {
       acc.multiplyScalar(2.0);
     }
 
-    if (this._stateMachine._currentState.Name == 'dance') {
+    if (this._stateMachine._currentState.Name == "dance") {
       acc.multiplyScalar(0.0);
     }
 
@@ -269,12 +282,18 @@ class BasicCharacterController {
     }
     if (this._input._keys.left) {
       _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * timeInSeconds * this._acceleration.y);
+      _Q.setFromAxisAngle(
+        _A,
+        4.0 * Math.PI * timeInSeconds * this._acceleration.y
+      );
       _R.multiply(_Q);
     }
     if (this._input._keys.right) {
       _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * timeInSeconds * this._acceleration.y);
+      _Q.setFromAxisAngle(
+        _A,
+        4.0 * -Math.PI * timeInSeconds * this._acceleration.y
+      );
       _R.multiply(_Q);
     }
 
@@ -303,13 +322,12 @@ class BasicCharacterController {
       this._mixer.update(timeInSeconds);
     }
   }
-};
+}
 
 // const characterController = new BasicCharacterController(misParams);
 // const position = characterController.Position;
 const controllers = [];
 var posicionG = new THREE.Vector3();
-
 
 class BasicCharacterControllerInput {
   constructor(params, controller) {
@@ -319,7 +337,6 @@ class BasicCharacterControllerInput {
   }
 
   _Init() {
-
     this._keys = {
       forward: false,
       backward: false,
@@ -332,11 +349,9 @@ class BasicCharacterControllerInput {
     // this._position = this._characterController.Position;
     // this._movingForward = true
     this._movementSpeed = 10;
-    this._delta = 1 / 60
-    document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
-    document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
-
-    
+    this._delta = 1 / 60;
+    document.addEventListener("keydown", (e) => this._onKeyDown(e), false);
+    document.addEventListener("keyup", (e) => this._onKeyUp(e), false);
   }
 
   // document.onkeydown = function(e){
@@ -356,8 +371,6 @@ class BasicCharacterControllerInput {
   //   writeUserData(currentUser.uid, jugadorActual.position);
   // }
 
-  
-
   _onKeyDown(event) {
     // try {
     // existing code
@@ -370,8 +383,6 @@ class BasicCharacterControllerInput {
     //   // console.log(controllerObj.controller.Position)
     //   if (controllerObj.key == currentUser.uid) {
     //     // console.log(controllerObj.controller)
-
-
 
     //     // console.log("Pos jA = ")
     //     // console.log(controllerObj.posX, controllerObj.posZ)
@@ -388,10 +399,9 @@ class BasicCharacterControllerInput {
     //     // console.log(obj.name);
     //   }
     // });
-  
 
     // console.log(jugadorActual)
-    if (position.x != 0 && position.z !=0) {
+    if (position.x != 0 && position.z != 0) {
       jugadorActual.position.x = position.x;
       jugadorActual.position.z = position.z;
       console.log(position.x);
@@ -440,17 +450,16 @@ class BasicCharacterControllerInput {
     //   console.log("Por favor, inicia sesión")
     //   console.error(error);
     // }
-  
   }
 
   _onKeyUp(event) {
     // try {
     // existing code
-    
-     const position = this._controller.Position;
-     const jugadorActual = scene.getObjectByName(currentUser.uid);
 
-    if (position.x != 0 && position.z !=0) {
+    const position = this._controller.Position;
+    const jugadorActual = scene.getObjectByName(currentUser.uid);
+
+    if (position.x != 0 && position.z != 0) {
       jugadorActual.position.x = position.x;
       jugadorActual.position.z = position.z;
     }
@@ -474,21 +483,19 @@ class BasicCharacterControllerInput {
         this._keys.shift = false;
         break;
     }
-     writeUserData(currentUser.uid, jugadorActual.position);
+    writeUserData(currentUser.uid, jugadorActual.position);
     // } catch (error) {
     //   console.log("Por favor, inicia sesión")
     //   // console.error(error);
     // }
-
   }
-};
+}
 
-
-// const _escena = new ThirdPersonCameraDemo();  
+// const _escena = new ThirdPersonCameraDemo();
 // const _Scene = _escena._scene;
-const scene = new THREE.Scene();   //PARA INICIAR LA ESCENA Y YA NADAMAS PASARSELA AL CONSTRUCTOR
+const scene = new THREE.Scene(); //PARA INICIAR LA ESCENA Y YA NADAMAS PASARSELA AL CONSTRUCTOR
 
-const starCountRef = ref(db, "jugador");   //EL PROFE NO LE DEJÓ EL SLASH
+const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
 onValue(starCountRef, (snapshot) => {
   const data = snapshot.val();
   //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
@@ -501,13 +508,12 @@ onValue(starCountRef, (snapshot) => {
     // scene.traverse(obj => {
     //   console.log(obj.name);
     // });
-    
+
     if (!jugador) {
       //this._LoadModels();
 
       // const car = new BasicCharacterController();
       // car._LoadModels();
-      
 
       const geometry = new THREE.BoxGeometry(1, 1, 1);
       const material = new THREE.MeshPhongMaterial();
@@ -516,14 +522,9 @@ onValue(starCountRef, (snapshot) => {
       mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
       mesh.name = "cube" + key;
       scene.add(mesh);
-  
-           
+
       const controller = new BasicCharacterController(misParams);
       controller._LoadModels(key, value.x, value.z);
-      
-      
-       
-      
 
       // console.log(controller.Position)
 
@@ -534,16 +535,13 @@ onValue(starCountRef, (snapshot) => {
         key: key,
         posX: value.x,
         posZ: value.z,
-        controller: controller
-        
+        controller: controller,
       };
-    
+
       controllers.push(controllerObj);
-     
-      
+
       // scene.getObjectByName(key).position.set(value.x, 0, value.z);
     }
-
 
     // const jugadorCuboActual = scene.getObjectByName("cube" + currentUser.uid);
 
@@ -558,13 +556,11 @@ onValue(starCountRef, (snapshot) => {
     // }
 
     scene.getObjectByName("cube" + key).position.set(value.x, 0, value.z);
-    scene.getObjectByName(key).position.set(value.x, 0, value.z)
-
-
+    scene.getObjectByName(key).position.set(value.x, 0, value.z);
 
     const fourGeometry = new THREE2.SphereGeometry(10.0);
     const fourMaterial = new THREE2.MeshPhongMaterial({ color: "green" });
-    const four = new THREE2.Mesh(fourGeometry, fourMaterial );
+    const four = new THREE2.Mesh(fourGeometry, fourMaterial);
     four.position.set(-19, -0.5, 0);
 
     if (collisionDetected == false) {
@@ -573,8 +569,7 @@ onValue(starCountRef, (snapshot) => {
       scene.remove(four);
     }
 
-
-      /*const loaderSTLL = new STLLoader();
+    /*const loaderSTLL = new STLLoader();
       loaderSTLL.load("deadMouse.stl", function (model) {
         const meshModel = new THREE.Mesh(
             model,
@@ -585,21 +580,22 @@ onValue(starCountRef, (snapshot) => {
         meshModel.rotateX(-Math.PI / 2);
         scene.add(meshModel);
         });*/
-        
 
     // const fourBB = new THREE2.Box3();
     // console.log(fourBB);
     // fourBB.setFromObject(four);
 
-
     const fourBB = new THREE.Sphere(four.position, 0.3);
 
     const fourGeometry2 = new THREE2.SphereGeometry(10.0);
-    const fourMaterial2 = new THREE2.MeshPhongMaterial({ color: "white", transparent: true, opacity: 0.0 });  //Cambiar opacidad para ver si no se crean más
-    const four2 = new THREE2.Mesh(fourGeometry2, fourMaterial2 );
-    four2.position.set(value.x, 0 , value.z);
-    scene.add(four2)
-  
+    const fourMaterial2 = new THREE2.MeshPhongMaterial({
+      color: "white",
+      transparent: true,
+      opacity: 0.0,
+    }); //Cambiar opacidad para ver si no se crean más
+    const four2 = new THREE2.Mesh(fourGeometry2, fourMaterial2);
+    four2.position.set(value.x, 0, value.z);
+    scene.add(four2);
 
     // const fourBB2 = new THREE2.Box3();
     // console.log(fourBB2);
@@ -608,21 +604,19 @@ onValue(starCountRef, (snapshot) => {
 
     const fourBB2 = new THREE.Sphere(four2.position, 3);
 
-    
+    if (fourBB2.intersectsSphere(fourBB)) {
+      if (!collisionDetected) {
+        console.log("Hubo Colision");
 
-     if (fourBB2.intersectsSphere(fourBB)) {
-     if (!collisionDetected) {
-       console.log("Hubo Colision");
+        //Audio
+        const listener = new THREE.AudioListener();
+        cameraglobal.add(listener);
 
-         //Audio
-          const listener = new THREE.AudioListener();
-          cameraglobal.add(listener);
+        // create a global audio source
+        const sound = new THREE.Audio(listener);
 
-          // create a global audio source
-          const sound = new THREE.Audio(listener);
-
-          const audioLoader = new THREE.AudioLoader();
-          audioLoader.load('./resources/sonidoF.mp3', function (buffer) {
+        const audioLoader = new THREE.AudioLoader();
+        audioLoader.load("./resources/sonidoF.mp3", function (buffer) {
           sound.setBuffer(buffer);
           sound.setLoop(false);
           sound.setVolume(0.1);
@@ -632,11 +626,10 @@ onValue(starCountRef, (snapshot) => {
         four.position.x = 20;
         collisionDetected = true;
       }
-      } else {
+    } else {
       collisionDetected = false;
-     }
+    }
 
-    
     /*
     if (fourBB2.intersectsSphere(fourBB)) {
       console.log("Hubo Colision");
@@ -658,9 +651,8 @@ onValue(starCountRef, (snapshot) => {
 
         four.position.x=20;
      }*/
-    
-    
-     /*
+
+    /*
      const loaderCan = new GLTFLoader();
         loaderCan.load(
           "./resources/taxi/gasoline_CanEfe3.glb",
@@ -681,10 +673,8 @@ onValue(starCountRef, (snapshot) => {
           }
         );
         */
-    
-    
+
     //_CheckCollisions(fourBB2, fourBB);
-  
 
     // if (key = "I8COjYTdYVUqDX5Dr2vyaVXPyY82") {
 
@@ -698,7 +688,7 @@ onValue(starCountRef, (snapshot) => {
     // if (scene.getObjectByName(key)) {
     //   console.log("Existe: " + key)
     // } else {
-    // console.log("No existe: ", key)  
+    // console.log("No existe: ", key)
     // }
     // scene.getObjectByName(key).position.set(value.x, 0, value.z);
 
@@ -706,8 +696,6 @@ onValue(starCountRef, (snapshot) => {
     //     if (key == currentUser.uid) {
     //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
     //     }
-
-    
   });
   // for (const controllerObj of controllers) {
   //   console.log("Mis controller es: " + controllerObj.key + " , ")
@@ -717,42 +705,38 @@ onValue(starCountRef, (snapshot) => {
   //   //   break;
   //   // }
   // }
-
-
 });
 
-function _CheckCollisions(four2, fourBB , mesh){
+function _CheckCollisions(four2, fourBB, mesh) {
   console.log("Entró a la función");
-  
+
   if (four2.intersectsSphere(fourBB)) {
     console.log("Hubo Colision");
-    
+
     //Audio
     const listener = new THREE.AudioListener();
-    cameraglobal.add( listener );
+    cameraglobal.add(listener);
 
-     // create a global audio source
-     const sound = new THREE.Audio( listener );
+    // create a global audio source
+    const sound = new THREE.Audio(listener);
 
-     const audioLoader = new THREE.AudioLoader();
-      audioLoader.load( './resources/sonidoF.mp3', function( buffer ) {
-	    sound.setBuffer( buffer );
-	    sound.setLoop(false);
-	     sound.setVolume(0.1);
-	      sound.play();
-      });
-      mesh.position.set(0,-20,0);
-   }
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load("./resources/sonidoF.mp3", function (buffer) {
+      sound.setBuffer(buffer);
+      sound.setLoop(false);
+      sound.setVolume(0.1);
+      sound.play();
+    });
+    mesh.position.set(0, -20, 0);
+  }
 }
 
 function writeUserData(userId, position) {
   //const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
-    z: position.z
+    z: position.z,
   });
-  
-  
 }
 
 /*
@@ -789,7 +773,6 @@ class FiniteStateMachine {
   }
 };*/
 
-
 function createFiniteStateMachine() {
   const states = {};
   let currentState = null;
@@ -825,7 +808,7 @@ function createFiniteStateMachine() {
     _currentState: currentState,
     _AddState: addState,
     SetState: setState,
-    Update: update
+    Update: update,
   };
 }
 
@@ -837,10 +820,10 @@ class CharacterFSM {
   }
 
   _Init() {
-    this._fsm._AddState('idle', IdleState);
-    this._fsm._AddState('walk', WalkState);
-    this._fsm._AddState('run', RunState);
-    this._fsm._AddState('dance', DanceState);
+    this._fsm._AddState("idle", IdleState);
+    this._fsm._AddState("walk", WalkState);
+    this._fsm._AddState("run", RunState);
+    this._fsm._AddState("dance", DanceState);
   }
 
   SetState(name) {
@@ -868,17 +851,15 @@ class CharacterFSM extends FiniteStateMachine {
   }
 };*/
 
-
 class State {
   constructor(parent) {
     this._parent = parent;
   }
 
-  Enter() { }
-  Exit() { }
-  Update() { }
-};
-
+  Enter() {}
+  Exit() {}
+  Update() {}
+}
 
 class DanceState extends State {
   constructor(parent) {
@@ -886,17 +867,17 @@ class DanceState extends State {
 
     this._FinishedCallback = () => {
       this._Finished();
-    }
+    };
   }
 
   get Name() {
-    return 'dance';
+    return "dance";
   }
 
   Enter(prevState) {
-    const curAction = this._parent._proxy._animations['dance'].action;
+    const curAction = this._parent._proxy._animations["dance"].action;
     const mixer = curAction.getMixer();
-    mixer.addEventListener('finished', this._FinishedCallback);
+    mixer.addEventListener("finished", this._FinishedCallback);
 
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
@@ -913,23 +894,21 @@ class DanceState extends State {
 
   _Finished() {
     this._Cleanup();
-    this._parent.SetState('idle');
+    this._parent.SetState("idle");
   }
 
   _Cleanup() {
-    const action = this._parent._proxy._animations['dance'].action;
+    const action = this._parent._proxy._animations["dance"].action;
 
-    action.getMixer().removeEventListener('finished', this._CleanupCallback);
+    action.getMixer().removeEventListener("finished", this._CleanupCallback);
   }
 
   Exit() {
     this._Cleanup();
   }
 
-  Update(_) {
-  }
-};
-
+  Update(_) {}
+}
 
 class WalkState extends State {
   constructor(parent) {
@@ -937,18 +916,19 @@ class WalkState extends State {
   }
 
   get Name() {
-    return 'walk';
+    return "walk";
   }
 
   Enter(prevState) {
-    const curAction = this._parent._proxy._animations['walk'].action;
+    const curAction = this._parent._proxy._animations["walk"].action;
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
 
       curAction.enabled = true;
 
-      if (prevState.Name == 'run') {
-        const ratio = curAction.getClip().duration / prevAction.getClip().duration;
+      if (prevState.Name == "run") {
+        const ratio =
+          curAction.getClip().duration / prevAction.getClip().duration;
         curAction.time = prevAction.time * ratio;
       } else {
         curAction.time = 0.0;
@@ -963,21 +943,19 @@ class WalkState extends State {
     }
   }
 
-  Exit() {
-  }
+  Exit() {}
 
   Update(timeElapsed, input) {
     if (input._keys.forward || input._keys.backward) {
       if (input._keys.shift) {
-        this._parent.SetState('run');
+        this._parent.SetState("run");
       }
       return;
     }
 
-    this._parent.SetState('idle');
+    this._parent.SetState("idle");
   }
-};
-
+}
 
 class RunState extends State {
   constructor(parent) {
@@ -985,18 +963,19 @@ class RunState extends State {
   }
 
   get Name() {
-    return 'run';
+    return "run";
   }
 
   Enter(prevState) {
-    const curAction = this._parent._proxy._animations['run'].action;
+    const curAction = this._parent._proxy._animations["run"].action;
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
 
       curAction.enabled = true;
 
-      if (prevState.Name == 'walk') {
-        const ratio = curAction.getClip().duration / prevAction.getClip().duration;
+      if (prevState.Name == "walk") {
+        const ratio =
+          curAction.getClip().duration / prevAction.getClip().duration;
         curAction.time = prevAction.time * ratio;
       } else {
         curAction.time = 0.0;
@@ -1011,21 +990,19 @@ class RunState extends State {
     }
   }
 
-  Exit() {
-  }
+  Exit() {}
 
   Update(timeElapsed, input) {
     if (input._keys.forward || input._keys.backward) {
       if (!input._keys.shift) {
-        this._parent.SetState('walk');
+        this._parent.SetState("walk");
       }
       return;
     }
 
-    this._parent.SetState('idle');
+    this._parent.SetState("idle");
   }
-};
-
+}
 
 class IdleState extends State {
   constructor(parent) {
@@ -1033,11 +1010,11 @@ class IdleState extends State {
   }
 
   get Name() {
-    return 'idle';
+    return "idle";
   }
 
   Enter(prevState) {
-    const idleAction = this._parent._proxy._animations['idle'].action;
+    const idleAction = this._parent._proxy._animations["idle"].action;
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
       idleAction.time = 0.0;
@@ -1051,18 +1028,16 @@ class IdleState extends State {
     }
   }
 
-  Exit() {
-  }
+  Exit() {}
 
   Update(_, input) {
     if (input._keys.forward || input._keys.backward) {
-      this._parent.SetState('walk');
+      this._parent.SetState("walk");
     } else if (input._keys.space) {
-      this._parent.SetState('dance');
+      this._parent.SetState("dance");
     }
   }
-};
-
+}
 
 class ThirdPersonCamera {
   constructor(params) {
@@ -1103,15 +1078,12 @@ class ThirdPersonCamera {
   }
 }
 
-
-
-
 class ThirdPersonCameraDemo {
   constructor() {
     this._Initialize();
   }
 
-  _Initialize = function() {
+  _Initialize = function () {
     this._threejs = new THREE.WebGLRenderer({
       antialias: true,
     });
@@ -1122,11 +1094,14 @@ class ThirdPersonCameraDemo {
     this._threejs.setSize(window.innerWidth, window.innerHeight);
 
     document.body.appendChild(this._threejs.domElement);
-    
 
-    window.addEventListener('resize', () => {
-      this._OnWindowResize();
-    }, false);
+    window.addEventListener(
+      "resize",
+      () => {
+        this._OnWindowResize();
+      },
+      false
+    );
 
     const fov = 70;
     const aspect = 1920 / 1080;
@@ -1137,7 +1112,7 @@ class ThirdPersonCameraDemo {
 
     this._scene = scene;
 
-    let light = new THREE.DirectionalLight(0xFFFFFF, 0.7);
+    let light = new THREE.DirectionalLight(0xffffff, 0.7);
     light.position.set(-100, 100, 100);
     light.target.position.set(0, 0, 0);
     light.castShadow = true;
@@ -1154,73 +1129,110 @@ class ThirdPersonCameraDemo {
     light.shadow.camera.bottom = -300;
     this._scene.add(light);
 
-    light = new THREE.AmbientLight(0x947CFD, 0.7);  //Color de la luz e Intensidad
+    light = new THREE.AmbientLight(0x947cfd, 0.7); //Color de la luz e Intensidad
     this._scene.add(light);
 
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-      './resources/Backgrounds/cityBackground.jpg',
-      './resources/Backgrounds/cityBackground.jpg',
-      './resources/Backgrounds/cityBackground.jpg',
-      './resources/Backgrounds/cityBackground.jpg',
-      './resources/Backgrounds/cityBackground.jpg',
-      './resources/Backgrounds/cityBackground.jpg',
+      "./resources/Backgrounds/cityBackground.jpg",
+      "./resources/Backgrounds/cityBackground.jpg",
+      "./resources/Backgrounds/cityBackground.jpg",
+      "./resources/Backgrounds/cityBackground.jpg",
+      "./resources/Backgrounds/cityBackground.jpg",
+      "./resources/Backgrounds/cityBackground.jpg",
     ]);
     texture.encoding = THREE.sRGBEncoding;
-    this._scene.background = texture;
-
-      
+    this._scene.background = texture; //esto es en caso de querer poner un paisaje, para que se carguen imagenes en cada cara
+    //del cubo, pero como nuestra camara esta estatica cenital, no es necesario
 
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(400, 400, 10, 10),
       new THREE.MeshStandardMaterial({
-        color: 0x2f2f2f,    //cambio de color del plano
-      }));
+        color: 0x2f2f2f, //cambio de color del plano
+      })
+    );
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     this._scene.add(plane);
-    
-  
-    
+
     this._mixers = [];
     this._previousRAF = null;
-    
+
     //this._CheckCollisions(four2, fourBB);
     this._LoadAnimatedModel();
     this._LoadAnimatedModelAndPlay(
-      './resources/people/', 'Character1.fbx', 'Character1.fbx', new THREE.Vector3(-57, 0, 12));
+      "./resources/people/",
+      "Character1.fbx",
+      "Character1.fbx",
+      new THREE.Vector3(-57, 0, 12)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/people/', 'Character2_P.fbx', 'Character2_P.fbx', new THREE.Vector3(-90, 0, -150));
+      "./resources/people/",
+      "Character2_P.fbx",
+      "Character2_P.fbx",
+      new THREE.Vector3(-90, 0, -150)
+    );
     //this._LoadAnimatedModelAndPlay(
     //    './resources/people/', 'Character3_P.fbx', 'Character3_P.fbx', new THREE.Vector3(-10, 0, -10));
     this._LoadAnimatedModelAndPlay(
-      './resources/people/', 'Character4_P.fbx', 'Character4_P.fbx', new THREE.Vector3(-65, 0, 170));
-
+      "./resources/people/",
+      "Character4_P.fbx",
+      "Character4_P.fbx",
+      new THREE.Vector3(-65, 0, 170)
+    );
 
     //buildings
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'redBuilding.fbx', 'redBuilding.fbx', new THREE.Vector3(90, 0, 20));
+      "./resources/buildings/",
+      "redBuilding.fbx",
+      "redBuilding.fbx",
+      new THREE.Vector3(90, 0, 20)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'redBuilding.fbx', 'redBuilding.fbx', new THREE.Vector3(0, 0, 130));
+      "./resources/buildings/",
+      "redBuilding.fbx",
+      "redBuilding.fbx",
+      new THREE.Vector3(0, 0, 130)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'greenBuilding.fbx', 'greenBuilding.fbx', new THREE.Vector3(-130, 0, 130));
+      "./resources/buildings/",
+      "greenBuilding.fbx",
+      "greenBuilding.fbx",
+      new THREE.Vector3(-130, 0, 130)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'gasoline.fbx', 'gasoline.fbx', new THREE.Vector3(-20, 0, 150));
+      "./resources/buildings/",
+      "gasoline.fbx",
+      "gasoline.fbx",
+      new THREE.Vector3(-20, 0, 150)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'flowerBuilding.fbx', 'flowerBuilding.fbx', new THREE.Vector3(-90, 0, -10));
+      "./resources/buildings/",
+      "flowerBuilding.fbx",
+      "flowerBuilding.fbx",
+      new THREE.Vector3(-90, 0, -10)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'hotel.fbx', 'hotel.fbx', new THREE.Vector3(90, 0, -120));
+      "./resources/buildings/",
+      "hotel.fbx",
+      "hotel.fbx",
+      new THREE.Vector3(90, 0, -120)
+    );
     this._LoadAnimatedModelAndPlay(
-      './resources/buildings/', 'libraryBuilding.fbx', 'libraryBuilding.fbx', new THREE.Vector3(-90, 0, -100));
+      "./resources/buildings/",
+      "libraryBuilding.fbx",
+      "libraryBuilding.fbx",
+      new THREE.Vector3(-90, 0, -100)
+    );
     this._RAF();
-  }
-  
+  };
+
   _LoadAnimatedModel() {
     const params = {
       camera: this._camera,
       scene: this._scene,
-    }
+    };
     misParams = params;
     this._controls = new BasicCharacterController(params);
 
@@ -1230,10 +1242,10 @@ class ThirdPersonCameraDemo {
     });
   }
 
-  _CheckCollisions(homer , oneBB) {
-        if(homer.intersectsSphere(oneBB)){
-          console.log("Hubo colision")
-        }
+  _CheckCollisions(homer, oneBB) {
+    if (homer.intersectsSphere(oneBB)) {
+      console.log("Hubo colision");
+    }
   }
 
   _LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
@@ -1241,7 +1253,7 @@ class ThirdPersonCameraDemo {
     loader.setPath(path);
     loader.load(modelFile, (fbx) => {
       fbx.scale.setScalar(0.1);
-      fbx.traverse(c => {
+      fbx.traverse((c) => {
         c.castShadow = true;
       });
       fbx.position.copy(offset);
@@ -1281,7 +1293,7 @@ class ThirdPersonCameraDemo {
   _Step(timeElapsed) {
     const timeElapsedS = timeElapsed * 0.001;
     if (this._mixers) {
-      this._mixers.map(m => m.update(timeElapsedS));
+      this._mixers.map((m) => m.update(timeElapsedS));
     }
 
     if (this._controls) {
@@ -1294,10 +1306,9 @@ class ThirdPersonCameraDemo {
 
 let _APP = null;
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener("DOMContentLoaded", () => {
   _APP = new ThirdPersonCameraDemo();
 });
-
 
 function _LerpOverFrames(frames, t) {
   const s = new THREE.Vector3(0, 0, 0);
@@ -1313,10 +1324,9 @@ function _LerpOverFrames(frames, t) {
 function _TestLerp(t1, t2) {
   const v1 = _LerpOverFrames(100, t1);
   const v2 = _LerpOverFrames(50, t2);
-  console.log(v1.x + ' | ' + v2.x);
+  console.log(v1.x + " | " + v2.x);
 }
 
 _TestLerp(0.01, 0.01);
 _TestLerp(1.0 / 100.0, 1.0 / 50.0);
-_TestLerp(1.0 - Math.pow(0.3, 1.0 / 100.0),
-  1.0 - Math.pow(0.3, 1.0 / 50.0));
+_TestLerp(1.0 - Math.pow(0.3, 1.0 / 100.0), 1.0 - Math.pow(0.3, 1.0 / 50.0));
