@@ -215,7 +215,7 @@ onValue(starCountRef, (snapshot) => {
       loader.setPath("../resources/taxi/");
       loader.load("taximodel.fbx", (fbx) => {
         fbx.scale.setScalar(0.1);
-        fbx.rotateY(Math.PI); // Rotar el objeto 180 grados alrededor del eje Y
+        fbx.rotateY(-Math.PI / 2); // Rotar el objeto 180 grados alrededor del eje Y
         fbx.traverse((c) => {
           c.castShadow = true;
         });
@@ -463,7 +463,7 @@ sandyBB.setFromObject(sandy);
 // };
 
 //En caso de flechas
-document.onkeydown = function (e) {
+/*document.onkeydown = function (e) {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
   if (e.keyCode == 37) { //flecha izq
@@ -484,7 +484,80 @@ document.onkeydown = function (e) {
 
   writeUserData(currentUser.uid, jugadorActual.position);
 
+};*/
+
+document.onkeydown = function (e) {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  const moveDistance = 1; // Distancia de movimiento
+  let angle = jugadorActual.rotation.y;
+
+  // Verificar si la rotación es un múltiplo de 90 grados
+  const is90DegreeRotation = Math.abs(angle - Math.PI / 2) % (Math.PI / 2) === 0;
+
+  if (e.keyCode === 68) {
+    // Tecla D - Girar 90 grados en sentido de las agujas del reloj
+    jugadorActual.rotation.y -= Math.PI / 2;
+    angle = jugadorActual.rotation.y;
+  }
+
+  if (e.keyCode === 65) {
+    // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
+    jugadorActual.rotation.y += Math.PI / 2;
+    angle = jugadorActual.rotation.y;
+  }
+
+  if (e.keyCode === 87) {
+    // Tecla W - Avanzar hacia adelante en la dirección de rotación o en línea recta si la rotación no es múltiplo de 90 grados
+    if (is90DegreeRotation) {
+      jugadorActual.position.x += Math.sin(angle) * moveDistance;
+      jugadorActual.position.z += Math.cos(angle) * moveDistance;
+    } else {
+      jugadorActual.position.x -= Math.cos(angle) * moveDistance;
+      jugadorActual.position.z -= Math.sin(angle) * moveDistance;
+    }
+  }
+
+  if (e.keyCode === 83) {
+    // Tecla S - Retroceder hacia atrás en la dirección opuesta a la rotación o en línea recta si la rotación no es múltiplo de 90 grados
+    if (is90DegreeRotation) {
+      jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+      jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+    } else {
+      jugadorActual.position.x += Math.cos(angle) * moveDistance;
+      jugadorActual.position.z += Math.sin(angle) * moveDistance;
+    }
+  }
+
+  writeUserData(currentUser.uid, jugadorActual.position);
 };
+
+// //En caso de flechas
+// document.onkeydown = function (e) {
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   if (e.keyCode == 37) { //flecha izq
+//     jugadorActual.position.x -= 1;
+//     jugadorActual.rotation.y = -Math.PI / 2;
+//   }
+
+//   if (e.keyCode == 39) { //flecha derecha
+//     jugadorActual.position.x += 1;
+//     jugadorActual.rotation.y = Math.PI / 2;
+//   }
+
+//   if (e.keyCode == 38) { //flecha arriba
+//     jugadorActual.position.z -= 1;
+//     jugadorActual.rotation.y = 0;
+//   }
+
+//   if (e.keyCode == 40) { //flecha abajo
+//     jugadorActual.position.z += 1;
+//     jugadorActual.rotation.y = Math.PI;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
 
 cityScene.add(
   //terrainPlane,
