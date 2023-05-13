@@ -1,5 +1,5 @@
-import * as THREE1 from "./three.module.js";  //Epoca Picapiedra
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js";  //Este el nuevo
+import * as THREE1 from "./three.module.js"; //Epoca Picapiedra
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js"; //Este el nuevo
 
 import { OrbitControls } from "./OrbitControls.js";
 import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js";
@@ -96,8 +96,6 @@ buttonLogout.addEventListener("click", async () => {
     });
 });
 
-
-
 //creamos la escena
 const cityScene = new THREE.Scene();
 cityScene.background = new THREE.Color("#8E3CB8");
@@ -139,10 +137,9 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement)
+const controls = new OrbitControls(camera, renderer.domElement);
 /*controls.enableDamping = true
 controls.target.set(0, 1, 0)*/
-
 
 // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
 // // hemiLight.position.set(0, 20, 0);
@@ -177,7 +174,7 @@ cityScene.add(ambientLight);
 //creamos el mixer para la animacion
 let animationMixer = [];
 //let previosRAF = null;
-const clock = new THREE.Clock();   //Agregamos una constante clock para la variable deltaTime
+const clock = new THREE.Clock(); //Agregamos una constante clock para la variable deltaTime
 
 //loadAnimatedModel(); por el momento no utilizar
 /*
@@ -214,23 +211,31 @@ onValue(starCountRef, (snapshot) => {
     //console.log(value);
     const jugador = cityScene.getObjectByName(key);
     if (!jugador) {
-      //this._LoadModels();
-      
-      // taxiCar._LoadModels(taxi);
-      // taxi.position.set(value.x, 0, value.z);
-      //taxi.material.color = new THREE.Color(Math.random() * 0xffffff);
-      //  taxi.name = key;
-      //scene.add(mesh);
+      const loader = new FBXLoader();
+      loader.setPath("../resources/taxi/");
+      loader.load("taximodel.fbx", (fbx) => {
+        fbx.scale.setScalar(0.1);
+        fbx.rotateY(Math.PI); // Rotar el objeto 180 grados alrededor del eje Y
+        fbx.traverse((c) => {
+          c.castShadow = true;
+        });
+        fbx.position.set(value.x, 0, value.z);
+        //fbx.material.color = new THREE.Color(Math.random() * 0xffffff);
+        fbx.name = key;
+        cityScene.add(fbx);
 
-      const geometry = new THREE.BoxGeometry(1, 1, 5);
-      const material = new THREE.MeshPhongMaterial();
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(value.x, 0, value.z);
-      mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
-      mesh.name = key;
-      cityScene.add(mesh);
-      //mesh.position.set(3, 0, 0);
-      //mesh.castShadow = true;
+        const animLoader = new FBXLoader();
+        animLoader.setPath("../resources/taxi/");
+        animLoader.load("walkTaxi.fbx", (anim) => {
+          const mixer = new THREE.AnimationMixer(fbx);
+          animationMixer.push(mixer);
+          const idleAction = mixer.clipAction(anim.animations[0]);
+          idleAction.play();
+        });
+
+        // Crear la caja de colisión para el modelo animado
+        modelBB = new THREE.Box3().setFromObject(fbx);
+      });
     }
 
     cityScene.getObjectByName(key).position.x = value.x;
@@ -250,6 +255,26 @@ function writeUserData(userId, position) {
     z: position.z,
   });
 }
+
+// // Crea una instancia del cargador FBX para cargar el taxi
+// var taxiLoader = new THREE.FBXLoader();
+
+// // Carga el archivo FBX
+// taxiLoader.load(
+//     'taximodel.fbx',
+//     function ( object ) {
+//         // Añade el objeto cargado a la escena
+//         scene.add( object );
+//     },
+//     function ( xhr ) {
+//         // Función de progreso de carga
+//         console.log( ( xhr.loaded / xhr.total * 100 ) + '% cargado' );
+//     },
+//     function ( error ) {
+//         // Función de error de carga
+//         console.error( error );
+//     }
+// );
 
 // const spongebobGeometry = new THREE.BoxGeometry(2, 2, 1);
 // const spongebobMaterial = new THREE.MeshPhongMaterial({ color: "yellow" });
@@ -328,22 +353,132 @@ sandyBB.setFromObject(sandy);
 //   }
 // });
 
+
+
+//Movimiento WASD
+// let wPresionada = false;  // Variable que indica si la tecla W está siendo presionada
+// let aPresionada = false;  // Variable que indica si la tecla A está siendo presionada
+// let dPresionada = false;  // Variable que indica si la tecla D está siendo presionada
+
+// document.onkeydown = function (e) {
+//   if (!currentUser) {
+//     return;
+//   }
+  
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   if (e.keyCode == 37) {
+//     aPresionada = true;
+//   }
+
+//   if (e.keyCode == 39) {
+//     dPresionada = true;
+//   }
+
+//   if (e.keyCode == 87) {
+//     wPresionada = true;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+// document.onkeyup = function (e) {
+//   if (!currentUser) {
+//     return;
+//   }
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   if (e.keyCode == 37) {
+//     aPresionada = false;
+//   }
+
+//   if (e.keyCode == 39) {
+//     dPresionada = false;
+//   }
+
+//   if (e.keyCode == 87) {
+//     wPresionada = false;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+// function actualizarJugador() {
+//   if (!currentUser) {
+//     return;
+//   }
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   const rotationAngle = Math.PI / 2; // Ángulo de rotación en radianes
+//   const moveDistance = 0.1; // Distancia de movimiento
+
+//   if (wPresionada) {
+//     const angle = jugadorActual.rotation.y;
+//     jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+//     jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+//   }
+
+//   if (aPresionada) {
+//     jugadorActual.rotation.y -= rotationAngle;
+//   }
+
+//   if (dPresionada) {
+//     jugadorActual.rotation.y += rotationAngle;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// }
+
+// document.onkeydown = function (e) {
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   const rotationAngle = Math.PI / 2; // Ángulo de rotación en radianes
+//   const moveDistance = 0.1; // Distancia de movimiento
+
+//   if (e.keyCode === 65) {
+//     // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
+//     jugadorActual.rotation.y -= rotationAngle;
+//   }
+
+//   if (e.keyCode === 68) {
+//     // Tecla D - Girar 90 grados en sentido de las agujas del reloj
+//     jugadorActual.rotation.y += rotationAngle;
+//   }
+
+//   if (e.keyCode === 87) {
+//     // Tecla W - Avanzar hacia adelante
+//     const angle = jugadorActual.rotation.y;
+//     jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+//     jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+//   }
+
+//   if (e.keyCode === 83) {
+//     // Tecla S - Retroceder hacia atrás
+//     const angle = jugadorActual.rotation.y;
+//     jugadorActual.position.x += Math.sin(angle) * moveDistance;
+//     jugadorActual.position.z += Math.cos(angle) * moveDistance;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+//En caso de flechas
 document.onkeydown = function (e) {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
-  if (e.keyCode == 37) {
+  if (e.keyCode == 37) { //flecha izq
     jugadorActual.position.x -= 1;
   }
 
-  if (e.keyCode == 39) {
+  if (e.keyCode == 39) { //flecha derecha
     jugadorActual.position.x += 1;
   }
 
-  if (e.keyCode == 38) {
+  if (e.keyCode == 38) { //flecha arriba
     jugadorActual.position.z -= 1;
   }
 
-  if (e.keyCode == 40) {
+  if (e.keyCode == 40) { //flecha abajo
     jugadorActual.position.z += 1;
   }
 
@@ -378,7 +513,7 @@ function loadAnimatedModelAndPlay() {
   const loader = new FBXLoader();
   loader.setPath("../resources/people/");
   loader.load("Character1.fbx", (loadedfbx) => {
-    fbx= loadedfbx;
+    fbx = loadedfbx;
     fbx.scale.setScalar(0.1);
     fbx.traverse((c) => {
       c.castShadow = true;
@@ -466,15 +601,13 @@ function checkCollisions() {
 animate();*/
 //raf();
 
-
 /*loadAnimatedModelAndPlay(
   "../resources/people/",
   "Character1.fbx",
   "Character1.fbx",
   new THREE.Vector3(-57, 0, 0)
 );*/
-//function loadAnimatedModelAndPlay(path, modelFile, animFile, offset) 
-  
+//function loadAnimatedModelAndPlay(path, modelFile, animFile, offset)
 
 /*function _RAF(previousRAF, threejs, scene, camera) {
   requestAnimationFrame((t) => {
@@ -503,22 +636,21 @@ animate();*/
 
 function animate() {
   const deltaTime = clock.getDelta();
-  
+
   // spongebobBB
   //   .copy(spongebob.geometry.boundingBox)
   //   .applyMatrix4(spongebob.matrixWorld);
   checkCollisions();
-  
+
   for (let i = 0; i < animationMixer.length; i++) {
     animationMixer[i].update(deltaTime);
   }
-  
+  //actualizarJugador();
   renderer.render(cityScene, camera);
   requestAnimationFrame(animate);
 }
 
 animate();
-
 
 // function raf() {
 //   requestAnimationFrame((t) => {
