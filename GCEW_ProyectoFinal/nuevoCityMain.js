@@ -353,114 +353,8 @@ sandyBB.setFromObject(sandy);
 //   }
 // });
 
-
-
 //Movimiento WASD
-// let wPresionada = false;  // Variable que indica si la tecla W está siendo presionada
-// let aPresionada = false;  // Variable que indica si la tecla A está siendo presionada
-// let dPresionada = false;  // Variable que indica si la tecla D está siendo presionada
 
-// document.onkeydown = function (e) {
-//   if (!currentUser) {
-//     return;
-//   }
-  
-//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
-
-//   if (e.keyCode == 37) {
-//     aPresionada = true;
-//   }
-
-//   if (e.keyCode == 39) {
-//     dPresionada = true;
-//   }
-
-//   if (e.keyCode == 87) {
-//     wPresionada = true;
-//   }
-
-//   writeUserData(currentUser.uid, jugadorActual.position);
-// };
-
-// document.onkeyup = function (e) {
-//   if (!currentUser) {
-//     return;
-//   }
-//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
-
-//   if (e.keyCode == 37) {
-//     aPresionada = false;
-//   }
-
-//   if (e.keyCode == 39) {
-//     dPresionada = false;
-//   }
-
-//   if (e.keyCode == 87) {
-//     wPresionada = false;
-//   }
-
-//   writeUserData(currentUser.uid, jugadorActual.position);
-// };
-
-// function actualizarJugador() {
-//   if (!currentUser) {
-//     return;
-//   }
-//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
-
-//   const rotationAngle = Math.PI / 2; // Ángulo de rotación en radianes
-//   const moveDistance = 0.1; // Distancia de movimiento
-
-//   if (wPresionada) {
-//     const angle = jugadorActual.rotation.y;
-//     jugadorActual.position.x -= Math.sin(angle) * moveDistance;
-//     jugadorActual.position.z -= Math.cos(angle) * moveDistance;
-//   }
-
-//   if (aPresionada) {
-//     jugadorActual.rotation.y -= rotationAngle;
-//   }
-
-//   if (dPresionada) {
-//     jugadorActual.rotation.y += rotationAngle;
-//   }
-
-//   writeUserData(currentUser.uid, jugadorActual.position);
-// }
-
-// document.onkeydown = function (e) {
-//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
-
-//   const rotationAngle = Math.PI / 2; // Ángulo de rotación en radianes
-//   const moveDistance = 0.1; // Distancia de movimiento
-
-//   if (e.keyCode === 65) {
-//     // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
-//     jugadorActual.rotation.y -= rotationAngle;
-//   }
-
-//   if (e.keyCode === 68) {
-//     // Tecla D - Girar 90 grados en sentido de las agujas del reloj
-//     jugadorActual.rotation.y += rotationAngle;
-//   }
-
-//   if (e.keyCode === 87) {
-//     // Tecla W - Avanzar hacia adelante
-//     const angle = jugadorActual.rotation.y;
-//     jugadorActual.position.x -= Math.sin(angle) * moveDistance;
-//     jugadorActual.position.z -= Math.cos(angle) * moveDistance;
-//   }
-
-//   if (e.keyCode === 83) {
-//     // Tecla S - Retroceder hacia atrás
-//     const angle = jugadorActual.rotation.y;
-//     jugadorActual.position.x += Math.sin(angle) * moveDistance;
-//     jugadorActual.position.z += Math.cos(angle) * moveDistance;
-//   }
-
-//   writeUserData(currentUser.uid, jugadorActual.position);
-// };
 
 //En caso de flechas
 document.onkeydown = function (e) {
@@ -468,22 +362,25 @@ document.onkeydown = function (e) {
 
   if (e.keyCode == 37) { //flecha izq
     jugadorActual.position.x -= 1;
+    jugadorActual.rotation.y = -Math.PI / 2;
   }
 
   if (e.keyCode == 39) { //flecha derecha
     jugadorActual.position.x += 1;
+    jugadorActual.rotation.y = Math.PI / 2;
   }
 
   if (e.keyCode == 38) { //flecha arriba
     jugadorActual.position.z -= 1;
+    jugadorActual.rotation.y = 0;
   }
 
   if (e.keyCode == 40) { //flecha abajo
     jugadorActual.position.z += 1;
+    jugadorActual.rotation.y = Math.PI;
   }
 
   writeUserData(currentUser.uid, jugadorActual.position);
-
 };
 
 cityScene.add(
