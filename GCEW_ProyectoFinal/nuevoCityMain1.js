@@ -89,11 +89,12 @@ const clock = new THREE.Clock();   //Agregamos una constante clock para la varia
 
 //loadAnimatedModel(); por el momento no utilizar
 
+/*
 loadAnimatedModelAndPlay(
   "../resources/people/",
   "Character1.fbx",
   "Character1.fbx",
-  new THREE.Vector3(-57, 0, 12)
+  new THREE.Vector3(-57, 0, 0)
 );
 loadAnimatedModelAndPlay(
   "../resources/people/",
@@ -106,7 +107,7 @@ loadAnimatedModelAndPlay(
   "Character4_P.fbx",
   "Character4_P.fbx",
   new THREE.Vector3(-65, 0, 170)
-);
+);*/
 
 //_RAF(previosRAF, renderer, cityScene, camera);
 
@@ -207,9 +208,54 @@ function onWindowResize() {
 }
 window.addEventListener("resize", onWindowResize);
 
-//const cameraControl = new OrbitControls(camera, renderer.domElement);
+let modelBB = new THREE1.Box3();
+let fbx;
+
+function loadAnimatedModelAndPlay() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/people/");
+  loader.load("Character1.fbx", (loadedfbx) => {
+    fbx= loadedfbx;
+    fbx.scale.setScalar(0.1);
+    fbx.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbx.position.copy(new THREE.Vector3(-57, 0, 0));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBB = new THREE.Box3().setFromObject(fbx);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/people/");
+    animLoader.load("Character1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbx);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+    });
+
+    cityScene.add(fbx);
+
+    checkCollisions();
+  });
+}
+
+// Llamar a la función para cargar el modelo animado
+loadAnimatedModelAndPlay();
 
 function checkCollisions() {
+  if (spongebobBB.intersectsBox(modelBB)) {
+    // Acciones a realizar en caso de colisión
+    console.log("Colisión detectada");
+    fbx.position.x += 1;
+    modelBB.min.x += 1; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
+    modelBB.max.x += 1; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
+  }
+}
+
+//const cameraControl = new OrbitControls(camera, renderer.domElement);
+
+/*function checkCollisions() {
   if (spongebobBB.intersectsSphere(patrickBB)) {
     patrick.material.wireframe = true;
   } else {
@@ -232,13 +278,18 @@ function checkCollisions() {
     squidward.position.set(0, 0.5, 0);
   }
 
+  if (spongebobBB.intersectsBox(modelBB)) {
+    // Establecer la posición deseada del modelo animado cuando hay colisión
+    fbx.position.set(0, 0.6, 0);
+  }
+
   const sandyIntersection = spongebobBB.intersect(sandyBB);
   if (!sandyIntersection.isEmpty()) {
     sandy.material.opacity = 0.5;
   } else {
     sandy.material.opacity = 1;
   }
-}
+}*/
 
 /*function animate() {
   spongebobBB
@@ -252,29 +303,15 @@ function checkCollisions() {
 animate();*/
 //raf();
 
-function loadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
-  const loader = new FBXLoader();
-  loader.setPath(path);
-  loader.load(modelFile, (fbx) => {
-    fbx.scale.setScalar(0.1);
-    fbx.traverse((c) => {
-      c.castShadow = true;
-    });
-    fbx.position.copy(offset);
 
-    const animLoader = new FBXLoader();
-    animLoader.setPath(path);
-    animLoader.load(animFile, (anim) => {
-      const mixer = new THREE.AnimationMixer(fbx);
-      animationMixer.push(mixer);
-      const idleAction = mixer.clipAction(anim.animations[0]);
-      idleAction.play();
-    });
-
-    cityScene.add(fbx);
-  });
-}
-
+/*loadAnimatedModelAndPlay(
+  "../resources/people/",
+  "Character1.fbx",
+  "Character1.fbx",
+  new THREE.Vector3(-57, 0, 0)
+);*/
+//function loadAnimatedModelAndPlay(path, modelFile, animFile, offset) 
+  
 
 /*function _RAF(previousRAF, threejs, scene, camera) {
   requestAnimationFrame((t) => {
