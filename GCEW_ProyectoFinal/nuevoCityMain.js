@@ -6,6 +6,98 @@ import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.118.1/examples/j
 
 import { CircleGeometry } from "../three.module.js";
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js"; // AQUI PUEDE IR LA 9.19.1
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js";
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+} from "https://www.gstatic.com/firebasejs/9.19.0/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAD00YWnfCKIg_taz8Qsd3S5vKZDhObImE",
+  authDomain: "coordenadas-cf28f.firebaseapp.com",
+  databaseURL: "https://coordenadas-cf28f-default-rtdb.firebaseio.com",
+  projectId: "coordenadas-cf28f",
+  storageBucket: "coordenadas-cf28f.appspot.com",
+  messagingSenderId: "638534802606",
+  appId: "1:638534802606:web:faa80ee102ba93cbe9213f",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// Initialize Firebase Authentication and get a reference to the service
+const auth = getAuth(); //LE QUITO EL PARAMETRO APP PORQUE SE BASÓ PARA LO DE REGISTRAR USUARIOS
+//const auth = getAuth();
+auth.languageCode = "es";
+const provider = new GoogleAuthProvider();
+
+// Initialize Realtime Database and get a reference to the service
+const db = getDatabase(); //EL PROFE NO TIENE EL PARAMETRO APP
+let currentUser;
+
+async function login() {
+  const res = await signInWithPopup(auth, provider)
+    .then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      // The signed-in user info.
+      const user = result.user;
+      currentUser = user;
+      console.log(user);
+      writeUserData(user.uid, { x: 0, z: 0 });
+      // IdP data available using getAdditionalUserInfo(result)
+      // ...
+    })
+    .catch((error) => {
+      // Handle Errors here.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.customData.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      console.log(errorMessage);
+      // ...
+    });
+}
+
+const buttonLogin = document.getElementById("button-login");
+const buttonLogout = document.getElementById("button-logout");
+
+buttonLogin.addEventListener("click", async () => {
+  const user = await login();
+});
+
+buttonLogout.addEventListener("click", async () => {
+  const auth = getAuth(); //ESTA LINEA NO LA COPIO EL PROFE
+  signOut(auth)
+    .then(() => {
+      // Sign-out successful.
+      alert("Sign-out successful.");
+      console.log("Sign-out successful.");
+    })
+    .catch((error) => {
+      // An error happened.
+      alert("An error happened");
+      console.log("An error happened");
+    });
+});
+
+
+
 //creamos la escena
 const cityScene = new THREE.Scene();
 cityScene.background = new THREE.Color("#8E3CB8");
@@ -88,12 +180,12 @@ let animationMixer = [];
 const clock = new THREE.Clock();   //Agregamos una constante clock para la variable deltaTime
 
 //loadAnimatedModel(); por el momento no utilizar
-
+/*
 loadAnimatedModelAndPlay(
   "../resources/people/",
   "Character1.fbx",
   "Character1.fbx",
-  new THREE.Vector3(-57, 0, 12)
+  new THREE.Vector3(-57, 0, 0)
 );
 loadAnimatedModelAndPlay(
   "../resources/people/",
@@ -106,9 +198,58 @@ loadAnimatedModelAndPlay(
   "Character4_P.fbx",
   "Character4_P.fbx",
   new THREE.Vector3(-65, 0, 170)
-);
+);*/
 
 //_RAF(previosRAF, renderer, cityScene, camera);
+
+//Esto tiene que ver con el multijugador
+const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
+  //console.log(data);
+  Object.entries(data).forEach(([key, value]) => {
+    //console.log(`${key} ${value}`);
+    //console.log(key);
+    //console.log(value);
+    const jugador = scene.getObjectByName(key);
+    if (!jugador) {
+      //this._LoadModels();
+      
+      // taxiCar._LoadModels(taxi);
+      // taxi.position.set(value.x, 0, value.z);
+      //taxi.material.color = new THREE.Color(Math.random() * 0xffffff);
+      //  taxi.name = key;
+      //scene.add(mesh);
+
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshPhongMaterial();
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(value.x, 0, value.z);
+      mesh.material.color = new THREE.Color(Math.random() * 0xffffff);
+      mesh.name = key;
+      cityScene.add(mesh);
+      //mesh.position.set(3, 0, 0);
+      //mesh.castShadow = true;
+    }
+
+    cityScene.getObjectByName(key).position.x = value.x;
+    cityScene.getObjectByName(key).position.z = value.z;
+
+    //     // Update the user info div with the user ID and position
+    //     if (key == currentUser.uid) {
+    //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
+    //     }
+  });
+});
+
+function writeUserData(userId, position) {
+  //const db = getDatabase();
+  set(ref(db, "jugador/" + userId), {
+    x: position.x,
+    z: position.z,
+  });
+}
 
 const spongebobGeometry = new THREE.BoxGeometry(2, 2, 1);
 const spongebobMaterial = new THREE.MeshPhongMaterial({ color: "yellow" });
@@ -207,9 +348,54 @@ function onWindowResize() {
 }
 window.addEventListener("resize", onWindowResize);
 
-//const cameraControl = new OrbitControls(camera, renderer.domElement);
+let modelBB = new THREE1.Box3();
+let fbx;
+
+function loadAnimatedModelAndPlay() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/people/");
+  loader.load("Character1.fbx", (loadedfbx) => {
+    fbx= loadedfbx;
+    fbx.scale.setScalar(0.1);
+    fbx.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbx.position.copy(new THREE.Vector3(-57, 0, 0));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBB = new THREE.Box3().setFromObject(fbx);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/people/");
+    animLoader.load("Character1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbx);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+    });
+
+    cityScene.add(fbx);
+
+    checkCollisions();
+  });
+}
+
+// Llamar a la función para cargar el modelo animado
+loadAnimatedModelAndPlay();
 
 function checkCollisions() {
+  if (spongebobBB.intersectsBox(modelBB)) {
+    // Acciones a realizar en caso de colisión
+    console.log("Colisión detectada");
+    fbx.position.x += 1;
+    modelBB.min.x += 1; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
+    modelBB.max.x += 1; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
+  }
+}
+
+//const cameraControl = new OrbitControls(camera, renderer.domElement);
+
+/*function checkCollisions() {
   if (spongebobBB.intersectsSphere(patrickBB)) {
     patrick.material.wireframe = true;
   } else {
@@ -232,13 +418,18 @@ function checkCollisions() {
     squidward.position.set(0, 0.5, 0);
   }
 
+  if (spongebobBB.intersectsBox(modelBB)) {
+    // Establecer la posición deseada del modelo animado cuando hay colisión
+    fbx.position.set(0, 0.6, 0);
+  }
+
   const sandyIntersection = spongebobBB.intersect(sandyBB);
   if (!sandyIntersection.isEmpty()) {
     sandy.material.opacity = 0.5;
   } else {
     sandy.material.opacity = 1;
   }
-}
+}*/
 
 /*function animate() {
   spongebobBB
@@ -252,29 +443,15 @@ function checkCollisions() {
 animate();*/
 //raf();
 
-function loadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
-  const loader = new FBXLoader();
-  loader.setPath(path);
-  loader.load(modelFile, (fbx) => {
-    fbx.scale.setScalar(0.1);
-    fbx.traverse((c) => {
-      c.castShadow = true;
-    });
-    fbx.position.copy(offset);
 
-    const animLoader = new FBXLoader();
-    animLoader.setPath(path);
-    animLoader.load(animFile, (anim) => {
-      const mixer = new THREE.AnimationMixer(fbx);
-      animationMixer.push(mixer);
-      const idleAction = mixer.clipAction(anim.animations[0]);
-      idleAction.play();
-    });
-
-    cityScene.add(fbx);
-  });
-}
-
+/*loadAnimatedModelAndPlay(
+  "../resources/people/",
+  "Character1.fbx",
+  "Character1.fbx",
+  new THREE.Vector3(-57, 0, 0)
+);*/
+//function loadAnimatedModelAndPlay(path, modelFile, animFile, offset) 
+  
 
 /*function _RAF(previousRAF, threejs, scene, camera) {
   requestAnimationFrame((t) => {
