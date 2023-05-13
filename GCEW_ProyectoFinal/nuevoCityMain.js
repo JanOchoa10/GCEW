@@ -212,7 +212,7 @@ onValue(starCountRef, (snapshot) => {
     //console.log(`${key} ${value}`);
     //console.log(key);
     //console.log(value);
-    const jugador = scene.getObjectByName(key);
+    const jugador = cityScene.getObjectByName(key);
     if (!jugador) {
       //this._LoadModels();
       
@@ -222,7 +222,7 @@ onValue(starCountRef, (snapshot) => {
       //  taxi.name = key;
       //scene.add(mesh);
 
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const geometry = new THREE.BoxGeometry(1, 1, 5);
       const material = new THREE.MeshPhongMaterial();
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.set(value.x, 0, value.z);
@@ -251,15 +251,15 @@ function writeUserData(userId, position) {
   });
 }
 
-const spongebobGeometry = new THREE.BoxGeometry(2, 2, 1);
-const spongebobMaterial = new THREE.MeshPhongMaterial({ color: "yellow" });
-const spongebob = new THREE.Mesh(spongebobGeometry, spongebobMaterial);
-spongebob.position.set(-10, 0, 0);
-spongebob.castShadow = true;
+// const spongebobGeometry = new THREE.BoxGeometry(2, 2, 1);
+// const spongebobMaterial = new THREE.MeshPhongMaterial({ color: "yellow" });
+// const spongebob = new THREE.Mesh(spongebobGeometry, spongebobMaterial);
+// spongebob.position.set(-10, 0, 0);
+// spongebob.castShadow = true;
 
-const spongebobBB = new THREE.Box3();
-console.log(spongebobBB);
-spongebobBB.setFromObject(spongebob);
+// const spongebobBB = new THREE.Box3();
+// console.log(spongebobBB);
+// spongebobBB.setFromObject(spongebob);
 
 const patrickGeometry = new THREE.SphereGeometry(1.5);
 const patrickMaterial = new THREE.MeshPhongMaterial({ color: "pink" });
@@ -306,31 +306,54 @@ const sandyBB = new THREE1.Box3();
 console.log(sandyBB);
 sandyBB.setFromObject(sandy);
 
-document.addEventListener("keydown", function (e) {
-  // console.log(e)
-  switch (e.keyCode) {
-    case 65:
-    case 37:
-      spongebob.position.x -= 1;
-      break;
-    case 68:
-    case 39:
-      spongebob.position.x += 1;
-      break;
-    case 87:
-    case 38:
-      spongebob.position.y += 1;
-      break;
-    case 83:
-    case 40:
-      spongebob.position.y -= 1;
-      break;
+// document.addEventListener("keydown", function (e) {
+//   // console.log(e)
+//   switch (e.keyCode) {
+//     case 65:
+//     case 37:
+//       spongebob.position.x -= 1;
+//       break;
+//     case 68:
+//     case 39:
+//       spongebob.position.x += 1;
+//       break;
+//     case 87:
+//     case 38:
+//       spongebob.position.y += 1;
+//       break;
+//     case 83:
+//     case 40:
+//       spongebob.position.y -= 1;
+//       break;
+//   }
+// });
+
+document.onkeydown = function (e) {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+  if (e.keyCode == 37) {
+    jugadorActual.position.x -= 1;
   }
-});
+
+  if (e.keyCode == 39) {
+    jugadorActual.position.x += 1;
+  }
+
+  if (e.keyCode == 38) {
+    jugadorActual.position.z -= 1;
+  }
+
+  if (e.keyCode == 40) {
+    jugadorActual.position.z += 1;
+  }
+
+  writeUserData(currentUser.uid, jugadorActual.position);
+
+};
 
 cityScene.add(
   //terrainPlane,
-  spongebob,
+  //spongebob,
   patrick,
   squidward,
   mrKrabs,
@@ -384,13 +407,13 @@ function loadAnimatedModelAndPlay() {
 loadAnimatedModelAndPlay();
 
 function checkCollisions() {
-  if (spongebobBB.intersectsBox(modelBB)) {
-    // Acciones a realizar en caso de colisión
-    console.log("Colisión detectada");
-    fbx.position.x += 1;
-    modelBB.min.x += 1; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
-    modelBB.max.x += 1; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
-  }
+  // if (spongebobBB.intersectsBox(modelBB)) {
+  //   // Acciones a realizar en caso de colisión
+  //   console.log("Colisión detectada");
+  //   fbx.position.x += 1;
+  //   modelBB.min.x += 1; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
+  //   modelBB.max.x += 1; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
+  // }
 }
 
 //const cameraControl = new OrbitControls(camera, renderer.domElement);
@@ -481,9 +504,9 @@ animate();*/
 function animate() {
   const deltaTime = clock.getDelta();
   
-  spongebobBB
-    .copy(spongebob.geometry.boundingBox)
-    .applyMatrix4(spongebob.matrixWorld);
+  // spongebobBB
+  //   .copy(spongebob.geometry.boundingBox)
+  //   .applyMatrix4(spongebob.matrixWorld);
   checkCollisions();
   
   for (let i = 0; i < animationMixer.length; i++) {
