@@ -101,17 +101,25 @@ const cityScene = new THREE.Scene();
 cityScene.background = new THREE.Color("#8E3CB8");
 
 //creamos la camara
-const fov = 70;
+const fov = 90;
 const aspect = 1920 / 1080;
 const near = 1.0;
 const far = 1000.0;
+let cameraInitialized = false;
+
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-camera.position.set(25, 10, 25);
-// const camera = new THREE.PerspectiveCamera(
-//   60,
-//   window.innerWidth / window.innerHeight
-// );
+//camera.position.set(25, 10, 25);
+//camera.lookAt(0,0,0);
+
+
+/*const camera = new THREE.PerspectiveCamera(
+   60,
+   window.innerWidth / window.innerHeight
+ );*/
 //camera.position.set(0, 0, 20);   ELIUD
+
+const cameraHeight = 50; // Altura de la cámara sobre el jugador
+const cameraDistance = 20; // Distancia de la cámara respecto al jugador
 
 const terrainTextureLoader = new THREE.TextureLoader();
 const terrainTexture = terrainTextureLoader.load("../images/concrete.jpg");
@@ -200,6 +208,9 @@ loadAnimatedModelAndPlay(
 //_RAF(previosRAF, renderer, cityScene, camera);
 
 //Esto tiene que ver con el multijugador
+var modelPlayerBB;
+var jugadorNames = {};
+
 const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
 onValue(starCountRef, (snapshot) => {
   const data = snapshot.val();
@@ -209,19 +220,31 @@ onValue(starCountRef, (snapshot) => {
     //console.log(`${key} ${value}`);
     //console.log(key);
     //console.log(value);
+    //key = keyglobal;
     const jugador = cityScene.getObjectByName(key);
     if (!jugador) {
       const loader = new FBXLoader();
       loader.setPath("../resources/taxi/");
       loader.load("taximodel.fbx", (fbx) => {
         fbx.scale.setScalar(0.1);
-        fbx.rotateY(-Math.PI / 2); // Rotar el objeto 180 grados alrededor del eje Y
+        fbx.rotateY(Math.PI); // Rotar el objeto 180 grados alrededor del eje Y
         fbx.traverse((c) => {
           c.castShadow = true;
         });
         fbx.position.set(value.x, 0, value.z);
+        //camera.position.set(value.x, cameraHeight , value.z);
         //fbx.material.color = new THREE.Color(Math.random() * 0xffffff);
         fbx.name = key;
+
+        const jugadorInfo = { name: key };
+        fbx.userData.jugadorInfo = jugadorInfo;
+        jugadorNames[key] = jugadorInfo;
+        //keyglobal = fbx.name;
+        // Configurar la posición y orientación de la cámara
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.set(fbx.position.x, fbx.position.y + cameraHeight, fbx.position.z);
+        camera.lookAt(fbx.position);
+        fbx.add(camera);
         cityScene.add(fbx);
 
         const animLoader = new FBXLoader();
@@ -234,7 +257,7 @@ onValue(starCountRef, (snapshot) => {
         });
 
         // Crear la caja de colisión para el modelo animado
-        modelBB = new THREE.Box3().setFromObject(fbx);
+        modelPlayerBB = new THREE.Box3().setFromObject(fbx);
       });
     }
 
@@ -245,6 +268,7 @@ onValue(starCountRef, (snapshot) => {
     //     if (key == currentUser.uid) {
     //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
     //     }
+    updateCamera();
   });
 });
 
@@ -255,6 +279,35 @@ function writeUserData(userId, position) {
     z: position.z,
   });
 }
+
+function updateCamera() {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  if (jugadorActual) {
+    // Actualizar la posición de la cámara para seguir al jugador
+    camera.position.x = jugadorActual.position.x;
+    camera.position.z = jugadorActual.position.z;
+
+    // Ajustar la orientación de la cámara para mirar hacia abajo con una ligera inclinación hacia arriba
+    const targetY = jugadorActual.position.y + cameraHeight;
+    camera.position.y += (targetY - camera.position.y) * 0.1;
+    camera.lookAt(new THREE.Vector3(jugadorActual.position.x, targetY - 10, jugadorActual.position.z));
+  }
+  
+}
+
+
+/*function updateCamera() {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  if (jugadorActual) {
+    // Actualizar la posición de la cámara para seguir al jugador
+    camera.position.x = jugadorActual.position.x - cameraDistance * Math.sin(jugadorActual.rotation.y);
+    camera.position.z = jugadorActual.position.z - cameraDistance * Math.cos(jugadorActual.rotation.y);
+
+    // Mantener la orientación de la cámara hacia el jugador sin rotar
+    camera.lookAt(new THREE.Vector3(jugadorActual.position.x, cameraHeight, jugadorActual.position.z));
+  }
+}*/
+
 
 // // Crea una instancia del cargador FBX para cargar el taxi
 // var taxiLoader = new THREE.FBXLoader();
@@ -486,54 +539,58 @@ sandyBB.setFromObject(sandy);
 
 };*/
 
-document.onkeydown = function (e) {
-  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
-  const moveDistance = 1; // Distancia de movimiento
-  let angle = jugadorActual.rotation.y;
-
-  // Verificar si la rotación es un múltiplo de 90 grados
-  const is90DegreeRotation = Math.abs(angle - Math.PI / 2) % (Math.PI / 2) === 0;
-
-  if (e.keyCode === 68) {
-    // Tecla D - Girar 90 grados en sentido de las agujas del reloj
-    jugadorActual.rotation.y -= Math.PI / 2;
-    angle = jugadorActual.rotation.y;
-  }
-
-  if (e.keyCode === 65) {
-    // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
-    jugadorActual.rotation.y += Math.PI / 2;
-    angle = jugadorActual.rotation.y;
-  }
-
-  if (e.keyCode === 87) {
-    // Tecla W - Avanzar hacia adelante en la dirección de rotación o en línea recta si la rotación no es múltiplo de 90 grados
-    if (is90DegreeRotation) {
-      jugadorActual.position.x += Math.sin(angle) * moveDistance;
-      jugadorActual.position.z += Math.cos(angle) * moveDistance;
-    } else {
-      jugadorActual.position.x -= Math.cos(angle) * moveDistance;
-      jugadorActual.position.z -= Math.sin(angle) * moveDistance;
-    }
-  }
-
-  if (e.keyCode === 83) {
-    // Tecla S - Retroceder hacia atrás en la dirección opuesta a la rotación o en línea recta si la rotación no es múltiplo de 90 grados
-    if (is90DegreeRotation) {
-      jugadorActual.position.x -= Math.sin(angle) * moveDistance;
-      jugadorActual.position.z -= Math.cos(angle) * moveDistance;
-    } else {
-      jugadorActual.position.x += Math.cos(angle) * moveDistance;
-      jugadorActual.position.z += Math.sin(angle) * moveDistance;
-    }
-  }
-
-  writeUserData(currentUser.uid, jugadorActual.position);
-};
-
-// //En caso de flechas
 // document.onkeydown = function (e) {
 //   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+//   const moveDistance = 1; // Distancia de movimiento
+//   let angle = jugadorActual.rotation.y;
+
+//   updateCamera();
+
+//   // Verificar si la rotación es un múltiplo de 90 grados
+//   const is90DegreeRotation = Math.abs(angle - Math.PI / 2) % (Math.PI / 2) === 0;
+
+//   if (e.keyCode === 68) {
+//     // Tecla D - Girar 90 grados en sentido de las agujas del reloj
+//     jugadorActual.rotation.y -= Math.PI / 2;
+//     angle = jugadorActual.rotation.y;
+//   }
+
+//   if (e.keyCode === 65) {
+//     // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
+//     jugadorActual.rotation.y += Math.PI / 2;
+//     angle = jugadorActual.rotation.y;
+//   }
+
+//   if (e.keyCode === 87) {
+//     // Tecla W - Avanzar hacia adelante en la dirección de rotación o en línea recta si la rotación no es múltiplo de 90 grados
+//     if (is90DegreeRotation) {
+//       jugadorActual.position.x += Math.sin(angle) * moveDistance;
+//       jugadorActual.position.z += Math.cos(angle) * moveDistance;
+//     } else {
+//       jugadorActual.position.x -= Math.cos(angle) * moveDistance;
+//       jugadorActual.position.z -= Math.sin(angle) * moveDistance;
+//     }
+//   }
+
+//   if (e.keyCode === 83) {
+//     // Tecla S - Retroceder hacia atrás en la dirección opuesta a la rotación o en línea recta si la rotación no es múltiplo de 90 grados
+//     if (is90DegreeRotation) {
+//       jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+//       jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+//     } else {
+//       jugadorActual.position.x += Math.cos(angle) * moveDistance;
+//       jugadorActual.position.z += Math.sin(angle) * moveDistance;
+//     }
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+//En caso de flechas
+// document.onkeydown = function (e) {
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   updateCamera();
 
 //   if (e.keyCode == 37) { //flecha izq
 //     jugadorActual.position.x -= 1;
@@ -558,6 +615,39 @@ document.onkeydown = function (e) {
 //   writeUserData(currentUser.uid, jugadorActual.position);
 // };
 
+document.onkeydown = function (e) {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+  updateCamera();
+  //movePlayer();
+  checkModelBBCollision();
+
+  if (e.keyCode === 65) { // Tecla A - Mover hacia la izquierda
+    jugadorActual.position.x -= 1;
+    jugadorActual.rotation.y = -Math.PI / 2;
+  }
+
+  if (e.keyCode === 68) { // Tecla D - Mover hacia la derecha
+    jugadorActual.position.x += 1;
+    jugadorActual.rotation.y = Math.PI / 2;
+  }
+
+  if (e.keyCode === 87) { // Tecla W - Mover hacia arriba
+    jugadorActual.position.z -= 1;
+    jugadorActual.rotation.y = 0;
+  }
+
+  if (e.keyCode === 83) { // Tecla S - Mover hacia abajo
+    jugadorActual.position.z += 1;
+    jugadorActual.rotation.y = Math.PI;
+  }
+
+  writeUserData(currentUser.uid, jugadorActual.position);
+
+  jugadorBB.setFromObject(jugadorActual);
+};
+
+
 
 //En caso de no sé, cochué tuvo un pedo con git hub
 
@@ -581,8 +671,9 @@ function onWindowResize() {
 }
 window.addEventListener("resize", onWindowResize);
 
-let modelBB = new THREE1.Box3();
+var modelBB;
 let fbx;
+//var jugadorBB;
 
 function loadAnimatedModelAndPlay() {
   const loader = new FBXLoader();
@@ -605,11 +696,14 @@ function loadAnimatedModelAndPlay() {
       animationMixer.push(mixer);
       const idleAction = mixer.clipAction(anim.animations[0]);
       idleAction.play();
+
+      checkCollisions();
+      animate()
     });
 
     cityScene.add(fbx);
 
-    checkCollisions();
+    //checkCollisions();
   });
 }
 
@@ -617,14 +711,33 @@ function loadAnimatedModelAndPlay() {
 loadAnimatedModelAndPlay();
 
 function checkCollisions() {
-  // if (spongebobBB.intersectsBox(modelBB)) {
-  //   // Acciones a realizar en caso de colisión
-  //   console.log("Colisión detectada");
-  //   fbx.position.x += 1;
-  //   modelBB.min.x += 1; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
-  //   modelBB.max.x += 1; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
-  // }
+  // Obtener la caja de colisión del jugador
+  jugadorBB = new THREE.Box3().setFromObject(cityScene.getObjectByName(jugadorNames));
+
 }
+
+function checkModelBBCollision() {
+  // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+  //Aquí se genera la lógica de la colisión
+  if (modelBB.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo fbx y el jugador");
+     fbx.position.y -= 10;
+     modelBB.min.y -= 10; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
+     modelBB.max.y -= 10; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
+  }
+}
+
+let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de Box3
+
+// function movePlayer() {
+//   // Lógica para mover al jugador
+//   // ...
+
+//   // Actualizar la posición de la caja de colisión del jugador
+//   jugadorBB.setFromObject(jugadorActual);
+// }
+
 
 //const cameraControl = new OrbitControls(camera, renderer.domElement);
 
@@ -709,13 +822,25 @@ animate();*/
   }
 }*/
 
+
 function animate() {
   const deltaTime = clock.getDelta();
 
   // spongebobBB
   //   .copy(spongebob.geometry.boundingBox)
   //   .applyMatrix4(spongebob.matrixWorld);
-  checkCollisions();
+  //checkCollisions();
+
+  //movePlayer();
+
+  // Verificar colisiones en cada fotograma
+  //checkModelBBCollision();
+  //updateCamera();
+  if (!cameraInitialized) {
+    camera.position.set(25, 10, 25); // Ajusta la altura según tus necesidades
+    camera.lookAt(new THREE.Vector3(25, 0, 25)); // Punto de enfoque hacia abajo
+    cameraInitialized = true;
+  }
 
   for (let i = 0; i < animationMixer.length; i++) {
     animationMixer[i].update(deltaTime);
