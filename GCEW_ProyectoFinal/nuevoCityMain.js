@@ -737,7 +737,7 @@ function movePlayerSmoothly(object, targetPosition) {
 
 // Función para rotar suavemente
 function rotateSmoothly(object, targetRotationY) {
-  const rotationSpeed = 0.05; // Ajusta la velocidad de rotación según sea necesario
+  const rotationSpeed = 0.1; // Ajusta la velocidad de rotación según sea necesario
 
   let currentRotation = object.rotation.y;
   let deltaRotation = targetRotationY - currentRotation;
