@@ -640,6 +640,8 @@ const smoothness = 0.1; // Ajusta este valor para controlar la suavidad de la ro
 
 // Objeto para almacenar las teclas presionadas
 const keysPressed = {};
+let totalRotation = 0;
+
 
 // Asignar evento a la tecla presionada
 document.onkeydown = function (e) {
@@ -649,7 +651,7 @@ document.onkeydown = function (e) {
 
   updateCamera();
   // movePlayer();
-  checkModelBBCollision();
+  
   keysPressed[e.keyCode] = true;
 
   if (e.keyCode === KEY_SHIFT) {
@@ -667,13 +669,12 @@ document.onkeyup = function (e) {
     // Tecla Shift soltada
     isShiftPressed = false;
   }
-
   updatePlayerMovement();
 };
 
 // Actualizar el movimiento del jugador en cada fotograma
 function updatePlayerMovement() {
-  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  let jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
   const movementSpeed = getMovementSpeed();
 
@@ -712,7 +713,7 @@ function updatePlayerMovement() {
     jugadorActual.position,
     jugadorActual.rotation.y
   );
-
+  checkModelBBCollision();
   jugadorBB.setFromObject(jugadorActual);
 }
 
@@ -736,11 +737,38 @@ function movePlayerSmoothly(object, targetPosition) {
 
 // Función para rotar suavemente
 function rotateSmoothly(object, targetRotationY) {
-  // Calcula la diferencia entre la rotación actual y la rotación objetivo
-  const rotationDiff = targetRotationY - object.rotation.y;
+  const rotationSpeed = 0.05; // Ajusta la velocidad de rotación según sea necesario
 
-  // Utiliza una interpolación para suavizar la rotación
-  object.rotation.y += rotationDiff * smoothness;
+  let currentRotation = object.rotation.y;
+  let deltaRotation = targetRotationY - currentRotation;
+
+  // Verificar si es necesario realizar una rotación completa
+  if (Math.abs(deltaRotation) > Math.PI) {
+    if (deltaRotation > 0) {
+      deltaRotation -= 2 * Math.PI;
+    } else {
+      deltaRotation += 2 * Math.PI;
+    }
+  }
+
+  let newRotation = currentRotation + rotationSpeed * deltaRotation;
+
+  // Asegurarse de que la rotación esté dentro del rango de 0 a 2π (360 grados)
+  if (newRotation < 0) {
+    newRotation += 2 * Math.PI;
+  } else if (newRotation >= 2 * Math.PI) {
+    newRotation -= 2 * Math.PI;
+  }
+
+  object.rotation.y = newRotation;
+ 
+
+  // //Código de Jancito bb mosho
+  // // Calcula la diferencia entre la rotación actual y la rotación objetivo
+  // const rotationDiff = targetRotationY - object.rotation.y;
+
+  // // Utiliza una interpolación para suavizar la rotación
+  // object.rotation.y += rotationDiff * smoothness;
 }
 
 
