@@ -215,7 +215,7 @@ const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
 onValue(starCountRef, (snapshot) => {
   const data = snapshot.val();
   //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
-  //console.log(data);
+  // console.log(data);
   Object.entries(data).forEach(([key, value]) => {
     //console.log(`${key} ${value}`);
     //console.log(key);
@@ -268,7 +268,8 @@ onValue(starCountRef, (snapshot) => {
 
     cityScene.getObjectByName(key).position.x = value.x;
     cityScene.getObjectByName(key).position.z = value.z;
-    cityScene.getObjectByName(key).rotation.rotY = value.rotY;
+    cityScene.getObjectByName(key).rotation.y = value.rotY;
+
     //Tonto profesore
     //     // Update the user info div with the user ID and position
     //     if (key == currentUser.uid) {
