@@ -647,13 +647,13 @@ document.onkeydown = function (e) {
   if (e.keyCode === 87) {
     // Tecla W - Mover hacia arriba
     jugadorActual.position.z -= 1;
-    jugadorActual.rotation.y = 0;
+    jugadorActual.rotation.y = Math.PI;
   }
-
+  
   if (e.keyCode === 83) {
     // Tecla S - Mover hacia abajo
     jugadorActual.position.z += 1;
-    jugadorActual.rotation.y = Math.PI;
+    jugadorActual.rotation.y = 0;
   }
 
   writeUserData(
