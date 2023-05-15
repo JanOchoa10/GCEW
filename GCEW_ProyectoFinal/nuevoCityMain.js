@@ -633,29 +633,52 @@ document.onkeydown = function (e) {
   //movePlayer();
   checkModelBBCollision();
 
+  const smoothness = 0.1; // Ajusta este valor para controlar la suavidad de la rotación
+
   if (e.keyCode === 65) {
     // Tecla A - Mover hacia la izquierda
     jugadorActual.position.x -= 1;
-    jugadorActual.rotation.y = -Math.PI / 2;
+    rotateSmoothly(jugadorActual, -Math.PI / 2);
   }
-
+  
   if (e.keyCode === 68) {
     // Tecla D - Mover hacia la derecha
     jugadorActual.position.x += 1;
-    jugadorActual.rotation.y = Math.PI / 2;
+    rotateSmoothly(jugadorActual, Math.PI / 2);
   }
-
+  
   if (e.keyCode === 87) {
     // Tecla W - Mover hacia arriba
     jugadorActual.position.z -= 1;
-    jugadorActual.rotation.y = Math.PI;
+    rotateSmoothly(jugadorActual, Math.PI);
   }
   
   if (e.keyCode === 83) {
     // Tecla S - Mover hacia abajo
     jugadorActual.position.z += 1;
-    jugadorActual.rotation.y = 0;
+    rotateSmoothly(jugadorActual, 0);
   }
+  
+  function rotateSmoothly(object, targetRotationY) {
+    let rotationDiff = targetRotationY - object.rotation.y;
+  
+    // Ajusta la rotación si está pasando de izquierda a arriba o de arriba a izquierda
+    if (
+      (object.rotation.y === -Math.PI / 2 && targetRotationY === Math.PI) ||
+      (object.rotation.y === Math.PI && targetRotationY === -Math.PI / 2)
+    ) {
+      if (rotationDiff > Math.PI) {
+        rotationDiff -= 2 * Math.PI;
+      } else if (rotationDiff < -Math.PI) {
+        rotationDiff += 2 * Math.PI;
+      }
+    }
+  
+    // Utiliza una interpolación para suavizar la rotación
+    object.rotation.y += rotationDiff * smoothness;
+  }
+  
+
 
   writeUserData(
     currentUser.uid,
