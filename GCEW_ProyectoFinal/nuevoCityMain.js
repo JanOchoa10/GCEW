@@ -57,7 +57,8 @@ async function login() {
       const user = result.user;
       currentUser = user;
       console.log(user);
-      writeUserData(user.uid, { x: 0, z: 0 });
+      const rotY = 0;
+      writeUserData(user.uid, { x: 0, z: 0 }, rotY); //ponermos la rotacion
       // IdP data available using getAdditionalUserInfo(result)
       // ...
     })
@@ -110,7 +111,6 @@ let cameraInitialized = false;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 //camera.position.set(25, 10, 25);
 //camera.lookAt(0,0,0);
-
 
 /*const camera = new THREE.PerspectiveCamera(
    60,
@@ -232,6 +232,7 @@ onValue(starCountRef, (snapshot) => {
           c.castShadow = true;
         });
         fbx.position.set(value.x, 0, value.z);
+        fbx.rotation.set(0, value.rotY, 0);
         //camera.position.set(value.x, cameraHeight , value.z);
         //fbx.material.color = new THREE.Color(Math.random() * 0xffffff);
         fbx.name = key;
@@ -242,7 +243,11 @@ onValue(starCountRef, (snapshot) => {
         //keyglobal = fbx.name;
         // Configurar la posición y orientación de la cámara
         const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        camera.position.set(fbx.position.x, fbx.position.y + cameraHeight, fbx.position.z);
+        camera.position.set(
+          fbx.position.x,
+          fbx.position.y + cameraHeight,
+          fbx.position.z
+        );
         camera.lookAt(fbx.position);
         fbx.add(camera);
         cityScene.add(fbx);
@@ -263,20 +268,22 @@ onValue(starCountRef, (snapshot) => {
 
     cityScene.getObjectByName(key).position.x = value.x;
     cityScene.getObjectByName(key).position.z = value.z;
-
+    cityScene.getObjectByName(key).rotation.rotY = value.rotY;
+    //Tonto profesore
     //     // Update the user info div with the user ID and position
     //     if (key == currentUser.uid) {
     //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
-    //     }
+    //     } soy cochué no me baño
     updateCamera();
   });
 });
 
-function writeUserData(userId, position) {
-  //const db = getDatabase();
+function writeUserData(userId, position, rotation) {
+  // const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
     z: position.z,
+    rotY: rotation
   });
 }
 
@@ -290,11 +297,15 @@ function updateCamera() {
     // Ajustar la orientación de la cámara para mirar hacia abajo con una ligera inclinación hacia arriba
     const targetY = jugadorActual.position.y + cameraHeight;
     camera.position.y += (targetY - camera.position.y) * 0.1;
-    camera.lookAt(new THREE.Vector3(jugadorActual.position.x, targetY - 10, jugadorActual.position.z));
+    camera.lookAt(
+      new THREE.Vector3(
+        jugadorActual.position.x,
+        targetY - 10,
+        jugadorActual.position.z
+      )
+    );
   }
-  
 }
-
 
 /*function updateCamera() {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
@@ -307,7 +318,6 @@ function updateCamera() {
     camera.lookAt(new THREE.Vector3(jugadorActual.position.x, cameraHeight, jugadorActual.position.z));
   }
 }*/
-
 
 // // Crea una instancia del cargador FBX para cargar el taxi
 // var taxiLoader = new THREE.FBXLoader();
@@ -406,8 +416,6 @@ sandyBB.setFromObject(sandy);
 //   }
 // });
 
-
-
 //Movimiento WASD
 // let wPresionada = false;  // Variable que indica si la tecla W está siendo presionada
 // let aPresionada = false;  // Variable que indica si la tecla A está siendo presionada
@@ -417,7 +425,7 @@ sandyBB.setFromObject(sandy);
 //   if (!currentUser) {
 //     return;
 //   }
-  
+
 //   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
 //   if (e.keyCode == 37) {
@@ -618,36 +626,44 @@ sandyBB.setFromObject(sandy);
 document.onkeydown = function (e) {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
+  console.log(jugadorActual);
+
   updateCamera();
   //movePlayer();
   checkModelBBCollision();
 
-  if (e.keyCode === 65) { // Tecla A - Mover hacia la izquierda
+  if (e.keyCode === 65) {
+    // Tecla A - Mover hacia la izquierda
     jugadorActual.position.x -= 1;
     jugadorActual.rotation.y = -Math.PI / 2;
   }
 
-  if (e.keyCode === 68) { // Tecla D - Mover hacia la derecha
+  if (e.keyCode === 68) {
+    // Tecla D - Mover hacia la derecha
     jugadorActual.position.x += 1;
     jugadorActual.rotation.y = Math.PI / 2;
   }
 
-  if (e.keyCode === 87) { // Tecla W - Mover hacia arriba
+  if (e.keyCode === 87) {
+    // Tecla W - Mover hacia arriba
     jugadorActual.position.z -= 1;
     jugadorActual.rotation.y = 0;
   }
 
-  if (e.keyCode === 83) { // Tecla S - Mover hacia abajo
+  if (e.keyCode === 83) {
+    // Tecla S - Mover hacia abajo
     jugadorActual.position.z += 1;
     jugadorActual.rotation.y = Math.PI;
   }
 
-  writeUserData(currentUser.uid, jugadorActual.position);
+  writeUserData(
+    currentUser.uid,
+    jugadorActual.position,
+    jugadorActual.rotation.y
+  );
 
   jugadorBB.setFromObject(jugadorActual);
 };
-
-
 
 //En caso de no sé, cochué tuvo un pedo con git hub
 
@@ -698,7 +714,7 @@ function loadAnimatedModelAndPlay() {
       idleAction.play();
 
       checkCollisions();
-      animate()
+      animate();
     });
 
     cityScene.add(fbx);
@@ -712,8 +728,9 @@ loadAnimatedModelAndPlay();
 
 function checkCollisions() {
   // Obtener la caja de colisión del jugador
-  jugadorBB = new THREE.Box3().setFromObject(cityScene.getObjectByName(jugadorNames));
-
+  jugadorBB = new THREE.Box3().setFromObject(
+    cityScene.getObjectByName(jugadorNames)
+  );
 }
 
 /*function checkModelBBCollision() {
@@ -757,7 +774,9 @@ function checkModelBBCollision() {
     for (const key in jugadorNames) {
       if (Object.hasOwnProperty.call(jugadorNames, key)) {
         const jugadorInfo = jugadorNames[key];
-        const jugadorBB = new THREE.Box3().setFromObject(cityScene.getObjectByName(jugadorInfo.name));
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
 
         if (modelBB.intersectsBox(jugadorBB)) {
           jugadoresColisionados++;
@@ -772,11 +791,6 @@ function checkModelBBCollision() {
   }
 }
 
-
-
-
-
-
 let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de Box3
 
 // function movePlayer() {
@@ -786,7 +800,6 @@ let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de 
 //   // Actualizar la posición de la caja de colisión del jugador
 //   jugadorBB.setFromObject(jugadorActual);
 // }
-
 
 //const cameraControl = new OrbitControls(camera, renderer.domElement);
 
@@ -870,7 +883,6 @@ animate();*/
     controls.Update(timeElapsedS);
   }
 }*/
-
 
 function animate() {
   const deltaTime = clock.getDelta();
