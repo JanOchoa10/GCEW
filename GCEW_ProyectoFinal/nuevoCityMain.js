@@ -716,7 +716,7 @@ function checkCollisions() {
 
 }
 
-function checkModelBBCollision() {
+/*function checkModelBBCollision() {
   // Comprobar colisión entre fbx (modelBB) y jugadorBB
 
   //Aquí se genera la lógica de la colisión
@@ -726,7 +726,56 @@ function checkModelBBCollision() {
      modelBB.min.y -= 10; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
      modelBB.max.y -= 10; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
   }
+}*/
+
+function checkModelBBCollision() {
+  // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+  //Aquí se genera la lógica de la colisión
+  if (modelBB.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo fbx y el jugador");
+
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // Obtener la posición actual del modelo
+    const modelPosition = fbx.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+
+    // Actualizar la posición del modelo
+    fbx.position.copy(modelPosition);
+
+    // Actualizar la caja de colisión del modelo
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados = 0;
+    const totalJugadores = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(cityScene.getObjectByName(jugadorInfo.name));
+
+        if (modelBB.intersectsBox(jugadorBB)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados === totalJugadores) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
 }
+
+
+
+
+
 
 let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de Box3
 
