@@ -623,62 +623,89 @@ sandyBB.setFromObject(sandy);
 
 //   writeUserData(currentUser.uid, jugadorActual.position);
 // };
+// Mapeo de teclas
+const KEY_LEFT = 65;
+const KEY_RIGHT = 68;
+const KEY_UP = 87;
+const KEY_DOWN = 83;
+const KEY_SHIFT = 16;
 
+// Define una velocidad de movimiento
+const normalMovementSpeed = 10;
+const shiftMovementSpeed = normalMovementSpeed * 2;
+
+// Variable para controlar si se está presionando la tecla Shift
+let isShiftPressed = false;
+const smoothness = 0.1; // Ajusta este valor para controlar la suavidad de la rotación
+
+// Objeto para almacenar las teclas presionadas
+const keysPressed = {};
+
+// Asignar evento a la tecla presionada
 document.onkeydown = function (e) {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
   console.log(jugadorActual);
 
   updateCamera();
-  //movePlayer();
+  // movePlayer();
   checkModelBBCollision();
+  keysPressed[e.keyCode] = true;
 
-  const smoothness = 0.1; // Ajusta este valor para controlar la suavidad de la rotación
+  if (e.keyCode === KEY_SHIFT) {
+    // Tecla Shift presionada
+    isShiftPressed = true;
+  }
 
-  if (e.keyCode === 65) {
+  updatePlayerMovement();
+};
+
+document.onkeyup = function (e) {
+  delete keysPressed[e.keyCode];
+
+  if (e.keyCode === KEY_SHIFT) {
+    // Tecla Shift soltada
+    isShiftPressed = false;
+  }
+
+  updatePlayerMovement();
+};
+
+// Actualizar el movimiento del jugador en cada fotograma
+function updatePlayerMovement() {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+  const movementSpeed = getMovementSpeed();
+
+  if (keysPressed[KEY_LEFT]) {
     // Tecla A - Mover hacia la izquierda
-    jugadorActual.position.x -= 1;
+    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(-movementSpeed, 0, 0));
+    movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, -Math.PI / 2);
   }
-  
-  if (e.keyCode === 68) {
+
+  if (keysPressed[KEY_RIGHT]) {
     // Tecla D - Mover hacia la derecha
-    jugadorActual.position.x += 1;
+    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(movementSpeed, 0, 0));
+    movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, Math.PI / 2);
   }
-  
-  if (e.keyCode === 87) {
+
+  if (keysPressed[KEY_UP]) {
     // Tecla W - Mover hacia arriba
-    jugadorActual.position.z -= 1;
+    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(0, 0, -movementSpeed));
+    movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, Math.PI);
   }
-  
-  if (e.keyCode === 83) {
+
+  if (keysPressed[KEY_DOWN]) {
     // Tecla S - Mover hacia abajo
-    jugadorActual.position.z += 1;
+    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(0, 0, movementSpeed));
+    movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, 0);
   }
-  
-  function rotateSmoothly(object, targetRotationY) {
-    let rotationDiff = targetRotationY - object.rotation.y;
-  
-    // Ajusta la rotación si está pasando de izquierda a arriba o de arriba a izquierda
-    if (
-      (object.rotation.y === -Math.PI / 2 && targetRotationY === Math.PI) ||
-      (object.rotation.y === Math.PI && targetRotationY === -Math.PI / 2)
-    ) {
-      if (rotationDiff > Math.PI) {
-        rotationDiff -= 2 * Math.PI;
-      } else if (rotationDiff < -Math.PI) {
-        rotationDiff += 2 * Math.PI;
-      }
-    }
-  
-    // Utiliza una interpolación para suavizar la rotación
-    object.rotation.y += rotationDiff * smoothness;
-  }
-  
 
+  console.log(keysPressed)
 
   writeUserData(
     currentUser.uid,
@@ -687,7 +714,35 @@ document.onkeydown = function (e) {
   );
 
   jugadorBB.setFromObject(jugadorActual);
-};
+}
+
+// Función para obtener la velocidad de movimiento actual
+function getMovementSpeed() {
+  return isShiftPressed ? shiftMovementSpeed : normalMovementSpeed;
+}
+
+// Función para mover suavemente al jugador
+function movePlayerSmoothly(object, targetPosition) {
+  // Calcula la distancia entre la posición actual y la posición objetivo
+  const distance = object.position.distanceTo(targetPosition);
+
+  // Define
+  // Define la velocidad de movimiento en función de la distancia
+  const movementSpeed = Math.min(distance, smoothness);
+
+  // Interpola suavemente la posición actual hacia la posición objetivo
+  object.position.lerp(targetPosition, movementSpeed);
+}
+
+// Función para rotar suavemente
+function rotateSmoothly(object, targetRotationY) {
+  // Calcula la diferencia entre la rotación actual y la rotación objetivo
+  const rotationDiff = targetRotationY - object.rotation.y;
+
+  // Utiliza una interpolación para suavizar la rotación
+  object.rotation.y += rotationDiff * smoothness;
+}
+
 
 //En caso de no sé, cochué tuvo un pedo con git hub
 
@@ -749,6 +804,7 @@ function loadAnimatedModelAndPlay() {
 
 // Llamar a la función para cargar el modelo animado
 loadAnimatedModelAndPlay();
+
 
 function checkCollisions() {
   // Obtener la caja de colisión del jugador
