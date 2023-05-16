@@ -211,8 +211,11 @@ loadAnimatedModelAndPlay(
 var modelPlayerBB;
 var jugadorNames = {};
 
+var playerName = "nombre_del_jugador"; 
+
 const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
 onValue(starCountRef, (snapshot) => {
+  //currentPlayerKey = key; // Asignar el valor de key a currentPlayerKey
   const data = snapshot.val();
   //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
   // console.log(data);
@@ -284,7 +287,7 @@ function writeUserData(userId, position, rotation) {
   set(ref(db, "jugador/" + userId), {
     x: position.x,
     z: position.z,
-    rotY: rotation
+    rotY: rotation,
   });
 }
 
@@ -350,50 +353,50 @@ function updateCamera() {
 // console.log(spongebobBB);
 // spongebobBB.setFromObject(spongebob);
 
-const patrickGeometry = new THREE.SphereGeometry(1.5);
-const patrickMaterial = new THREE.MeshPhongMaterial({ color: "pink" });
-const patrick = new THREE.Mesh(patrickGeometry, patrickMaterial);
-patrick.position.set(-5, 0.3, 0);
+// const patrickGeometry = new THREE.SphereGeometry(1.5);
+// const patrickMaterial = new THREE.MeshPhongMaterial({ color: "pink" });
+// const patrick = new THREE.Mesh(patrickGeometry, patrickMaterial);
+// patrick.position.set(-5, 0.3, 0);
 
-const patrickBB = new THREE.Sphere(patrick.position, 1);
+// const patrickBB = new THREE.Sphere(patrick.position, 1);
 
-const squidwardGeometry = new THREE.CylinderGeometry(0.7, 0.7, 3.25, 16);
-const squidwardMaterial = new THREE.MeshPhongMaterial({ color: "gray" });
-const squidward = new THREE.Mesh(squidwardGeometry, squidwardMaterial);
-squidward.position.set(0, 0.5, 0);
+// const squidwardGeometry = new THREE.CylinderGeometry(0.7, 0.7, 3.25, 16);
+// const squidwardMaterial = new THREE.MeshPhongMaterial({ color: "gray" });
+// const squidward = new THREE.Mesh(squidwardGeometry, squidwardMaterial);
+// squidward.position.set(0, 0.5, 0);
 
-const squidwardBB = new THREE.Box3();
-squidwardBB.setFromObject(squidward);
+// const squidwardBB = new THREE.Box3();
+// squidwardBB.setFromObject(squidward);
 
-const mrKrabsGeometry = new THREE.ConeGeometry(2, 2.75, 32);
-const mrKrabsMaterial = new THREE.MeshPhongMaterial({ color: "red" });
-const mrKrabs = new THREE.Mesh(mrKrabsGeometry, mrKrabsMaterial);
-mrKrabs.position.set(6, 0.2, 0);
+// const mrKrabsGeometry = new THREE.ConeGeometry(2, 2.75, 32);
+// const mrKrabsMaterial = new THREE.MeshPhongMaterial({ color: "red" });
+// const mrKrabs = new THREE.Mesh(mrKrabsGeometry, mrKrabsMaterial);
+// mrKrabs.position.set(6, 0.2, 0);
 
-const mrKrabsBB = new THREE.Box3();
-console.log(mrKrabsBB);
-mrKrabsBB.setFromObject(mrKrabs);
+// const mrKrabsBB = new THREE.Box3();
+// console.log(mrKrabsBB);
+// mrKrabsBB.setFromObject(mrKrabs);
 
-const planktonGeometry = new THREE1.CapsuleGeometry(0.1, 0.5, 4, 8);
-const planktonMaterial = new THREE1.MeshPhongMaterial({ color: "green" });
-const plankton = new THREE1.Mesh(planktonGeometry, planktonMaterial);
-plankton.position.set(-15, -0.5, 0);
+// const planktonGeometry = new THREE1.CapsuleGeometry(0.1, 0.5, 4, 8);
+// const planktonMaterial = new THREE1.MeshPhongMaterial({ color: "green" });
+// const plankton = new THREE1.Mesh(planktonGeometry, planktonMaterial);
+// plankton.position.set(-15, -0.5, 0);
 
-const planktonBB = new THREE1.Box3();
-console.log(planktonBB);
-planktonBB.setFromObject(plankton);
+// const planktonBB = new THREE1.Box3();
+// console.log(planktonBB);
+// planktonBB.setFromObject(plankton);
 
-const sandyGeometry = new THREE1.CapsuleGeometry(0.75, 1, 4, 8);
-const sandyMaterial = new THREE1.MeshPhongMaterial({
-  color: "white",
-  transparent: true,
-});
-const sandy = new THREE1.Mesh(sandyGeometry, sandyMaterial);
-sandy.position.set(12, 0, 0);
+// const sandyGeometry = new THREE1.CapsuleGeometry(0.75, 1, 4, 8);
+// const sandyMaterial = new THREE1.MeshPhongMaterial({
+//   color: "white",
+//   transparent: true,
+// });
+// const sandy = new THREE1.Mesh(sandyGeometry, sandyMaterial);
+// sandy.position.set(12, 0, 0);
 
-const sandyBB = new THREE1.Box3();
-console.log(sandyBB);
-sandyBB.setFromObject(sandy);
+// const sandyBB = new THREE1.Box3();
+// console.log(sandyBB);
+// sandyBB.setFromObject(sandy);
 
 // document.addEventListener("keydown", function (e) {
 //   // console.log(e)
@@ -642,7 +645,6 @@ const smoothness = 0.1; // Ajusta este valor para controlar la suavidad de la ro
 const keysPressed = {};
 let totalRotation = 0;
 
-
 // Asignar evento a la tecla presionada
 document.onkeydown = function (e) {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
@@ -651,7 +653,7 @@ document.onkeydown = function (e) {
 
   updateCamera();
   // movePlayer();
-  
+
   keysPressed[e.keyCode] = true;
 
   if (e.keyCode === KEY_SHIFT) {
@@ -680,33 +682,41 @@ function updatePlayerMovement() {
 
   if (keysPressed[KEY_LEFT]) {
     // Tecla A - Mover hacia la izquierda
-    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(-movementSpeed, 0, 0));
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(-movementSpeed, 0, 0));
     movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, -Math.PI / 2);
   }
 
   if (keysPressed[KEY_RIGHT]) {
     // Tecla D - Mover hacia la derecha
-    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(movementSpeed, 0, 0));
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(movementSpeed, 0, 0));
     movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, Math.PI / 2);
   }
 
   if (keysPressed[KEY_UP]) {
     // Tecla W - Mover hacia arriba
-    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(0, 0, -movementSpeed));
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(0, 0, -movementSpeed));
     movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, Math.PI);
   }
 
   if (keysPressed[KEY_DOWN]) {
     // Tecla S - Mover hacia abajo
-    const targetPosition = jugadorActual.position.clone().add(new THREE.Vector3(0, 0, movementSpeed));
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(0, 0, movementSpeed));
     movePlayerSmoothly(jugadorActual, targetPosition);
     rotateSmoothly(jugadorActual, 0);
   }
 
-  console.log(keysPressed)
+  console.log(keysPressed);
 
   writeUserData(
     currentUser.uid,
@@ -714,6 +724,13 @@ function updatePlayerMovement() {
     jugadorActual.rotation.y
   );
   checkModelBBCollision();
+  checkBuildingsCollisions();
+  checkBuildingsCollisions2();
+  checkBuildingsCollisions3();
+  checkBuildingsCollisions4();
+  checkBuildingsCollisions5();
+  checkBuildingsCollisions6();
+  checkBuildingsCollisions7();
   jugadorBB.setFromObject(jugadorActual);
 }
 
@@ -761,7 +778,6 @@ function rotateSmoothly(object, targetRotationY) {
   }
 
   object.rotation.y = newRotation;
- 
 
   // //Código de Jancito bb mosho
   // // Calcula la diferencia entre la rotación actual y la rotación objetivo
@@ -771,20 +787,20 @@ function rotateSmoothly(object, targetRotationY) {
   // object.rotation.y += rotationDiff * smoothness;
 }
 
-
 //En caso de no sé, cochué tuvo un pedo con git hub
 
-cityScene.add(
+cityScene
+  .add
   //terrainPlane,
   //spongebob,
-  patrick,
-  squidward,
-  mrKrabs,
-  plankton,
-  sandy
+  // patrick,
+  // squidward,
+  // mrKrabs,
+  // plankton,
+  // sandy
   //hemiLight,
   //directionalLight
-);
+  ();
 
 // Resize Handler
 function onWindowResize() {
@@ -793,6 +809,8 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener("resize", onWindowResize);
+
+const jugadorID = "jugador1";
 
 var modelBB;
 let fbx;
@@ -830,9 +848,260 @@ function loadAnimatedModelAndPlay() {
   });
 }
 
+var modelConstruction1;
+let fbxConstruction;
+
+function loadConstruction1() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("hotel.fbx", (loadedfbx1) => {
+    fbxConstruction = loadedfbx1;
+    fbxConstruction.scale.setScalar(0.1);
+    fbxConstruction.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction.position.copy(new THREE.Vector3(90, 0, -120));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction1 = new THREE.Box3().setFromObject(fbxConstruction);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("hotel.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction);
+
+    //checkCollisions();
+  });
+}
+
+var modelConstruction2;
+let fbxConstruction2;
+
+function loadConstruction2() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("flowerBuilding.fbx", (loadedfbx2) => {
+    fbxConstruction2 = loadedfbx2;
+    fbxConstruction2.scale.setScalar(0.1);
+    fbxConstruction2.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction2.position.copy(new THREE.Vector3(-90, 0, -10));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction2 = new THREE.Box3().setFromObject(fbxConstruction2);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("flowerBuilding.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction2);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction2);
+
+    //checkCollisions();
+  });
+}
+
+var modelConstruction3;
+let fbxConstruction3;
+
+function loadConstruction3() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("redBuilding.fbx", (loadedfbx3) => {
+    fbxConstruction3 = loadedfbx3;
+    fbxConstruction3.scale.setScalar(0.1);
+    fbxConstruction3.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction3.position.copy(new THREE.Vector3(0, 0, 130));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction3 = new THREE.Box3().setFromObject(fbxConstruction3);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("redBuilding.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction3);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction3);
+
+    //checkCollisions();
+  });
+}
+
+var modelConstruction4;
+let fbxConstruction4;
+
+function loadConstruction4() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("greenBuilding.fbx", (loadedfbx4) => {
+    fbxConstruction4 = loadedfbx4;
+    fbxConstruction4.scale.setScalar(0.1);
+    fbxConstruction4.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction4.position.copy(new THREE.Vector3(-130, 0, 130));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction4 = new THREE.Box3().setFromObject(fbxConstruction4);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("greenBuilding.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction4);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction4);
+
+    //checkCollisions();
+  });
+}
+
+var modelConstruction5;
+let fbxConstruction5;
+
+function loadConstruction5() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("libraryBuilding.fbx", (loadedfbx5) => {
+    fbxConstruction5 = loadedfbx5;
+    fbxConstruction5.scale.setScalar(0.1);
+    fbxConstruction5.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction5.position.copy(new THREE.Vector3(-90, 0, -100));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction5 = new THREE.Box3().setFromObject(fbxConstruction5);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("libraryBuilding.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction5);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction5);
+
+    //checkCollisions();
+  });
+}
+
+var modelConstruction6;
+let fbxConstruction6;
+
+function loadConstruction6() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("gasoline.fbx", (loadedfbx6) => {
+    fbxConstruction6 = loadedfbx6;
+    fbxConstruction6.scale.setScalar(0.1);
+    fbxConstruction6.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction6.position.copy(new THREE.Vector3(-20, 0, 150));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction6 = new THREE.Box3().setFromObject(fbxConstruction6);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("gasoline.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction6);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction6);
+
+    //checkCollisions();
+  });
+}
+
+var modelConstruction7;
+let fbxConstruction7;
+
+function loadConstruction7() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("redBuilding.fbx", (loadedfbx7) => {
+    fbxConstruction7 = loadedfbx7;
+    fbxConstruction7.scale.setScalar(0.1);
+    fbxConstruction7.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction7.position.copy(new THREE.Vector3(90, 0, 20));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction7 = new THREE.Box3().setFromObject(fbxConstruction7);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("redBuilding.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction7);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction7);
+
+    //checkCollisions();
+  });
+}
+
 // Llamar a la función para cargar el modelo animado
 loadAnimatedModelAndPlay();
-
+loadConstruction1();
+loadConstruction2();
+loadConstruction3();
+loadConstruction4();
+loadConstruction5();
+loadConstruction6();
+loadConstruction7();
 
 function checkCollisions() {
   // Obtener la caja de colisión del jugador
@@ -856,7 +1125,7 @@ function checkCollisions() {
 function checkModelBBCollision() {
   // Comprobar colisión entre fbx (modelBB) y jugadorBB
 
-  //Aquí se genera la lógica de la colisión
+  //Aquí se genera la lógica de la colisión para el character1
   if (modelBB.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo fbx y el jugador");
 
@@ -897,7 +1166,290 @@ function checkModelBBCollision() {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
   }
+
+  
 }
+
+let jugadoresColisionados = 0; // Definir la variable jugadoresColisionados antes de su uso
+
+
+function checkBuildingsCollisions() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction1 && jugadorBB.intersectsBox(modelConstruction1)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+
+function checkBuildingsCollisions2() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction2 && jugadorBB.intersectsBox(modelConstruction2)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction2.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisions3() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction3 && jugadorBB.intersectsBox(modelConstruction3)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction3.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisions4() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction4 && jugadorBB.intersectsBox(modelConstruction4)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction4.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisions5() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction5 && jugadorBB.intersectsBox(modelConstruction5)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction5.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisions6() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction6 && jugadorBB.intersectsBox(modelConstruction6)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction6.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(1.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisions7() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (modelConstruction7 && jugadorBB.intersectsBox(modelConstruction7)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstruction7.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+// function checkBuildingsCollisions() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction1 && jugadorBB.intersectsBox(modelConstruction1)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Retroceder al jugador
+//           const retroceso = 10; // Ajusta el valor según sea necesario
+//           jugador.position.x -= retroceso;
+//           jugador.position.z -= retroceso;
+//         }
+//       }
+//     }
+//   }
+// }
+
+
+// function checkBuildingsCollisions() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction1 && jugadorBB.intersectsBox(modelConstruction1)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// Verificar colisiones en cada actualización de fotograma
+// function checkBuildingsCollisions() {
+//   // Obtener las cajas de colisión del jugador y el modelo colisionado
+//   const playerBB = modelPlayerBB.clone(); // Clonar la caja de colisión del jugador
+//   const constructionBB = modelConstruction1.clone(); // Clonar la caja de colisión del modelo colisionado
+  
+
+//   const jugadorInfo = jugadorNames[playerName];
+//   const jugador = cityScene.getObjectByName(jugadorInfo.name);   
+//   // Mover las cajas de colisión según la posición actual del jugador y el modelo colisionado
+//   playerBB.translate(jugador.position); // Mover la caja de colisión del jugador
+//   constructionBB.translate(fbxConstruction.position); // Mover la caja de colisión del modelo colisionado
+
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugadorBB = new THREE.Box3().setFromObject(
+//         cityScene.getObjectByName(jugadorInfo.name)
+//       );
+
+//       if (modelBB.intersectsBox(jugadorBB)) {
+//         jugadoresColisionados++;
+//         console.log("Colisión con el jugador:", key);
+//       }
+//     }
+//   }
+
+//   // Comprobar si las cajas de colisión se superponen
+//   if (playerBB.intersectsBox(constructionBB)) {
+//     // Las cajas de colisión se superponen, lo que indica una colisión
+
+//     // Aquí puedes agregar el código que deseas ejecutar cuando haya una colisión
+//     // Por ejemplo, puedes detener el movimiento del jugador o aplicar alguna acción específica
+
+//     // Para detener el movimiento del jugador, puedes deshabilitar los controles de movimiento:
+//     // controls.enabled = false;
+
+//     // O puedes establecer una variable de estado para indicar que el jugador está colisionando:
+//     // isColliding = true;
+//   } else {
+//     // Las cajas de colisión no se superponen, no hay colisión
+
+//     // Aquí puedes agregar el código que deseas ejecutar cuando no haya colisión
+//     // Por ejemplo, puedes permitir que el jugador se mueva nuevamente o revertir la acción realizada en la colisión
+
+//     // Para permitir el movimiento del jugador nuevamente, puedes habilitar los controles de movimiento:
+//     // controls.enabled = true;
+
+//     // Si usaste una variable de estado, puedes restablecerla:
+//     // isColliding = false;
+//   }
+// }
 
 let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de Box3
 
@@ -1014,6 +1566,7 @@ function animate() {
   for (let i = 0; i < animationMixer.length; i++) {
     animationMixer[i].update(deltaTime);
   }
+
   //actualizarJugador();
   renderer.render(cityScene, camera);
   requestAnimationFrame(animate);
