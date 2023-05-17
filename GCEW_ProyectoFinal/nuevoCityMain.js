@@ -662,6 +662,11 @@ function updatePlayerMovement() {
   checkBuildingsCollisions5();
   checkBuildingsCollisions6();
   checkBuildingsCollisions7();
+  checkBuildingsCollisionsWall();
+  checkBuildingsCollisionsWall2();
+  checkBuildingsCollisionsWall3();
+  checkBuildingsCollisionsWall4();
+
   jugadorBB.setFromObject(jugadorActual);
 }
 
@@ -869,6 +874,148 @@ function loadConstruction1() {
     });
 
     cityScene.add(fbxConstruction);
+
+    //checkCollisions();
+  });
+}
+
+var wall1;
+let fbxConstructionWall;
+
+function loadConstructionWallSide() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWall) => {
+    fbxConstructionWall = loadedfbWall;
+    fbxConstructionWall.scale.setScalar(0.1);
+    fbxConstructionWall.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall.position.copy(new THREE.Vector3(0, 0, -115));
+
+    // Crear la caja de colisión para el modelo animado
+    wall1 = new THREE.Box3().setFromObject(fbxConstructionWall);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall);
+
+    //checkCollisions();
+  });
+}
+
+var wall2;
+let fbxConstructionWall2;
+
+function loadConstructionWallSide2() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal2l) => {
+    fbxConstructionWall2 = loadedfbWal2l;
+    fbxConstructionWall2.rotateY(Math.PI/2);
+    fbxConstructionWall2.scale.setScalar(0.1);
+    fbxConstructionWall2.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall2.position.copy(new THREE.Vector3(-115, 0, -5));
+
+    // Crear la caja de colisión para el modelo animado
+    wall2 = new THREE.Box3().setFromObject(fbxConstructionWall2);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall2);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall2);
+
+    //checkCollisions();
+  });
+}
+
+var wall3;
+let fbxConstructionWall3;
+
+function loadConstructionWallSide3() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal3l) => {
+    fbxConstructionWall3 = loadedfbWal3l;
+    fbxConstructionWall3.rotateY(Math.PI/2);
+    fbxConstructionWall3.scale.setScalar(0.1);
+    fbxConstructionWall3.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall3.position.copy(new THREE.Vector3(275, 0, 5));
+
+    // Crear la caja de colisión para el modelo animado
+    wall3 = new THREE.Box3().setFromObject(fbxConstructionWall3);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall3);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall3);
+
+    //checkCollisions();
+  });
+}
+
+var wall4;
+let fbxConstructionWall4;
+
+function loadConstructionWallSide4() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal4l) => {
+    fbxConstructionWall4 = loadedfbWal4l;
+    fbxConstructionWall4.scale.setScalar(0.1);
+    fbxConstructionWall4.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall4.position.copy(new THREE.Vector3(0, 0, 285));
+
+    // Crear la caja de colisión para el modelo animado
+    wall4 = new THREE.Box3().setFromObject(fbxConstructionWall4);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall4);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall4);
 
     //checkCollisions();
   });
@@ -1097,6 +1244,10 @@ loadConstruction4();
 loadConstruction5();
 loadConstruction6();
 loadConstruction7();
+loadConstructionWallSide();
+loadConstructionWallSide2();
+loadConstructionWallSide3();
+loadConstructionWallSide4();
 
 function checkCollisions() {
   // Obtener la caja de colisión del jugador
@@ -1269,6 +1420,110 @@ function checkBuildingsCollisions() {
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
           const construccionPosition = new THREE.Vector3().copy(fbxConstruction.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall1 && jugadorBB.intersectsBox(wall1)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall2() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall2 && jugadorBB.intersectsBox(wall2)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall2.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall3() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall3 && jugadorBB.intersectsBox(wall3)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall3.position);
+          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall4() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall4 && jugadorBB.intersectsBox(wall4)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall4.position);
           const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
