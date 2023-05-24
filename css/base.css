@@ -9,3 +9,9 @@ body {
   overflow: hidden;
 }
 
+#puntuacion-texto {
+  color: white;
+  position: absolute;
+  right: 10px; 
+}
+

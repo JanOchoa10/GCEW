@@ -47,6 +47,7 @@ const provider = new GoogleAuthProvider();
 // Initialize Realtime Database and get a reference to the service
 const db = getDatabase(); //EL PROFE NO TIENE EL PARAMETRO APP
 let currentUser;
+let puntuacion = 0; //La puntuación del jugador
 
 async function login() {
   const res = await signInWithPopup(auth, provider)
@@ -852,14 +853,13 @@ document.onkeyup = function (e) {
 
 let movementSpeed = getMovementSpeed();
 
-
 // Actualizar el movimiento del jugador en cada fotograma
 function updatePlayerMovement() {
   let jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
   if (isThePlayerPickUpGasoline) {
     movementSpeed = getPowerUpSpeed();
-  } else { 
+  } else {
     movementSpeed = getMovementSpeed();
   }
 
@@ -906,15 +906,15 @@ function updatePlayerMovement() {
       console.log("Ya pasó el tiempo");
     }, 500);
   }
-  
+
   console.log(keysPressed);
-    
+
   writeUserData(
     currentUser.uid,
     jugadorActual.position,
     jugadorActual.rotation.y
   );
-   
+
   // // Restablecer la velocidad normal después de 5 segundos
   // if (isThePlayerPickUpGasoline) {
   //   clearTimeout(powerUpTimer);
@@ -1192,7 +1192,6 @@ function loadSkullPowerUp2() {
       checkCollisions();
       animate();
     });
-
 
     cityScene.add(fbxPowerUp2);
 
@@ -1687,6 +1686,9 @@ function checkModelBBCollision() {
     modelBB.min.add(desplazamiento);
     modelBB.max.add(desplazamiento);
 
+    puntuacion += 50;
+    console.log("Puntuación =", puntuacion);
+
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados = 0;
     const totalJugadores = Object.keys(jugadorNames).length;
@@ -1708,6 +1710,12 @@ function checkModelBBCollision() {
     if (jugadoresColisionados === totalJugadores) {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
   }
 }
 
@@ -1730,6 +1738,9 @@ function checModelBB1WomanCollision() {
     modelBB1.min.add(desplazamiento1);
     modelBB1.max.add(desplazamiento1);
 
+    puntuacion += 50;
+    console.log("Puntuación =", puntuacion);
+
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados1 = 0;
     const totalJugadores1 = Object.keys(jugadorNames).length;
@@ -1751,6 +1762,12 @@ function checModelBB1WomanCollision() {
     if (jugadoresColisionados1 === totalJugadores1) {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
+
+     // Obtener el elemento <span> de la puntuación
+     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+     // Actualizar el contenido del elemento con la puntuación actual
+     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
   }
 }
 
@@ -1773,6 +1790,9 @@ function checModelBB1GrandmaCollision() {
     modelBB3.min.add(desplazamiento1);
     modelBB3.max.add(desplazamiento1);
 
+    puntuacion += 50;
+    console.log("Puntuación =", puntuacion);
+
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados1 = 0;
     const totalJugadores1 = Object.keys(jugadorNames).length;
@@ -1794,6 +1814,12 @@ function checModelBB1GrandmaCollision() {
     if (jugadoresColisionados1 === totalJugadores1) {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
+
+     // Obtener el elemento <span> de la puntuación
+     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+     // Actualizar el contenido del elemento con la puntuación actual
+     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
   }
 }
 
