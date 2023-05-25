@@ -565,6 +565,8 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB.min.add(desplazamiento);
     modelBB.max.add(desplazamiento);
     cityScene.remove(fbx);
+    fbx = null;
+    modelBB = null;
   }
 
   if (peatonesArray[0].activo == true) {
@@ -581,6 +583,8 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB1.min.add(desplazamiento);
     modelBB1.max.add(desplazamiento);
     cityScene.remove(fbx1);
+    fbx1 = null;
+    modelBB1 = null;
   }
 
   if (peatonesArray[0].activo == true) {
@@ -597,6 +601,8 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB3.min.add(desplazamiento);
     modelBB3.max.add(desplazamiento);
     cityScene.remove(fbx3);
+    fbx3 = null;
+    modelBB3 = null;
   }
 });
 
