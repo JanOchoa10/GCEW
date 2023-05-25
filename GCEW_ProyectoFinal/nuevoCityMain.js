@@ -551,33 +551,41 @@ onValue(peatonesCountRef, (snapshot) => {
   console.log('Peatones obtenidos desde Firebase:', peatonesArray);
 
 
-  if (peatonesArray[0].activo == false) {
+  if (peatonesArray[0].activo == true) {
+    // loadAnimatedModelAndPlay();
+  } else if (peatonesArray[0].activo == false) {
     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
-    // // Obtener la posición actual del modelo
+    // Obtener la posición actual del modelo
     const modelPosition = fbx.position.clone();
-    // // Aplicar el desplazamiento a la posición del modelo
+    // Aplicar el desplazamiento a la posición del modelo
     modelPosition.add(desplazamiento);
-    // // Actualizar la posición del modelo
+    // Actualizar la posición del modelo
     fbx.position.copy(modelPosition);
     // Actualizar la caja de colisión del modelo
     modelBB.min.add(desplazamiento);
     modelBB.max.add(desplazamiento);
     cityScene.remove(fbx);
   }
-  if (peatonesArray[1].activo == false) {
+
+  if (peatonesArray[0].activo == true) {
+    // loadAnimatedModelAndPlayWoman();
+  } else if (peatonesArray[1].activo == false) {
     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
-    // // Obtener la posición actual del modelo
+    // Obtener la posición actual del modelo
     const modelPosition = fbx1.position.clone();
-    // // Aplicar el desplazamiento a la posición del modelo
+    // Aplicar el desplazamiento a la posición del modelo
     modelPosition.add(desplazamiento);
-    // // Actualizar la posición del modelo
+    // Actualizar la posición del modelo
     fbx1.position.copy(modelPosition);
     // Actualizar la caja de colisión del modelo
-    modelBB.min.add(desplazamiento);
-    modelBB.max.add(desplazamiento);
+    modelBB1.min.add(desplazamiento);
+    modelBB1.max.add(desplazamiento);
     cityScene.remove(fbx1);
   }
-  if (peatonesArray[2].activo == false) {
+
+  if (peatonesArray[0].activo == true) {
+    // loadAnimatedModelAndPlayGrandmaOhShitDamn();
+  } else if (peatonesArray[2].activo == false) {
     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
     // // Obtener la posición actual del modelo
     const modelPosition = fbx3.position.clone();
@@ -586,8 +594,8 @@ onValue(peatonesCountRef, (snapshot) => {
     // // Actualizar la posición del modelo
     fbx3.position.copy(modelPosition);
     // Actualizar la caja de colisión del modelo
-    modelBB.min.add(desplazamiento);
-    modelBB.max.add(desplazamiento);
+    modelBB3.min.add(desplazamiento);
+    modelBB3.max.add(desplazamiento);
     cityScene.remove(fbx3);
   }
 });
