@@ -564,6 +564,32 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB.max.add(desplazamiento);
     cityScene.remove(fbx);
   }
+  if (peatonesArray[1].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // // Obtener la posición actual del modelo
+    const modelPosition = fbx1.position.clone();
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // // Actualizar la posición del modelo
+    fbx1.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
+    cityScene.remove(fbx1);
+  }
+  if (peatonesArray[2].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // // Obtener la posición actual del modelo
+    const modelPosition = fbx3.position.clone();
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // // Actualizar la posición del modelo
+    fbx3.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
+    cityScene.remove(fbx3);
+  }
 });
 
 
