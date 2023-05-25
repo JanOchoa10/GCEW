@@ -61,6 +61,9 @@ async function login() {
       console.log(user);
       const rotY = 0;
       writeUserData(user.uid, { x: 0, z: 0 }, rotY, puntuacion); //ponermos la rotacion
+
+      writePeatonDataInicio(peatonesArray);
+
       // IdP data available using getAdditionalUserInfo(result)
       // ...
     })
@@ -531,6 +534,39 @@ onValue(starCountRef, (snapshot) => {
   });
 });
 
+const peatonesArray = [];
+const peatonesCountRef = ref(db, "peatones");
+onValue(peatonesCountRef, (snapshot) => {
+  peatonesArray.splice(0); // Borra el contenido anterior del array
+  const data = snapshot.val();
+  Object.entries(data).forEach(([key, value]) => {
+    const peaton = {
+      id: key,
+      activo: value.activo
+      // x: value.x,
+      // z: value.z
+    };
+    peatonesArray.push(peaton);
+  });
+  console.log('Peatones obtenidos desde Firebase:', peatonesArray);
+
+
+  if (peatonesArray[0].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // // Obtener la posición actual del modelo
+    const modelPosition = fbx.position.clone();
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // // Actualizar la posición del modelo
+    fbx.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
+    cityScene.remove(fbx);
+  }
+});
+
+
 function writeUserData(userId, position, rotation, puntosJugador) {
   // const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
@@ -538,6 +574,21 @@ function writeUserData(userId, position, rotation, puntosJugador) {
     z: position.z,
     rotY: rotation,
     puntos: puntosJugador
+  });
+}
+function writePeatonData(peatonId, activo) {
+  // const db = getDatabase();
+  set(ref(db, "peatones/" + peatonId), {
+    activo: activo
+  });
+}
+
+function writePeatonDataInicio(peatonesArray) {
+  // const db = getDatabase();
+  peatonesArray.forEach((peaton) => {
+    set(ref(db, "peatones/" + peaton.id), {
+      activo: true
+    });
   });
 }
 
@@ -560,6 +611,8 @@ function updateCamera() {
     );
   }
 }
+
+
 
 /*function updateCamera() {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
@@ -1020,6 +1073,8 @@ function onWindowResize() {
 window.addEventListener("resize", onWindowResize);
 
 const jugadorID = "jugador1";
+
+
 
 var modelBB;
 let fbx;
@@ -1693,6 +1748,7 @@ function checkModelBBCollision() {
 
     puntuacion += 50;
     console.log("Puntuación =", puntuacion);
+    writePeatonData(1, false);
 
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados = 0;
@@ -1747,6 +1803,7 @@ function checModelBB1WomanCollision() {
 
     puntuacion += 50;
     console.log("Puntuación =", puntuacion);
+    writePeatonData(2, false);
 
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados1 = 0;
@@ -1801,6 +1858,7 @@ function checModelBB1GrandmaCollision() {
 
     puntuacion += 50;
     console.log("Puntuación =", puntuacion);
+    writePeatonData(3, false);
 
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados1 = 0;
