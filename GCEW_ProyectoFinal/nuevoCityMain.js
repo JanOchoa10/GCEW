@@ -1673,20 +1673,20 @@ function checkModelBBCollision() {
   if (modelBB.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo del hombre y el jugador");
 
-     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
 
     // // Obtener la posición actual del modelo
-     const modelPosition = fbx.position.clone();
+    const modelPosition = fbx.position.clone();
 
     // // Aplicar el desplazamiento a la posición del modelo
-     modelPosition.add(desplazamiento);
+    modelPosition.add(desplazamiento);
 
     // // Actualizar la posición del modelo
-     fbx.position.copy(modelPosition);
+    fbx.position.copy(modelPosition);
 
     // Actualizar la caja de colisión del modelo
-     modelBB.min.add(desplazamiento);
-     modelBB.max.add(desplazamiento);
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
 
     cityScene.remove(fbx);
     //cityScene.remove(modelBB);
@@ -1728,21 +1728,21 @@ function checModelBB1WomanCollision() {
   if (modelBB1.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo de la mujer y el jugador");
 
-     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
 
     // // Obtener la posición actual del modelo
-     const modelPosition1 = fbx1.position.clone();
+    const modelPosition1 = fbx1.position.clone();
 
     // // Aplicar el desplazamiento a la posición del modelo
-     modelPosition1.add(desplazamiento1);
+    modelPosition1.add(desplazamiento1);
 
-     // Actualizar la posición del modelo
-     fbx1.position.copy(modelPosition1);
+    // Actualizar la posición del modelo
+    fbx1.position.copy(modelPosition1);
 
-     // Actualizar la caja de colisión del modelo
-     modelBB1.min.add(desplazamiento1);
-     modelBB1.max.add(desplazamiento1);
-    
+    // Actualizar la caja de colisión del modelo
+    modelBB1.min.add(desplazamiento1);
+    modelBB1.max.add(desplazamiento1);
+
     cityScene.remove(fbx1);
 
     puntuacion += 50;
@@ -1770,11 +1770,11 @@ function checModelBB1WomanCollision() {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
 
-     // Obtener el elemento <span> de la puntuación
-     const puntuacionTexto = document.getElementById("puntuacion-texto");
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
 
-     // Actualizar el contenido del elemento con la puntuación actual
-     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
   }
 }
 
@@ -1782,20 +1782,20 @@ function checModelBB1GrandmaCollision() {
   if (modelBB3.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo de la mujer y el jugador");
 
-     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
 
     // // Obtener la posición actual del modelo
-     const modelPosition1 = fbx3.position.clone();
+    const modelPosition1 = fbx3.position.clone();
 
     // // Aplicar el desplazamiento a la posición del modelo
-     modelPosition1.add(desplazamiento1);
+    modelPosition1.add(desplazamiento1);
 
     // // Actualizar la posición del modelo
-     fbx3.position.copy(modelPosition1);
+    fbx3.position.copy(modelPosition1);
 
-     // Actualizar la caja de colisión del modelo
-     modelBB3.min.add(desplazamiento1);
-     modelBB3.max.add(desplazamiento1);
+    // Actualizar la caja de colisión del modelo
+    modelBB3.min.add(desplazamiento1);
+    modelBB3.max.add(desplazamiento1);
 
     cityScene.remove(fbx3);
 
@@ -1824,11 +1824,11 @@ function checModelBB1GrandmaCollision() {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
 
-     // Obtener el elemento <span> de la puntuación
-     const puntuacionTexto = document.getElementById("puntuacion-texto");
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
 
-     // Actualizar el contenido del elemento con la puntuación actual
-     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
   }
 }
 
