@@ -598,6 +598,15 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB3.max.add(desplazamiento);
     cityScene.remove(fbx3);
   }
+
+  const todosInactivos = peatonesArray.every(elemento => elemento.activo === false);
+
+  if (todosInactivos) {
+    console.log("Todos los elementos son inactivos");
+  } else {
+    // console.log("Al menos uno de los elementos es activo");
+  }
+
 });
 
 
@@ -1841,7 +1850,7 @@ function checModelBB1WomanCollision() {
 
     cityScene.remove(fbx1);
 
-    puntuacion += 50;
+    puntuacion += 100;
     console.log("Puntuación =", puntuacion);
     writePeatonData(2, false);
 
@@ -1896,7 +1905,7 @@ function checModelBB1GrandmaCollision() {
 
     cityScene.remove(fbx3);
 
-    puntuacion += 50;
+    puntuacion += 100;
     console.log("Puntuación =", puntuacion);
     writePeatonData(3, false);
 
