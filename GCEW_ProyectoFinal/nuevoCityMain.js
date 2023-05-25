@@ -60,7 +60,7 @@ async function login() {
       currentUser = user;
       console.log(user);
       const rotY = 0;
-      writeUserData(user.uid, { x: 0, z: 0 }, rotY); //ponermos la rotacion
+      writeUserData(user.uid, { x: 0, z: 0 }, rotY, puntuacion); //ponermos la rotacion
       // IdP data available using getAdditionalUserInfo(result)
       // ...
     })
@@ -531,12 +531,13 @@ onValue(starCountRef, (snapshot) => {
   });
 });
 
-function writeUserData(userId, position, rotation) {
+function writeUserData(userId, position, rotation, puntosJugador) {
   // const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
     z: position.z,
     rotY: rotation,
+    puntos: puntosJugador
   });
 }
 
@@ -912,7 +913,8 @@ function updatePlayerMovement() {
   writeUserData(
     currentUser.uid,
     jugadorActual.position,
-    jugadorActual.rotation.y
+    jugadorActual.rotation.y,
+    puntuacion
   );
 
   // // Restablecer la velocidad normal después de 5 segundos
