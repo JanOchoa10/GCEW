@@ -3,6 +3,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 
 import { OrbitControls } from "./OrbitControls.js";
 import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js";
+//import snowFlake from "./images/snowflake1.png";
 
 import { CircleGeometry } from "../three.module.js";
 
@@ -184,6 +185,253 @@ let animationMixer = [];
 //let previosRAF = null;
 const clock = new THREE.Clock(); //Agregamos una constante clock para la variable deltaTime
 
+// Supongamos que tienes una escena llamada 'scene'
+// const numParticles = 50; // Número de partículas
+// const maxLife = 100; // Vida máxima de las partículas
+
+// function createFogParticles() {
+//   const textureLoader = new THREE.TextureLoader();
+//   const fogParticleTexture = textureLoader.load("../resources/smoke.png"); // Reemplaza 'path/to/your/texture.png' con la ruta correcta de tu textura
+
+//   const positions = new Float32Array(numParticles * 3);
+//   const velocities = new Float32Array(numParticles * 3);
+//   const life = new Float32Array(numParticles);
+
+//   for (let i = 0; i < numParticles; i++) {
+//     const index = i * 3;
+
+//     positions[index] = Math.random() * 2 - 1; // Rango: -1 a 1
+//     positions[index + 1] = Math.random() * 2 - 1; // Rango: -1 a 1
+//     positions[index + 2] = Math.random() * 2 - 1; // Rango: -1 a 1
+
+//     const speed = Math.random() * 0.5 + 0.1; // Velocidad aleatoria entre 0.1 y 0.6
+//     const angle = Math.random() * Math.PI * 2; // Ángulo aleatorio
+
+//     velocities[index] = Math.cos(angle) * speed;
+//     velocities[index + 1] = Math.random() * 0.2 - 0.1; // Rango: -0.1 a 0.1
+//     velocities[index + 2] = Math.sin(angle) * speed;
+
+//     life[i] = Math.random() * maxLife; // Vida aleatoria entre 0 y maxLife
+//   }
+
+//   const geometry = new THREE.BufferGeometry();
+//   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+//   geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+//   geometry.setAttribute('life', new THREE.BufferAttribute(life, 1));
+
+//   const material = new THREE.PointsMaterial({
+//     size: 0.05, // Tamaño de las partículas
+//     map: fogParticleTexture, // Textura de las partículas
+//     blending: THREE.AdditiveBlending, // Mezcla aditiva para crear el efecto de fog
+//     depthTest: false,
+//     transparent: true
+//   });
+
+//   const particles = new THREE.Points(geometry, material);
+
+//   const onUpdate = () => {
+//     const positionsAttr = particles.geometry.getAttribute('position').array;
+//     const velocitiesAttr = particles.geometry.getAttribute('velocity').array;
+//     const lifeAttr = particles.geometry.getAttribute('life').array;
+
+//     for (let i = 0; i < numParticles * 3; i += 3) {
+//       positionsAttr[i] += velocitiesAttr[i];
+//       positionsAttr[i + 1] += velocitiesAttr[i + 1];
+//       positionsAttr[i + 2] += velocitiesAttr[i + 2];
+
+//       lifeAttr[i / 3] -= 1;
+
+//       if (lifeAttr[i / 3] <= 0) {
+//         positionsAttr[i] = Math.random() * 2 - 1;
+//         positionsAttr[i + 1] = Math.random() * 2 - 1;
+//         positionsAttr[i + 2] = Math.random() * 2 - 1;
+//         lifeAttr[i / 3] = Math.random() * maxLife;
+//       }
+//     }
+
+//     particles.geometry.attributes.position.needsUpdate = true;
+//     particles.geometry.attributes.life.needsUpdate = true;
+//   };
+
+//   particles.onUpdate = onUpdate;
+
+//   cityScene.add(particles);
+// }
+
+// function emitSnowParticles() {
+//   const numSnowflakes = 1;
+//   const maxRange = 200;
+//   const minRange = maxRange / 2;
+//   const minHeight = 2;
+//   const maxLife = 5000; // Tiempo de vida máximo en milisegundos (10 segundos)
+
+//   const geometry = new THREE.BufferGeometry();
+
+//   const positions = new Float32Array(numSnowflakes * 3);
+//   const velocities = new Float32Array(numSnowflakes * 3);
+//   const life = new Float32Array(numSnowflakes);
+//   const maxLifeArray = new Float32Array(numSnowflakes);
+
+//   const textureLoader = new THREE.TextureLoader();
+
+//   for (let i = 0; i < numSnowflakes; i++) {
+//     const index = i * 3;
+
+//     positions[index] = Math.random() * maxRange - minRange;
+//     positions[index + 1] = Math.random() * minRange + minHeight;
+//     positions[index + 2] = Math.random() * maxRange - minRange;
+
+//     velocities[index] = (Math.random() - 0.5) * 0.3;
+//     velocities[index + 1] = Math.random() * 0.1 + 0.02;
+//     velocities[index + 2] = (Math.random() - 0.5) * 0.3;
+
+//     life[i] = maxLife; // Asignar vida inicial
+//     maxLifeArray[i] = maxLife; // Guardar vida máxima
+//   }
+
+//   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+//   geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+//   geometry.setAttribute('life', new THREE.BufferAttribute(life, 1));
+//   geometry.setAttribute('maxLife', new THREE.BufferAttribute(maxLifeArray, 1));
+
+//   const flakeMaterial = new THREE.PointsMaterial({
+//     size: 2,
+//     map: textureLoader.load("../images/snowflake1.png"),
+//     blending: THREE.AdditiveBlending,
+//     depthTest: false,
+//     transparent: true,
+//     opacity: 0.3
+//   });
+
+//   const particles = new THREE.Points(geometry, flakeMaterial);
+
+//   particles.name = 'snowP';
+
+//   const startTime = Date.now(); // Tiempo de inicio de la emisión de partículas
+
+//   const onUpdate = () => {
+//     const currentTime = Date.now(); // Tiempo actual
+//     const timeElapsed = (currentTime - startTime) / 2; // Tiempo transcurrido desde el inicio (dividido por 2 para reducir la velocidad)
+
+//     const positionsAttr = particles.geometry.getAttribute('position').array;
+//     const velocitiesAttr = particles.geometry.getAttribute('velocity').array;
+//     const lifeAttr = particles.geometry.getAttribute('life').array;
+//     const maxLifeAttr = particles.geometry.getAttribute('maxLife').array;
+
+//     for (let i = 0; i < numSnowflakes * 3; i += 3) {
+//       positionsAttr[i] -= velocitiesAttr[i];
+//       positionsAttr[i + 1] -= velocitiesAttr[i + 1];
+//       positionsAttr[i + 2] -= velocitiesAttr[i + 2];
+
+//       lifeAttr[i / 3] -= timeElapsed; // Reducir la vida según el tiempo transcurrido
+
+//       if (lifeAttr[i / 3] <= 0) {
+//         // Si la vida llega a cero, reiniciar la posición y la vida
+//         positionsAttr[i] = Math.random() * maxRange - minRange;
+//         positionsAttr[i + 1] = Math.random() * minRange + minHeight;
+//         positionsAttr[i + 2] = Math.random() * maxRange - minRange;
+//         lifeAttr[i / 3] = maxLifeAttr[i / 3]; // Reiniciar la vida
+//       }
+//     }
+
+//     particles.geometry.attributes.position.needsUpdate = true;
+//     particles.geometry.attributes.life.needsUpdate = true;
+//   };
+
+//   particles.onUpdate = onUpdate;
+
+//   cityScene.add(particles);
+//   console.log("Se añadieron las partículas");
+// }
+
+//
+
+function emitSnowParticles() {
+  const numSnowflakes = 1; // Cambia el número de partículas según tus necesidades
+  const maxRange = 200;
+  const minRange = maxRange / 2;
+  const minHeight = 2;
+  const maxLife = 5000; // Tiempo de vida máximo en milisegundos (5 segundos)
+
+  const geometry = new THREE.BufferGeometry();
+
+  const positions = new Float32Array(numSnowflakes * 3);
+  const velocities = new Float32Array(numSnowflakes * 3);
+  const life = new Float32Array(numSnowflakes);
+  const maxLifeArray = new Float32Array(numSnowflakes);
+
+  const textureLoader = new THREE.TextureLoader();
+
+  for (let i = 0; i < numSnowflakes; i++) {
+    const index = i * 3;
+
+    positions[index] = Math.random() * maxRange - minRange;
+    positions[index + 1] = Math.random() * minRange + minHeight;
+    positions[index + 2] = Math.random() * maxRange - minRange;
+
+    velocities[index] = (Math.random() - 0.5) * 0.3;
+    velocities[index + 1] = Math.random() * 0.1 + 0.02;
+    velocities[index + 2] = (Math.random() - 0.5) * 0.3;
+
+    life[i] = maxLife; // Asignar vida inicial
+    maxLifeArray[i] = maxLife; // Guardar vida máxima
+  }
+
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
+  geometry.setAttribute("life", new THREE.BufferAttribute(life, 1));
+  geometry.setAttribute("maxLife", new THREE.BufferAttribute(maxLifeArray, 1));
+
+  const flakeMaterial = new THREE.PointsMaterial({
+    size: 2,
+    map: textureLoader.load("../images/snowflake1.png"),
+    blending: THREE.AdditiveBlending,
+    depthTest: false,
+    transparent: true,
+    opacity: 0.3,
+  });
+
+  const particles = new THREE.Points(geometry, flakeMaterial);
+
+  particles.name = "snowP";
+
+  const startTime = Date.now(); // Tiempo de inicio de la emisión de partículas
+
+  const onUpdate = () => {
+    const currentTime = Date.now(); // Tiempo actual
+    const timeElapsed = currentTime - startTime; // Tiempo transcurrido desde el inicio
+
+    const positionsAttr = particles.geometry.getAttribute("position").array;
+    const velocitiesAttr = particles.geometry.getAttribute("velocity").array;
+    const lifeAttr = particles.geometry.getAttribute("life").array;
+    const maxLifeAttr = particles.geometry.getAttribute("maxLife").array;
+
+    for (let i = 0; i < numSnowflakes * 3; i += 3) {
+      positionsAttr[i] -= velocitiesAttr[i];
+      positionsAttr[i + 1] -= velocitiesAttr[i + 1];
+      positionsAttr[i + 2] -= velocitiesAttr[i + 2];
+
+      lifeAttr[i / 3] -= timeElapsed; // Reducir la vida según el tiempo transcurrido
+
+      if (lifeAttr[i / 3] <= 0) {
+        // Si la vida llega a cero, reiniciar la posición y la vida
+        positionsAttr[i] = Math.random() * maxRange - minRange;
+        positionsAttr[i + 1] = Math.random() * minRange + minHeight;
+        positionsAttr[i + 2] = Math.random() * maxRange - minRange;
+        lifeAttr[i / 3] = maxLifeAttr[i / 3]; // Reiniciar la vida
+      }
+    }
+
+    particles.geometry.attributes.position.needsUpdate = true;
+    particles.geometry.attributes.life.needsUpdate = true;
+  };
+
+  particles.onUpdate = onUpdate;
+
+  cityScene.add(particles);
+  //console.log("Se añadieron las partículas");
+}
+
 //loadAnimatedModel(); por el momento no utilizar
 /*
 loadAnimatedModelAndPlay(
@@ -211,7 +459,7 @@ loadAnimatedModelAndPlay(
 var modelPlayerBB;
 var jugadorNames = {};
 
-var playerName = "nombre_del_jugador"; 
+var playerName = "nombre_del_jugador";
 
 const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
 onValue(starCountRef, (snapshot) => {
@@ -342,8 +590,6 @@ function updateCamera() {
 //         console.error( error );
 //     }
 // );
-
-
 
 //Movimiento WASD
 // let wPresionada = false;  // Variable que indica si la tecla W está siendo presionada
@@ -561,6 +807,11 @@ const KEY_SHIFT = 16;
 // Define una velocidad de movimiento
 const normalMovementSpeed = 10;
 const shiftMovementSpeed = normalMovementSpeed * 2;
+const powerUpMovementSpeed = normalMovementSpeed * 3;
+
+//Variable para validar si agarró el bidón de gasolina
+let isThePlayerPickUpGasoline = false;
+let powerUpTimer;
 
 // Variable para controlar si se está presionando la tecla Shift
 let isShiftPressed = false;
@@ -599,11 +850,18 @@ document.onkeyup = function (e) {
   updatePlayerMovement();
 };
 
+let movementSpeed = getMovementSpeed();
+
+
 // Actualizar el movimiento del jugador en cada fotograma
 function updatePlayerMovement() {
   let jugadorActual = cityScene.getObjectByName(currentUser.uid);
 
-  const movementSpeed = getMovementSpeed();
+  if (isThePlayerPickUpGasoline) {
+    movementSpeed = getPowerUpSpeed();
+  } else { 
+    movementSpeed = getMovementSpeed();
+  }
 
   if (keysPressed[KEY_LEFT]) {
     // Tecla A - Mover hacia la izquierda
@@ -641,18 +899,40 @@ function updatePlayerMovement() {
     rotateSmoothly(jugadorActual, 0);
   }
 
+  if (isThePlayerPickUpGasoline) {
+    clearTimeout(powerUpTimer);
+    powerUpTimer = setTimeout(() => {
+      isThePlayerPickUpGasoline = false;
+      console.log("Ya pasó el tiempo");
+    }, 500);
+  }
+  
   console.log(keysPressed);
-
+    
   writeUserData(
     currentUser.uid,
     jugadorActual.position,
     jugadorActual.rotation.y
   );
+   
+  // // Restablecer la velocidad normal después de 5 segundos
+  // if (isThePlayerPickUpGasoline) {
+  //   clearTimeout(powerUpTimer);
+  //   powerUpTimer = setTimeout(() => {
+  //     isThePlayerPickUpGasoline = false;
+  //     console.log("Ya pasó el tiempo");
+  //   }, 5000);
+  // }
+
   //Colisiones con los personajes.
   checkModelBBCollision();
   checModelBB1WomanCollision();
   checModelBB1GrandmaCollision();
 
+  //Colisiones con los powerUps
+  checPowerSkullCollision();
+  checPowerGasolineCollision();
+  checDoublePointsCollision();
 
   //Colisiones de los edificios.
   checkBuildingsCollisions();
@@ -673,6 +953,10 @@ function updatePlayerMovement() {
 // Función para obtener la velocidad de movimiento actual
 function getMovementSpeed() {
   return isShiftPressed ? shiftMovementSpeed : normalMovementSpeed;
+}
+
+function getPowerUpSpeed() {
+  return isShiftPressed ? powerUpMovementSpeed : powerUpMovementSpeed;
 }
 
 // Función para mover suavemente al jugador
@@ -724,7 +1008,6 @@ function rotateSmoothly(object, targetRotationY) {
 }
 
 //En caso de no sé, cochué tuvo un pedo con git hub
-
 
 // Resize Handler
 function onWindowResize() {
@@ -844,6 +1127,115 @@ function loadAnimatedModelAndPlayGrandmaOhShitDamn() {
   });
 }
 
+var powerUpBB3; //Caja de colision
+let fbxPowerUp1; //fbx
+//var jugadorBB;
+
+function loadSkullPowerUp() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("Skull_PowerUp1.fbx", (loadedfbx24) => {
+    fbxPowerUp1 = loadedfbx24;
+    fbxPowerUp1.scale.setScalar(0.1);
+    fbxPowerUp1.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp1.position.copy(new THREE.Vector3(-57, 0, 15)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB3 = new THREE.Box3().setFromObject(fbxPowerUp1);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("Skull_PowerUp1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp1);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxPowerUp1);
+
+    //checkCollisions();
+  });
+}
+
+var powerUpBB4; //Caja de colision
+let fbxPowerUp2; //fbx
+//var jugadorBB;
+
+function loadSkullPowerUp2() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("Gasoline_PowerUp1.fbx", (loadedfbx25) => {
+    fbxPowerUp2 = loadedfbx25;
+    fbxPowerUp2.scale.setScalar(0.1);
+    fbxPowerUp2.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp2.position.copy(new THREE.Vector3(27, 0, -15)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB4 = new THREE.Box3().setFromObject(fbxPowerUp2);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("Gasoline_PowerUp1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp2);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+
+    cityScene.add(fbxPowerUp2);
+
+    //checkCollisions();
+  });
+}
+
+var powerUpBB5; //Caja de colision
+let fbxPowerUp3; //fbx
+//var jugadorBB;
+
+function loadSkullPowerUp3() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("DoublePoints_PowerUP1.fbx", (loadedfbx26) => {
+    fbxPowerUp3 = loadedfbx26;
+    fbxPowerUp3.scale.setScalar(0.1);
+    fbxPowerUp3.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp3.position.copy(new THREE.Vector3(10, 0, -15)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB5 = new THREE.Box3().setFromObject(fbxPowerUp3);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("DoublePoints_PowerUP1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp3);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxPowerUp3);
+
+    //checkCollisions();
+  });
+}
+
 var modelConstruction1;
 let fbxConstruction;
 
@@ -922,7 +1314,7 @@ function loadConstructionWallSide2() {
   loader.setPath("../resources/buildings/");
   loader.load("wall_sides.fbx", (loadedfbWal2l) => {
     fbxConstructionWall2 = loadedfbWal2l;
-    fbxConstructionWall2.rotateY(Math.PI/2);
+    fbxConstructionWall2.rotateY(Math.PI / 2);
     fbxConstructionWall2.scale.setScalar(0.1);
     fbxConstructionWall2.traverse((c) => {
       c.castShadow = true;
@@ -958,7 +1350,7 @@ function loadConstructionWallSide3() {
   loader.setPath("../resources/buildings/");
   loader.load("wall_sides.fbx", (loadedfbWal3l) => {
     fbxConstructionWall3 = loadedfbWal3l;
-    fbxConstructionWall3.rotateY(Math.PI/2);
+    fbxConstructionWall3.rotateY(Math.PI / 2);
     fbxConstructionWall3.scale.setScalar(0.1);
     fbxConstructionWall3.traverse((c) => {
       c.castShadow = true;
@@ -1236,6 +1628,11 @@ loadAnimatedModelAndPlay();
 loadAnimatedModelAndPlayWoman();
 loadAnimatedModelAndPlayGrandmaOhShitDamn();
 
+//Cargamos los powerups
+loadSkullPowerUp();
+loadSkullPowerUp2();
+loadSkullPowerUp3();
+
 //Cargar las construcciones
 loadConstruction1();
 loadConstruction2();
@@ -1312,7 +1709,6 @@ function checkModelBBCollision() {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
   }
-  
 }
 
 function checModelBB1WomanCollision() {
@@ -1388,7 +1784,185 @@ function checModelBB1GrandmaCollision() {
           cityScene.getObjectByName(jugadorInfo.name)
         );
 
-        if (modelBB1.intersectsBox(jugadorBB)) {
+        if (modelBB3.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+function checPowerSkullCollision() {
+  if (powerUpBB3.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp1.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp1.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB3.min.add(desplazamiento1);
+    powerUpBB3.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB3.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+function checPowerGasolineCollision() {
+  if (powerUpBB4.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    isThePlayerPickUpGasoline = true;
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp2.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp2.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB4.min.add(desplazamiento1);
+    powerUpBB4.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB4.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+function checDoublePointsCollision() {
+  if (powerUpBB5.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp3.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp3.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB5.min.add(desplazamiento1);
+    powerUpBB5.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB5.intersectsBox(jugadorBB)) {
           jugadoresColisionados1++;
           console.log("Colisión con el jugador:", key);
         }
@@ -1402,7 +1976,6 @@ function checModelBB1GrandmaCollision() {
 }
 
 let jugadoresColisionados = 0; // Definir la variable jugadoresColisionados antes de su uso
-
 
 function checkBuildingsCollisions() {
   for (const key in jugadorNames) {
@@ -1419,8 +1992,13 @@ function checkBuildingsCollisions() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1445,8 +2023,13 @@ function checkBuildingsCollisionsWall() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1471,8 +2054,13 @@ function checkBuildingsCollisionsWall2() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall2.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall2.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1497,8 +2085,13 @@ function checkBuildingsCollisionsWall3() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall3.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall3.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1523,8 +2116,13 @@ function checkBuildingsCollisionsWall4() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstructionWall4.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall4.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1533,7 +2131,6 @@ function checkBuildingsCollisionsWall4() {
     }
   }
 }
-
 
 function checkBuildingsCollisions2() {
   for (const key in jugadorNames) {
@@ -1550,8 +2147,13 @@ function checkBuildingsCollisions2() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction2.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction2.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1576,8 +2178,13 @@ function checkBuildingsCollisions3() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction3.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction3.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1602,8 +2209,13 @@ function checkBuildingsCollisions4() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction4.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction4.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1628,8 +2240,13 @@ function checkBuildingsCollisions5() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction5.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction5.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1654,8 +2271,13 @@ function checkBuildingsCollisions6() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction6.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(1.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction6.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(1.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1680,8 +2302,13 @@ function checkBuildingsCollisions7() {
 
           // Calcular el vector de retroceso
           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(fbxConstruction7.position);
-          const retroceso = jugadorPosition.sub(construccionPosition).normalize().multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstruction7.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
           // Retroceder al jugador
           jugador.position.add(retroceso);
@@ -1714,7 +2341,6 @@ function checkBuildingsCollisions7() {
 //   }
 // }
 
-
 // function checkBuildingsCollisions() {
 //   for (const key in jugadorNames) {
 //     if (Object.hasOwnProperty.call(jugadorNames, key)) {
@@ -1738,10 +2364,9 @@ function checkBuildingsCollisions7() {
 //   // Obtener las cajas de colisión del jugador y el modelo colisionado
 //   const playerBB = modelPlayerBB.clone(); // Clonar la caja de colisión del jugador
 //   const constructionBB = modelConstruction1.clone(); // Clonar la caja de colisión del modelo colisionado
-  
 
 //   const jugadorInfo = jugadorNames[playerName];
-//   const jugador = cityScene.getObjectByName(jugadorInfo.name);   
+//   const jugador = cityScene.getObjectByName(jugadorInfo.name);
 //   // Mover las cajas de colisión según la posición actual del jugador y el modelo colisionado
 //   playerBB.translate(jugador.position); // Mover la caja de colisión del jugador
 //   constructionBB.translate(fbxConstruction.position); // Mover la caja de colisión del modelo colisionado
@@ -1881,6 +2506,7 @@ animate();*/
 
 function animate() {
   const deltaTime = clock.getDelta();
+  //createFogParticles ();
 
   // spongebobBB
   //   .copy(spongebob.geometry.boundingBox)
@@ -1901,7 +2527,7 @@ function animate() {
   for (let i = 0; i < animationMixer.length; i++) {
     animationMixer[i].update(deltaTime);
   }
-
+  //emitSnowParticles();
   //actualizarJugador();
   renderer.render(cityScene, camera);
   requestAnimationFrame(animate);
