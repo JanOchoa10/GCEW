@@ -937,7 +937,7 @@ function updatePlayerMovement() {
   //Colisiones de los edificios.
   checkBuildingsCollisions();
   checkBuildingsCollisions2();
-  checkBuildingsCollisions3();
+  //checkBuildingsCollisions3();
   checkBuildingsCollisions4();
   checkBuildingsCollisions5();
   checkBuildingsCollisions6();
@@ -1447,40 +1447,40 @@ function loadConstruction2() {
   });
 }
 
-var modelConstruction3;
-let fbxConstruction3;
+// var modelConstruction3;
+// let fbxConstruction3;
 
-function loadConstruction3() {
-  const loader = new FBXLoader();
-  loader.setPath("../resources/buildings/");
-  loader.load("redBuilding.fbx", (loadedfbx3) => {
-    fbxConstruction3 = loadedfbx3;
-    fbxConstruction3.scale.setScalar(0.1);
-    fbxConstruction3.traverse((c) => {
-      c.castShadow = true;
-    });
-    fbxConstruction3.position.copy(new THREE.Vector3(0, 0, 130));
+// function loadConstruction3() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("redBuilding.fbx", (loadedfbx3) => {
+//     fbxConstruction3 = loadedfbx3;
+//     fbxConstruction3.scale.setScalar(0.1);
+//     fbxConstruction3.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction3.position.copy(new THREE.Vector3(0, 0, 130));
 
-    // Crear la caja de colisión para el modelo animado
-    modelConstruction3 = new THREE.Box3().setFromObject(fbxConstruction3);
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction3 = new THREE.Box3().setFromObject(fbxConstruction3);
 
-    const animLoader = new FBXLoader();
-    animLoader.setPath("../resources/buildings/");
-    animLoader.load("redBuilding.fbx", (anim) => {
-      const mixer = new THREE.AnimationMixer(fbxConstruction3);
-      animationMixer.push(mixer);
-      const idleAction = mixer.clipAction(anim.animations[0]);
-      idleAction.play();
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("redBuilding.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction3);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
 
-      checkCollisions();
-      animate();
-    });
+//       checkCollisions();
+//       animate();
+//     });
 
-    cityScene.add(fbxConstruction3);
+//     cityScene.add(fbxConstruction3);
 
-    //checkCollisions();
-  });
-}
+//     //checkCollisions();
+//   });
+// }
 
 var modelConstruction4;
 let fbxConstruction4;
@@ -1635,7 +1635,7 @@ loadSkullPowerUp3();
 //Cargar las construcciones
 loadConstruction1();
 loadConstruction2();
-loadConstruction3();
+//loadConstruction3();
 loadConstruction4();
 loadConstruction5();
 loadConstruction6();
@@ -2196,36 +2196,36 @@ function checkBuildingsCollisions2() {
   }
 }
 
-function checkBuildingsCollisions3() {
-  for (const key in jugadorNames) {
-    if (Object.hasOwnProperty.call(jugadorNames, key)) {
-      const jugadorInfo = jugadorNames[key];
-      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+// function checkBuildingsCollisions3() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
 
-      if (jugador && jugadorInfo) {
-        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
 
-        if (modelConstruction3 && jugadorBB.intersectsBox(modelConstruction3)) {
-          jugadoresColisionados++;
-          console.log("Colisión con el jugador:", key);
+//         if (modelConstruction3 && jugadorBB.intersectsBox(modelConstruction3)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
 
-          // Calcular el vector de retroceso
-          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
-          const construccionPosition = new THREE.Vector3().copy(
-            fbxConstruction3.position
-          );
-          const retroceso = jugadorPosition
-            .sub(construccionPosition)
-            .normalize()
-            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction3.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
 
-          // Retroceder al jugador
-          jugador.position.add(retroceso);
-        }
-      }
-    }
-  }
-}
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
 
 function checkBuildingsCollisions4() {
   for (const key in jugadorNames) {
