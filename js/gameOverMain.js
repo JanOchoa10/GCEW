@@ -1,8 +1,28 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 
 
-import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
-import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
+
+// Obtener la referencia al elemento del contador
+const contadorElemento = document.getElementById("contador");
+
+let tiempoRestante = 15; // Tiempo inicial en segundos
+
+// Actualizar el contenido del contador cada segundo
+const intervalo = setInterval(() => {
+  tiempoRestante--;
+
+  if (tiempoRestante <= 0) {
+    // Redirigir cuando el tiempo llegue a cero
+    clearInterval(intervalo);
+    window.location.href = "puntuation.html";
+  } else {
+    // Actualizar el contenido del contador
+    contadorElemento.textContent = tiempoRestante;
+  }
+}, 1000); // Intervalo de 1 segundo
+
 
 
 const _VS = `
@@ -65,9 +85,9 @@ class LinearSpline {
     }
 
     return this._lerp(
-        (t - this._points[p1][0]) / (
-            this._points[p2][0] - this._points[p1][0]),
-        this._points[p1][1], this._points[p2][1]);
+      (t - this._points[p1][0]) / (
+        this._points[p2][0] - this._points[p1][0]),
+      this._points[p1][1], this._points[p2][1]);
   }
 }
 
@@ -75,23 +95,23 @@ class LinearSpline {
 class ParticleSystem {
   constructor(params) {
     const uniforms = {
-        diffuseTexture: {
-            value: new THREE.TextureLoader().load('./resources/smoke.png')
-        },
-        pointMultiplier: {
-            value: window.innerHeight / (2.0 * Math.tan(0.5 * 60.0 * Math.PI / 180.0))
-        }
+      diffuseTexture: {
+        value: new THREE.TextureLoader().load('./resources/smoke.png')
+      },
+      pointMultiplier: {
+        value: window.innerHeight / (2.0 * Math.tan(0.5 * 60.0 * Math.PI / 180.0))
+      }
     };
 
     this._material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: _VS,
-        fragmentShader: _FS,
-        blending: THREE.AdditiveBlending,
-        depthTest: true,
-        depthWrite: false,
-        transparent: true,
-        vertexColors: true
+      uniforms: uniforms,
+      vertexShader: _VS,
+      fragmentShader: _FS,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      depthWrite: false,
+      transparent: true,
+      vertexColors: true
     });
 
     this._camera = params.camera;
@@ -130,12 +150,12 @@ class ParticleSystem {
     this._sizeSpline.AddPoint(1.0, 1.0);
 
     document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
-  
+
     this._UpdateGeometry();
   }
 
   _onKeyUp(event) {
-    switch(event.keyCode) {
+    switch (event.keyCode) {
       case 32: // SPACE
         this._AddParticles();
         break;
@@ -153,17 +173,17 @@ class ParticleSystem {
     for (let i = 0; i < n; i++) {
       const life = (Math.random() * 0.75 + 0.25) * 10.0;
       this._particles.push({
-          position: new THREE.Vector3(
-              (Math.random() * 2 - 1) * 1.0,
-              (Math.random() * 2 - 1) * 1.0,
-              (Math.random() * 2 - 1) * 1.0),
-          size: (Math.random() * 0.5 + 0.5) * 4.0,
-          colour: new THREE.Color(),
-          alpha: 1.0,
-          life: life,
-          maxLife: life,
-          rotation: Math.random() * 2.0 * Math.PI,
-          velocity: new THREE.Vector3(0, -15, 0),
+        position: new THREE.Vector3(
+          (Math.random() * 2 - 1) * 1.0,
+          (Math.random() * 2 - 1) * 1.0,
+          (Math.random() * 2 - 1) * 1.0),
+        size: (Math.random() * 0.5 + 0.5) * 4.0,
+        colour: new THREE.Color(),
+        alpha: 1.0,
+        life: life,
+        maxLife: life,
+        rotation: Math.random() * 2.0 * Math.PI,
+        velocity: new THREE.Vector3(0, -15, 0),
       });
     }
   }
@@ -182,14 +202,14 @@ class ParticleSystem {
     }
 
     this._geometry.setAttribute(
-        'position', new THREE.Float32BufferAttribute(positions, 3));
+      'position', new THREE.Float32BufferAttribute(positions, 3));
     this._geometry.setAttribute(
-        'size', new THREE.Float32BufferAttribute(sizes, 1));
+      'size', new THREE.Float32BufferAttribute(sizes, 1));
     this._geometry.setAttribute(
-        'colour', new THREE.Float32BufferAttribute(colours, 4));
+      'colour', new THREE.Float32BufferAttribute(colours, 4));
     this._geometry.setAttribute(
-        'angle', new THREE.Float32BufferAttribute(angles, 1));
-  
+      'angle', new THREE.Float32BufferAttribute(angles, 1));
+
     this._geometry.attributes.position.needsUpdate = true;
     this._geometry.attributes.size.needsUpdate = true;
     this._geometry.attributes.colour.needsUpdate = true;
@@ -243,7 +263,7 @@ class ParticleSystem {
     this._AddParticles(timeElapsed);
     this._UpdateParticles(timeElapsed);
     this._UpdateGeometry();
-    
+
   }
 }
 
@@ -251,8 +271,8 @@ class ParticleSystemDemo {
   constructor() {
     this.initializegame_();
   }
-   
-  initializegame_(){
+
+  initializegame_() {
     this._Initialize();
 
     this.previousRAF_ = null;
@@ -260,10 +280,10 @@ class ParticleSystemDemo {
     this.onWindowResize_();
   }
 
-  
+
 
   _Initialize() {
-    
+
     this._threejs = new THREE.WebGLRenderer({
       antialias: true,
     });
@@ -376,30 +396,30 @@ class ParticleSystemDemo {
 
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        './resources/Backgrounds/clouds.jpg',
-        './resources/Backgrounds/clouds5.jpg',
-        './resources/Backgrounds/clouds2.jpg',
-        './resources/Backgrounds/clouds6.jpg',
-        './resources/Backgrounds/clouds4.jpg',
-        './resources/Backgrounds/clouds1.jpg',
+      './resources/Backgrounds/clouds.jpg',
+      './resources/Backgrounds/clouds5.jpg',
+      './resources/Backgrounds/clouds2.jpg',
+      './resources/Backgrounds/clouds6.jpg',
+      './resources/Backgrounds/clouds4.jpg',
+      './resources/Backgrounds/clouds1.jpg',
     ]);
     texture.encoding = THREE.sRGBEncoding;
     this._scene.background = texture;
-    
+
     //Audio
     const listener = new THREE.AudioListener();
-     this._camera.add( listener );
+    this._camera.add(listener);
 
-     // create a global audio source
-     const sound = new THREE.Audio( listener );
+    // create a global audio source
+    const sound = new THREE.Audio(listener);
 
-     const audioLoader = new THREE.AudioLoader();
-      audioLoader.load( './resources/audioBackground.mp3', function( buffer ) {
-	    sound.setBuffer( buffer );
-	    sound.setLoop(true);
-	     sound.setVolume(0.5);
-	      sound.play();
-      });
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load('./resources/audioBackground.mp3', function (buffer) {
+      sound.setBuffer(buffer);
+      sound.setLoop(true);
+      sound.setVolume(0.5);
+      sound.play();
+    });
 
     const controls = new OrbitControls(
       this._camera, this._threejs.domElement);
@@ -407,12 +427,12 @@ class ParticleSystemDemo {
     controls.update();
 
     this._particles = new ParticleSystem({
-        parent: this._scene,
-        camera: this._camera,
+      parent: this._scene,
+      camera: this._camera,
     });
 
 
-    
+
     this._LoadModel();
     this._previousRAF = null;
     this._RAF();
