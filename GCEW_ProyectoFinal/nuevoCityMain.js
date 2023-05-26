@@ -736,7 +736,8 @@ onValue(usuariosCountRefSiempre, (snapshot) => {
       const puntuacionTexto = document.getElementById("puntuacion-texto");
 
       // Actualizar el contenido del elemento con la puntuación actual
-      puntuacionTexto.textContent = "Puntuación: " + usuario.puntos ;
+      puntuacionTexto.textContent = "Puntuación: " + usuario.puntos;
+      puntuacion = usuario.puntos;
     }
   });
 });
@@ -1485,7 +1486,7 @@ function loadSkullPowerUp() {
     fbxPowerUp1.traverse((c) => {
       c.castShadow = true;
     });
-    fbxPowerUp1.position.copy(new THREE.Vector3(-57, 0, 15)); //Posición
+    fbxPowerUp1.position.copy(new THREE.Vector3(-147, 0, 185)); //Posición
 
     // Crear la caja de colisión para el modelo animado
     powerUpBB3 = new THREE.Box3().setFromObject(fbxPowerUp1);
@@ -1521,7 +1522,7 @@ function loadSkullPowerUp2() {
     fbxPowerUp2.traverse((c) => {
       c.castShadow = true;
     });
-    fbxPowerUp2.position.copy(new THREE.Vector3(27, 0, -15)); //Posición
+    fbxPowerUp2.position.copy(new THREE.Vector3(125, 0, 105)); //Posición
 
     // Crear la caja de colisión para el modelo animado
     powerUpBB4 = new THREE.Box3().setFromObject(fbxPowerUp2);
@@ -1557,7 +1558,7 @@ function loadSkullPowerUp3() {
     fbxPowerUp3.traverse((c) => {
       c.castShadow = true;
     });
-    fbxPowerUp3.position.copy(new THREE.Vector3(10, 0, -15)); //Posición
+    fbxPowerUp3.position.copy(new THREE.Vector3(-120, 0, -45)); //Posición
 
     // Crear la caja de colisión para el modelo animado
     powerUpBB5 = new THREE.Box3().setFromObject(fbxPowerUp3);
