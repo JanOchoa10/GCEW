@@ -16,13 +16,24 @@ const intervalo = setInterval(() => {
   if (tiempoRestante <= 0) {
     // Redirigir cuando el tiempo llegue a cero
     clearInterval(intervalo);
-    window.location.href = "puntuation.html";
+    window.location.href = "puntuation.html" + '?usuario=' + usuario;
   } else {
     // Actualizar el contenido del contador
     contadorElemento.textContent = tiempoRestante;
   }
 }, 1000); // Intervalo de 1 segundo
 
+
+// Obtener los parámetros de la URL
+const params = new URLSearchParams(window.location.search);
+
+// Obtener el valor del parámetro 'usuario'
+const usuario = params.get('usuario');
+
+// Hacer algo con el valor recibido, por ejemplo, mostrarlo en la página
+// const usuarioElement = document.createElement('p');
+// usuarioElement.textContent = "Usuario: " + usuario;
+// document.body.appendChild(usuarioElement);
 
 
 const _VS = `
