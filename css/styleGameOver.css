@@ -6,6 +6,7 @@ body {
   margin: 0;
   padding: 0;
   overscroll-behavior: none;
+  overflow: hidden;
 }
 
 #contador-container {
@@ -15,8 +16,13 @@ body {
   width: 100%;
   /* background-color: aliceblue; */
   z-index: 9999;
+  font-family: "Arial", sans-serif;
 }
 
 #contador-barra {
   padding: 10px;
+  text-align: center;
+  font-size: 300%;
+  font-weight: bold;
+  color: orange;
 }
