@@ -9,9 +9,12 @@ body {
 }
 
 body.dark-mode {
-  background-image: none; /* Elimina la imagen de fondo en modo oscuro */
-  background-color: #111; /* Establece un color de fondo en modo oscuro */
-  color: #fff; /* Cambia el color del texto en modo oscuro */
+  background-image: none;
+  /* Elimina la imagen de fondo en modo oscuro */
+  background-color: #111;
+  /* Establece un color de fondo en modo oscuro */
+  color: #fff;
+  /* Cambia el color del texto en modo oscuro */
 }
 
 .bg-white {
@@ -96,4 +99,13 @@ body.dark-mode {
   #wrapper.toggled #sidebar-wrapper {
     margin-left: -15rem;
   }
+}
+
+.btn-orange {
+  background-color: #ffc107;
+  color: #380046;
+}
+.btn-orange:hover {
+  background-color: #a36a00;
+  color: white;
 }
