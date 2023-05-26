@@ -736,7 +736,8 @@ onValue(usuariosCountRefSiempre, (snapshot) => {
       const puntuacionTexto = document.getElementById("puntuacion-texto");
 
       // Actualizar el contenido del elemento con la puntuación actual
-      puntuacionTexto.textContent = "Puntuación: " + usuario.puntos ;
+      puntuacionTexto.textContent = "Puntuación: " + usuario.puntos;
+      puntuacion = usuario.puntos;
     }
   });
 });
