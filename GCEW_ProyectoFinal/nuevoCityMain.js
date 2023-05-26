@@ -2417,6 +2417,9 @@ function checDoublePointsCollision() {
     powerUpBB5.min.add(desplazamiento1);
     powerUpBB5.max.add(desplazamiento1);
 
+    puntuacion *= 2;
+    console.log("Puntuación actual:", puntuacion);
+
     const listenerPowerUp = new THREE.AudioListener();
     camera.add(listenerPowerUp);
 
@@ -2447,6 +2450,7 @@ function checDoublePointsCollision() {
         if (powerUpBB5.intersectsBox(jugadorBB)) {
           jugadoresColisionados1++;
           console.log("Colisión con el jugador:", key);
+
         }
       }
     }
@@ -2454,6 +2458,12 @@ function checDoublePointsCollision() {
     if (jugadoresColisionados1 === totalJugadores1) {
       console.log("Todos los jugadores han colisionado con el modelo");
     }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
   }
 }
 
