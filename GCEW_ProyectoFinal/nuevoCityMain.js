@@ -630,7 +630,7 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB3.max.add(desplazamiento);
     cityScene.remove(fbx3);
   }
-  
+
   if (peatonesArray[5].activo == true) {
     // loadAnimatedModelAndPlayGrandmaOhShitDamn();
   } else if (peatonesArray[5].activo == false) {
@@ -651,6 +651,7 @@ onValue(peatonesCountRef, (snapshot) => {
 
   if (todosInactivos) {
     console.log("Todos los peatones han sido conseguidos");
+    window.location.href = "../gameOver.html";
   } else {
     // console.log("Al menos uno de los elementos es activo");
   }
