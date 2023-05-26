@@ -670,6 +670,77 @@ function writeUserData(userId, position, rotation, puntosJugador, nombreJugador)
     nombre: nombreJugador,
   });
 }
+
+function actualizarPuntuaciones() {
+
+
+  console.log("Bajamos 100 puntos a todos");
+
+  const usuarioArray = [];
+  const usuariosCountRef = ref(db, "jugador");
+  onValue(usuariosCountRef, (snapshot) => {
+    usuarioArray.splice(0); // Borra el contenido anterior del array
+    const data = snapshot.val();
+    Object.entries(data).forEach(([key, value]) => {
+      const usuario = {
+        id: key,
+        x: value.x,
+        z: value.z,
+        rotY: value.rotY,
+        puntos: value.puntos,
+        nombre: value.nombre,
+      };
+      usuarioArray.push(usuario);
+    });
+    // console.log('Peatones obtenidos desde Firebase:', usuarioArray);
+  });
+
+  // Llama a writeUserData por cada elemento en usuarioArray
+  // Reduce en 100 puntos la puntuación de todos los jugadores, excepto el jugador actual
+  usuarioArray.forEach((usuario) => {
+    if (usuario.id !== currentUser.uid) {
+      const nuevaPuntuacion = usuario.puntos - 100;
+      writeUserData(
+        usuario.id,
+        { x: usuario.x, z: usuario.z },
+        usuario.rotY,
+        nuevaPuntuacion,
+        usuario.nombre
+      );
+    }
+  });
+
+}
+
+const usuarioArraySiempre = [];
+const usuariosCountRefSiempre = ref(db, "jugador");
+onValue(usuariosCountRefSiempre, (snapshot) => {
+  usuarioArraySiempre.splice(0); // Borra el contenido anterior del array
+  const data = snapshot.val();
+  Object.entries(data).forEach(([key, value]) => {
+    const usuario = {
+      id: key,
+      x: value.x,
+      z: value.z,
+      rotY: value.rotY,
+      puntos: value.puntos,
+      nombre: value.nombre,
+    };
+    usuarioArraySiempre.push(usuario);
+  });
+  // console.log('Peatones obtenidos desde Firebase:', usuarioArray);
+
+  usuarioArraySiempre.forEach((usuario) => {
+    if (usuario.id === currentUser.uid) {
+      // Obtener el elemento <span> de la puntuación
+      const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+      // Actualizar el contenido del elemento con la puntuación actual
+      puntuacionTexto.textContent = "Puntuación: " + usuario.puntos ;
+    }
+  });
+});
+
 function writePeatonData(peatonId, activo) {
   // const db = getDatabase();
   set(ref(db, "peatones/" + peatonId), {
@@ -1931,7 +2002,7 @@ function checkCollisions() {
 
 /*function checkModelBBCollision() {
   // Comprobar colisión entre fbx (modelBB) y jugadorBB
-
+ 
   //Aquí se genera la lógica de la colisión
   if (modelBB.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo fbx y el jugador");
@@ -2313,6 +2384,8 @@ function checPowerSkullCollision() {
         soundPOwer.play();
       }
     );
+
+    actualizarPuntuaciones();
 
     // Verificar si todos los jugadores han colisionado
     let jugadoresColisionados1 = 0;
@@ -2931,18 +3004,18 @@ let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de 
   } else {
     mrKrabs.material.color = new THREE.Color("red");
   }
-
+ 
   if (spongebobBB.intersectsBox(squidwardBB)) {
     squidward.position.set(0, 0.5, -2);
   } else {
     squidward.position.set(0, 0.5, 0);
   }
-
+ 
   if (spongebobBB.intersectsBox(modelBB)) {
     // Establecer la posición deseada del modelo animado cuando hay colisión
     fbx.position.set(0, 0.6, 0);
   }
-
+ 
   const sandyIntersection = spongebobBB.intersect(sandyBB);
   if (!sandyIntersection.isEmpty()) {
     sandy.material.opacity = 0.5;
@@ -2959,7 +3032,7 @@ let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de 
   renderer.render(cityScene, camera);
   requestAnimationFrame(animate);
 }
-
+ 
 animate();*/
 //raf();
 
@@ -2976,9 +3049,9 @@ animate();*/
     if (previousRAF === null) {
       previousRAF = t;
     }
-
+ 
     _RAF(previousRAF, threejs, scene, camera);
-
+ 
     threejs.render(scene, camera);
     _Step(t - previousRAF);
     previousRAF = t;
@@ -2990,7 +3063,7 @@ animate();*/
   if (mixers) {
     mixers.map((m) => m.update(timeElapsedS));
   }
-
+ 
   if (controls) {
     controls.Update(timeElapsedS);
   }
