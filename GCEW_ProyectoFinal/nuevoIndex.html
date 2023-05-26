@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>TAKSI The Game: City</title>
-    <meta
-      name="viewport"
-      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
-    />
-    <link rel="stylesheet" type="text/css" href="../css/base.css" />
-    <link rel="stylesheet" type="text/css" href="../css/stylePauseGame.css" />
-  </head>
-  <body>
+
+<head>
+  <title>TAKSI The Game: City</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <link rel="stylesheet" type="text/css" href="../css/base.css" />
+  <link rel="stylesheet" type="text/css" href="../css/stylePauseGame.css" />
+</head>
+
+<body>
+  <div>
     <button id="button-login">Login</button>
     <button id="button-logout">Logout</button>
     <button id="button-pause">Pause</button>
 
     <span id="puntuacion-texto">Puntuación: 0</span>
-    <!-- Modal -->
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <h1>Menú Pausa</h1>
-        <p>Presiona "Regresar" o cierra esta ventana para regresar al juego</p>
-        <button id="button-regresar">Regresar</button>
-      </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h1>Menú Pausa</h1>
+      <p>Presiona "Regresar" o cierra esta ventana para regresar al juego.</p>
+      <button id="button-regresar">Reanudar</button>
     </div>
-    <script src="../js/pauseGame.js"></script>
-    <script type="module" src="nuevoCityMain.js"></script>
-  </body>
+  </div>
+  <script src="../js/pauseGame.js"></script>
+  <script type="module" src="nuevoCityMain.js"></script>
+</body>
+
 </html>
