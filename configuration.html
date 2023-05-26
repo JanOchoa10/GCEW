@@ -37,7 +37,7 @@
           </label>
         </div>
 
-        <div>
+        <!-- <div>
           <label for="togg-2" class="togg-label">
             <span> Mostrar Notificaciones </span>
             <input type="checkbox" id="togg-2" />
@@ -46,7 +46,7 @@
               <span class="toggle-c"></span>
             </div>
           </label>
-        </div>
+        </div> -->
 
         <div>
           <label for="togg-3" class="togg-label">
@@ -58,8 +58,77 @@
             </div>
           </label>
         </div>
+
+        <!-- <div id="mostrar-tips">Mostrar tips</div> -->
+        <!-- Modal -->
+        <div id="modal" class="modal">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="tips">¡Recoge a todos los pasajeros lo antes posible!</p>
+            <p id="tips">
+              ¡Agarra power ups del mundo para obtener ventaja sobre tus
+              adversarios!
+            </p>
+            <p id="tips">
+              En el modo carrera, ¡sé el primero en llegar a la meta!
+            </p>
+          </div>
+        </div>
       </div>
       <div>
+        <div>
+          <h3>Resolución</h3>
+        </div>
+
+        <div>
+          <label for="radio1" class="flex">
+            <input
+              type="radio"
+              name="Filter"
+              id="radio1"
+              onclick="changeResolution('1920x1080')"
+            />
+            <span>1920x1080</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="radio2" class="flex">
+            <input
+              type="radio"
+              name="Filter"
+              id="radio2"
+              onclick="changeResolution('1280x720')"
+            />
+            <span>1280x720</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="radio3" class="flex">
+            <input
+              type="radio"
+              name="Filter"
+              id="radio3"
+              onclick="changeResolution('960x540')"
+            />
+            <span>960x540</span>
+          </label>
+        </div>
+      </div>
+
+      <script>
+        function changeResolution(resolution) {
+          // Aquí puedes agregar la lógica para cambiar la resolución según el valor seleccionado
+          // Por ejemplo, puedes usar una función de JavaScript para aplicar el cambio al elemento deseado en tu página
+          // A continuación, se muestra un ejemplo simple que actualiza el contenido de un elemento con el id "resolution-display"
+
+          var resolutionDisplay = document.getElementById("resolution-display");
+          resolutionDisplay.textContent = resolution;
+        }
+      </script>
+
+      <!-- <div>
         <div>
           <h3>Resolución</h3>
         </div>
@@ -84,8 +153,8 @@
             <span>960x540</span>
           </label>
         </div>
-      </div>
-      <div>
+      </div> -->
+      <!-- <div>
         <div>
           <h3>Frame Rate</h3>
         </div>
@@ -108,11 +177,13 @@
             </label>
           </div>
         </div>
-      </div>
+      </div> -->
       <br />
       <div class="bottom" onclick="window.location.href='index.html';">
-        <span> Regresar al Menu...</span>
+        <span> Regresar al Menu</span>
       </div>
     </div>
   </body>
+  <script src="js/configuration.js"></script>
+  <script src="js/darkmode.js"></script>
 </html>
