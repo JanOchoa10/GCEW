@@ -1,0 +1,3763 @@
+import * as THREE1 from "./three.module.js"; //Epoca Picapiedra
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js"; //Este el nuevo
+
+import { OrbitControls } from "./OrbitControls.js";
+import { FBXLoader } from "https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js";
+//import snowFlake from "./images/snowflake1.png";
+
+import { CircleGeometry } from "../three.module.js";
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.0/firebase-app.js"; // AQUI PUEDE IR LA 9.19.1
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.19.0/firebase-auth.js";
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+} from "https://www.gstatic.com/firebasejs/9.19.0/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAD00YWnfCKIg_taz8Qsd3S5vKZDhObImE",
+  authDomain: "coordenadas-cf28f.firebaseapp.com",
+  databaseURL: "https://coordenadas-cf28f-default-rtdb.firebaseio.com",
+  projectId: "coordenadas-cf28f",
+  storageBucket: "coordenadas-cf28f.appspot.com",
+  messagingSenderId: "638534802606",
+  appId: "1:638534802606:web:faa80ee102ba93cbe9213f",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// Initialize Firebase Authentication and get a reference to the service
+const auth = getAuth(); //LE QUITO EL PARAMETRO APP PORQUE SE BASÓ PARA LO DE REGISTRAR USUARIOS
+//const auth = getAuth();
+auth.languageCode = "es";
+const provider = new GoogleAuthProvider();
+
+// Initialize Realtime Database and get a reference to the service
+const db = getDatabase(); //EL PROFE NO TIENE EL PARAMETRO APP
+let currentUser;
+let puntuacion = 0; //La puntuación del jugador
+
+async function login() {
+  const res = await signInWithPopup(auth, provider)
+    .then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      // The signed-in user info.
+      const user = result.user;
+      currentUser = user;
+      console.log(user);
+      const rotY = 0;
+      writeUserData(user.uid, { x: -150, z: 110}, rotY, puntuacion, user.displayName); //ponermos la rotacion
+
+      writePeatonDataInicio(peatonesArray);
+
+      // IdP data available using getAdditionalUserInfo(result)
+      // ...
+    })
+    .catch((error) => {
+      // Handle Errors here.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.customData.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      console.log(errorMessage);
+      // ...
+    });
+}
+
+const buttonLogin = document.getElementById("button-login");
+const buttonLogout = document.getElementById("button-logout");
+
+buttonLogin.addEventListener("click", async () => {
+  const user = await login();
+});
+
+buttonLogout.addEventListener("click", async () => {
+  const auth = getAuth(); //ESTA LINEA NO LA COPIO EL PROFE
+  signOut(auth)
+    .then(() => {
+      // Sign-out successful.
+      alert("Sign-out successful.");
+      console.log("Sign-out successful.");
+    })
+    .catch((error) => {
+      // An error happened.
+      alert("An error happened");
+      console.log("An error happened");
+    });
+});
+
+//creamos la escena
+const cityScene = new THREE.Scene();
+cityScene.background = new THREE.Color("#468eb6");
+
+//creamos la camara
+const fov = 90;
+const aspect = 1920 / 1080;
+const near = 1.0;
+const far = 1000.0;
+let cameraInitialized = false;
+
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+//camera.position.set(25, 10, 25);
+//camera.lookAt(0,0,0);
+
+/*const camera = new THREE.PerspectiveCamera(
+   60,
+   window.innerWidth / window.innerHeight
+ );*/
+//camera.position.set(0, 0, 20);   ELIUD
+
+const cameraHeight = 50; // Altura de la cámara sobre el jugador
+const cameraDistance = 20; // Distancia de la cámara respecto al jugador
+
+const terrainTextureLoader = new THREE.TextureLoader();
+const terrainTexture = terrainTextureLoader.load("../images/forestFloor.jpg");
+const terrainPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(400, 400, 10, 10),
+  new THREE.MeshStandardMaterial({
+    map: terrainTexture, //la textura del concreto
+    side: THREE.DoubleSide,
+    color: 0x2f2f2f, //cambio de color del plano
+  })
+);
+terrainPlane.castShadow = false;
+terrainPlane.receiveShadow = true;
+terrainPlane.rotation.x = -Math.PI / 2;
+cityScene.add(terrainPlane);
+
+// Creamos el renderer
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+/*controls.enableDamping = true
+controls.target.set(0, 1, 0)*/
+
+// const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
+// // hemiLight.position.set(0, 20, 0);
+// cityScene.add(hemiLight);
+
+// const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+// directionalLight.position.set(1, 5, -1);
+// directionalLight.castShadow = true;             ELIUD
+
+//creamos una luz direccional
+const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.7);
+directionalLight.position.set(-100, 100, 100);
+directionalLight.target.position.set(0, 0, 0);
+directionalLight.castShadow = true;
+directionalLight.shadow.bias = -0.001;
+directionalLight.shadow.mapSize.width = 4096;
+directionalLight.shadow.mapSize.height = 4096;
+directionalLight.shadow.camera.near = 0.1;
+directionalLight.shadow.camera.far = 700.0;
+directionalLight.shadow.camera.near = 0.5;
+directionalLight.shadow.camera.far = 700.0;
+directionalLight.shadow.camera.left = 300;
+directionalLight.shadow.camera.right = -300;
+directionalLight.shadow.camera.top = 300;
+directionalLight.shadow.camera.bottom = -300;
+cityScene.add(directionalLight);
+
+//creamos una luz ambiental
+const ambientLight = new THREE.AmbientLight(0x92FCD6, 0.60); //Color de la luz e Intensidad
+cityScene.add(ambientLight);
+
+//creamos el mixer para la animacion
+let animationMixer = [];
+//let previosRAF = null;
+const clock = new THREE.Clock(); //Agregamos una constante clock para la variable deltaTime
+
+// Supongamos que tienes una escena llamada 'scene'
+// const numParticles = 50; // Número de partículas
+// const maxLife = 100; // Vida máxima de las partículas
+
+// function createFogParticles() {
+//   const textureLoader = new THREE.TextureLoader();
+//   const fogParticleTexture = textureLoader.load("../resources/smoke.png"); // Reemplaza 'path/to/your/texture.png' con la ruta correcta de tu textura
+
+//   const positions = new Float32Array(numParticles * 3);
+//   const velocities = new Float32Array(numParticles * 3);
+//   const life = new Float32Array(numParticles);
+
+//   for (let i = 0; i < numParticles; i++) {
+//     const index = i * 3;
+
+//     positions[index] = Math.random() * 2 - 1; // Rango: -1 a 1
+//     positions[index + 1] = Math.random() * 2 - 1; // Rango: -1 a 1
+//     positions[index + 2] = Math.random() * 2 - 1; // Rango: -1 a 1
+
+//     const speed = Math.random() * 0.5 + 0.1; // Velocidad aleatoria entre 0.1 y 0.6
+//     const angle = Math.random() * Math.PI * 2; // Ángulo aleatorio
+
+//     velocities[index] = Math.cos(angle) * speed;
+//     velocities[index + 1] = Math.random() * 0.2 - 0.1; // Rango: -0.1 a 0.1
+//     velocities[index + 2] = Math.sin(angle) * speed;
+
+//     life[i] = Math.random() * maxLife; // Vida aleatoria entre 0 y maxLife
+//   }
+
+//   const geometry = new THREE.BufferGeometry();
+//   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+//   geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+//   geometry.setAttribute('life', new THREE.BufferAttribute(life, 1));
+
+//   const material = new THREE.PointsMaterial({
+//     size: 0.05, // Tamaño de las partículas
+//     map: fogParticleTexture, // Textura de las partículas
+//     blending: THREE.AdditiveBlending, // Mezcla aditiva para crear el efecto de fog
+//     depthTest: false,
+//     transparent: true
+//   });
+
+//   const particles = new THREE.Points(geometry, material);
+
+//   const onUpdate = () => {
+//     const positionsAttr = particles.geometry.getAttribute('position').array;
+//     const velocitiesAttr = particles.geometry.getAttribute('velocity').array;
+//     const lifeAttr = particles.geometry.getAttribute('life').array;
+
+//     for (let i = 0; i < numParticles * 3; i += 3) {
+//       positionsAttr[i] += velocitiesAttr[i];
+//       positionsAttr[i + 1] += velocitiesAttr[i + 1];
+//       positionsAttr[i + 2] += velocitiesAttr[i + 2];
+
+//       lifeAttr[i / 3] -= 1;
+
+//       if (lifeAttr[i / 3] <= 0) {
+//         positionsAttr[i] = Math.random() * 2 - 1;
+//         positionsAttr[i + 1] = Math.random() * 2 - 1;
+//         positionsAttr[i + 2] = Math.random() * 2 - 1;
+//         lifeAttr[i / 3] = Math.random() * maxLife;
+//       }
+//     }
+
+//     particles.geometry.attributes.position.needsUpdate = true;
+//     particles.geometry.attributes.life.needsUpdate = true;
+//   };
+
+//   particles.onUpdate = onUpdate;
+
+//   cityScene.add(particles);
+// }
+
+// function emitSnowParticles() {
+//   const numSnowflakes = 1;
+//   const maxRange = 200;
+//   const minRange = maxRange / 2;
+//   const minHeight = 2;
+//   const maxLife = 5000; // Tiempo de vida máximo en milisegundos (10 segundos)
+
+//   const geometry = new THREE.BufferGeometry();
+
+//   const positions = new Float32Array(numSnowflakes * 3);
+//   const velocities = new Float32Array(numSnowflakes * 3);
+//   const life = new Float32Array(numSnowflakes);
+//   const maxLifeArray = new Float32Array(numSnowflakes);
+
+//   const textureLoader = new THREE.TextureLoader();
+
+//   for (let i = 0; i < numSnowflakes; i++) {
+//     const index = i * 3;
+
+//     positions[index] = Math.random() * maxRange - minRange;
+//     positions[index + 1] = Math.random() * minRange + minHeight;
+//     positions[index + 2] = Math.random() * maxRange - minRange;
+
+//     velocities[index] = (Math.random() - 0.5) * 0.3;
+//     velocities[index + 1] = Math.random() * 0.1 + 0.02;
+//     velocities[index + 2] = (Math.random() - 0.5) * 0.3;
+
+//     life[i] = maxLife; // Asignar vida inicial
+//     maxLifeArray[i] = maxLife; // Guardar vida máxima
+//   }
+
+//   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+//   geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+//   geometry.setAttribute('life', new THREE.BufferAttribute(life, 1));
+//   geometry.setAttribute('maxLife', new THREE.BufferAttribute(maxLifeArray, 1));
+
+//   const flakeMaterial = new THREE.PointsMaterial({
+//     size: 2,
+//     map: textureLoader.load("../images/snowflake1.png"),
+//     blending: THREE.AdditiveBlending,
+//     depthTest: false,
+//     transparent: true,
+//     opacity: 0.3
+//   });
+
+//   const particles = new THREE.Points(geometry, flakeMaterial);
+
+//   particles.name = 'snowP';
+
+//   const startTime = Date.now(); // Tiempo de inicio de la emisión de partículas
+
+//   const onUpdate = () => {
+//     const currentTime = Date.now(); // Tiempo actual
+//     const timeElapsed = (currentTime - startTime) / 2; // Tiempo transcurrido desde el inicio (dividido por 2 para reducir la velocidad)
+
+//     const positionsAttr = particles.geometry.getAttribute('position').array;
+//     const velocitiesAttr = particles.geometry.getAttribute('velocity').array;
+//     const lifeAttr = particles.geometry.getAttribute('life').array;
+//     const maxLifeAttr = particles.geometry.getAttribute('maxLife').array;
+
+//     for (let i = 0; i < numSnowflakes * 3; i += 3) {
+//       positionsAttr[i] -= velocitiesAttr[i];
+//       positionsAttr[i + 1] -= velocitiesAttr[i + 1];
+//       positionsAttr[i + 2] -= velocitiesAttr[i + 2];
+
+//       lifeAttr[i / 3] -= timeElapsed; // Reducir la vida según el tiempo transcurrido
+
+//       if (lifeAttr[i / 3] <= 0) {
+//         // Si la vida llega a cero, reiniciar la posición y la vida
+//         positionsAttr[i] = Math.random() * maxRange - minRange;
+//         positionsAttr[i + 1] = Math.random() * minRange + minHeight;
+//         positionsAttr[i + 2] = Math.random() * maxRange - minRange;
+//         lifeAttr[i / 3] = maxLifeAttr[i / 3]; // Reiniciar la vida
+//       }
+//     }
+
+//     particles.geometry.attributes.position.needsUpdate = true;
+//     particles.geometry.attributes.life.needsUpdate = true;
+//   };
+
+//   particles.onUpdate = onUpdate;
+
+//   cityScene.add(particles);
+//   console.log("Se añadieron las partículas");
+// }
+
+//
+
+function emitSnowParticles() {
+  const numSnowflakes = 1; // Cambia el número de partículas según tus necesidades
+  const maxRange = 200;
+  const minRange = maxRange / 2;
+  const minHeight = 2;
+  const maxLife = 5000; // Tiempo de vida máximo en milisegundos (5 segundos)
+
+  const geometry = new THREE.BufferGeometry();
+
+  const positions = new Float32Array(numSnowflakes * 3);
+  const velocities = new Float32Array(numSnowflakes * 3);
+  const life = new Float32Array(numSnowflakes);
+  const maxLifeArray = new Float32Array(numSnowflakes);
+
+  const textureLoader = new THREE.TextureLoader();
+
+  for (let i = 0; i < numSnowflakes; i++) {
+    const index = i * 3;
+
+    positions[index] = Math.random() * maxRange - minRange;
+    positions[index + 1] = Math.random() * minRange + minHeight;
+    positions[index + 2] = Math.random() * maxRange - minRange;
+
+    velocities[index] = (Math.random() - 0.5) * 0.3;
+    velocities[index + 1] = Math.random() * 0.1 + 0.02;
+    velocities[index + 2] = (Math.random() - 0.5) * 0.3;
+
+    life[i] = maxLife; // Asignar vida inicial
+    maxLifeArray[i] = maxLife; // Guardar vida máxima
+  }
+
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
+  geometry.setAttribute("life", new THREE.BufferAttribute(life, 1));
+  geometry.setAttribute("maxLife", new THREE.BufferAttribute(maxLifeArray, 1));
+
+  const flakeMaterial = new THREE.PointsMaterial({
+    size: 2,
+    map: textureLoader.load("../images/snowflake1.png"),
+    blending: THREE.AdditiveBlending,
+    depthTest: false,
+    transparent: true,
+    opacity: 0.3,
+  });
+
+  const particles = new THREE.Points(geometry, flakeMaterial);
+
+  particles.name = "snowP";
+
+  const startTime = Date.now(); // Tiempo de inicio de la emisión de partículas
+
+  const onUpdate = () => {
+    const currentTime = Date.now(); // Tiempo actual
+    const timeElapsed = currentTime - startTime; // Tiempo transcurrido desde el inicio
+
+    const positionsAttr = particles.geometry.getAttribute("position").array;
+    const velocitiesAttr = particles.geometry.getAttribute("velocity").array;
+    const lifeAttr = particles.geometry.getAttribute("life").array;
+    const maxLifeAttr = particles.geometry.getAttribute("maxLife").array;
+
+    for (let i = 0; i < numSnowflakes * 3; i += 3) {
+      positionsAttr[i] -= velocitiesAttr[i];
+      positionsAttr[i + 1] -= velocitiesAttr[i + 1];
+      positionsAttr[i + 2] -= velocitiesAttr[i + 2];
+
+      lifeAttr[i / 3] -= timeElapsed; // Reducir la vida según el tiempo transcurrido
+
+      if (lifeAttr[i / 3] <= 0) {
+        // Si la vida llega a cero, reiniciar la posición y la vida
+        positionsAttr[i] = Math.random() * maxRange - minRange;
+        positionsAttr[i + 1] = Math.random() * minRange + minHeight;
+        positionsAttr[i + 2] = Math.random() * maxRange - minRange;
+        lifeAttr[i / 3] = maxLifeAttr[i / 3]; // Reiniciar la vida
+      }
+    }
+
+    particles.geometry.attributes.position.needsUpdate = true;
+    particles.geometry.attributes.life.needsUpdate = true;
+  };
+
+  particles.onUpdate = onUpdate;
+
+  cityScene.add(particles);
+  //console.log("Se añadieron las partículas");
+}
+
+//loadAnimatedModel(); por el momento no utilizar
+/*
+loadAnimatedModelAndPlay(
+  "../resources/people/",
+  "Character1.fbx",
+  "Character1.fbx",
+  new THREE.Vector3(-57, 0, 0)
+);
+loadAnimatedModelAndPlay(
+  "../resources/people/",
+  "Character2_P.fbx",
+  "Character2_P.fbx",
+  new THREE.Vector3(-90, 0, -150)
+);
+loadAnimatedModelAndPlay(
+  "../resources/people/",
+  "Character4_P.fbx",
+  "Character4_P.fbx",
+  new THREE.Vector3(-65, 0, 170)
+);*/
+
+//_RAF(previosRAF, renderer, cityScene, camera);
+
+//Esto tiene que ver con el multijugador
+var modelPlayerBB;
+var jugadorNames = {};
+
+var playerName = "nombre_del_jugador";
+
+const starCountRef = ref(db, "jugador"); //EL PROFE NO LE DEJÓ EL SLASH
+onValue(starCountRef, (snapshot) => {
+  //currentPlayerKey = key; // Asignar el valor de key a currentPlayerKey
+  const data = snapshot.val();
+  //updateStarCount(postElement, data);   EL PROFE ELIMINÓ ESTO
+  // console.log(data);
+  Object.entries(data).forEach(([key, value]) => {
+    //console.log(`${key} ${value}`);
+    //console.log(key);
+    //console.log(value);
+    //key = keyglobal;
+    const jugador = cityScene.getObjectByName(key);
+    if (!jugador) {
+      const loader = new FBXLoader();
+      loader.setPath("../resources/taxi/");
+      loader.load("taximodel.fbx", (fbx) => {
+        fbx.scale.setScalar(0.1);
+        fbx.rotateY(Math.PI); // Rotar el objeto 180 grados alrededor del eje Y
+        fbx.traverse((c) => {
+          c.castShadow = true;
+        });
+        fbx.position.set(value.x, 0, value.z);
+        fbx.rotation.set(0, value.rotY, 0);
+        //camera.position.set(value.x, cameraHeight , value.z);
+        //fbx.material.color = new THREE.Color(Math.random() * 0xffffff);
+        fbx.name = key;
+
+        const jugadorInfo = { name: key };
+        fbx.userData.jugadorInfo = jugadorInfo;
+        jugadorNames[key] = jugadorInfo;
+        //keyglobal = fbx.name;
+        // Configurar la posición y orientación de la cámara
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.set(
+          fbx.position.x,
+          fbx.position.y + cameraHeight,
+          fbx.position.z
+        );
+        camera.lookAt(fbx.position);
+        fbx.add(camera);
+        cityScene.add(fbx);
+
+        const animLoader = new FBXLoader();
+        animLoader.setPath("../resources/taxi/");
+        animLoader.load("walkTaxi.fbx", (anim) => {
+          const mixer = new THREE.AnimationMixer(fbx);
+          animationMixer.push(mixer);
+          const idleAction = mixer.clipAction(anim.animations[0]);
+          idleAction.play();
+        });
+
+        // Crear la caja de colisión para el modelo animado
+        modelPlayerBB = new THREE.Box3().setFromObject(fbx);
+      });
+    }
+
+    cityScene.getObjectByName(key).position.x = value.x;
+    cityScene.getObjectByName(key).position.z = value.z;
+    cityScene.getObjectByName(key).rotation.y = value.rotY;
+
+    //     // Update the user info div with the user ID and position
+    //     if (key == currentUser.uid) {
+    //       userInfoDiv.innerText = `User ID: ${key}\nPosition: (${value.x}, ${value.z})`;
+    //     }
+    updateCamera();
+  });
+});
+
+const peatonesArray = [];
+const peatonesCountRef = ref(db, "meta");
+onValue(peatonesCountRef, (snapshot) => {
+  peatonesArray.splice(0); // Borra el contenido anterior del array
+  const data = snapshot.val();
+  Object.entries(data).forEach(([key, value]) => {
+    const peaton = {
+      id: key,
+      activo: value.activo
+      // x: value.x,
+      // z: value.z
+    };
+    peatonesArray.push(peaton);
+  });
+  console.log('Peatones obtenidos desde Firebase:', peatonesArray);
+
+
+  if (peatonesArray[0].activo == true) {
+    // loadAnimatedModelAndPlay();
+  } else if (peatonesArray[0].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // Obtener la posición actual del modelo
+    const modelPosition = fbx.position.clone();
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // Actualizar la posición del modelo
+    fbx.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
+    cityScene.remove(fbx);
+  }
+
+  // if (peatonesArray[3].activo == true) {
+  //   // loadAnimatedModelAndPlay();
+  // } else if (peatonesArray[3].activo == false) {
+  //   const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+  //   // Obtener la posición actual del modelo
+  //   const modelPosition = fbx0.position.clone();
+  //   // Aplicar el desplazamiento a la posición del modelo
+  //   modelPosition.add(desplazamiento);
+  //   // Actualizar la posición del modelo
+  //   fbx0.position.copy(modelPosition);
+  //   // Actualizar la caja de colisión del modelo
+  //   modelBB0.min.add(desplazamiento);
+  //   modelBB0.max.add(desplazamiento);
+  //   cityScene.remove(fbx0);
+  // }
+
+  // if (peatonesArray[1].activo == true) {
+  //   // loadAnimatedModelAndPlayWoman();
+  // } else if (peatonesArray[1].activo == false) {
+  //   const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+  //   // Obtener la posición actual del modelo
+  //   const modelPosition = fbx1.position.clone();
+  //   // Aplicar el desplazamiento a la posición del modelo
+  //   modelPosition.add(desplazamiento);
+  //   // Actualizar la posición del modelo
+  //   fbx1.position.copy(modelPosition);
+  //   // Actualizar la caja de colisión del modelo
+  //   modelBB1.min.add(desplazamiento);
+  //   modelBB1.max.add(desplazamiento);
+  //   cityScene.remove(fbx1);
+  // }
+
+  // if (peatonesArray[4].activo == true) {
+  //   // loadAnimatedModelAndPlayWoman();
+  // } else if (peatonesArray[4].activo == false) {
+  //   const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+  //   // Obtener la posición actual del modelo
+  //   const modelPosition = fbx2.position.clone();
+  //   // Aplicar el desplazamiento a la posición del modelo
+  //   modelPosition.add(desplazamiento);
+  //   // Actualizar la posición del modelo
+  //   fbx2.position.copy(modelPosition);
+  //   // Actualizar la caja de colisión del modelo
+  //   modelBB2.min.add(desplazamiento);
+  //   modelBB2.max.add(desplazamiento);
+  //   cityScene.remove(fbx2);
+  // }
+
+  // if (peatonesArray[2].activo == true) {
+  //   // loadAnimatedModelAndPlayGrandmaOhShitDamn();
+  // } else if (peatonesArray[2].activo == false) {
+  //   const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+  //   // // Obtener la posición actual del modelo
+  //   const modelPosition = fbx3.position.clone();
+  //   // // Aplicar el desplazamiento a la posición del modelo
+  //   modelPosition.add(desplazamiento);
+  //   // // Actualizar la posición del modelo
+  //   fbx3.position.copy(modelPosition);
+  //   // Actualizar la caja de colisión del modelo
+  //   modelBB3.min.add(desplazamiento);
+  //   modelBB3.max.add(desplazamiento);
+  //   cityScene.remove(fbx3);
+  // }
+
+  // if (peatonesArray[5].activo == true) {
+  //   // loadAnimatedModelAndPlayGrandmaOhShitDamn();
+  // } else if (peatonesArray[5].activo == false) {
+  //   const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+  //   // // Obtener la posición actual del modelo
+  //   const modelPosition = fbx4.position.clone();
+  //   // // Aplicar el desplazamiento a la posición del modelo
+  //   modelPosition.add(desplazamiento);
+  //   // // Actualizar la posición del modelo
+  //   fbx4.position.copy(modelPosition);
+  //   // Actualizar la caja de colisión del modelo
+  //   modelBB4.min.add(desplazamiento);
+  //   modelBB4.max.add(desplazamiento);
+  //   cityScene.remove(fbx4);
+  // }
+
+  const todosInactivos = peatonesArray.every(elemento => elemento.activo === false);
+
+  if (todosInactivos) {
+    console.log("Todos los peatones han sido conseguidos");
+    writePeatonDataInicio(peatonesArray);
+    window.location.href = "../gameOver.html";
+  } else {
+    // console.log("Al menos uno de los elementos es activo");
+  }
+
+});
+
+
+function writeUserData(userId, position, rotation, puntosJugador, nombreJugador) {
+  // const db = getDatabase();
+  set(ref(db, "jugador/" + userId), {
+    x: position.x,
+    z: position.z,
+    rotY: rotation,
+    puntos: puntosJugador,
+    nombre: nombreJugador,
+  });
+}
+function writePeatonData(peatonId, activo) {
+  // const db = getDatabase();
+  set(ref(db, "meta/" + peatonId), {
+    activo: activo
+  });
+}
+
+function writePeatonDataInicio(peatonesArray) {
+  // const db = getDatabase();
+  peatonesArray.forEach((peaton) => {
+    set(ref(db, "meta/" + peaton.id), {
+      activo: true
+    });
+  });
+}
+
+function updateCamera() {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  if (jugadorActual) {
+    // Actualizar la posición de la cámara para seguir al jugador
+    camera.position.x = jugadorActual.position.x;
+    camera.position.z = jugadorActual.position.z;
+
+    // Ajustar la orientación de la cámara para mirar hacia abajo con una ligera inclinación hacia arriba
+    const targetY = jugadorActual.position.y + cameraHeight;
+    camera.position.y += (targetY - camera.position.y) * 0.1;
+    camera.lookAt(
+      new THREE.Vector3(
+        jugadorActual.position.x,
+        targetY - 10,
+        jugadorActual.position.z
+      )
+    );
+  }
+}
+
+
+
+/*function updateCamera() {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  if (jugadorActual) {
+    // Actualizar la posición de la cámara para seguir al jugador
+    camera.position.x = jugadorActual.position.x - cameraDistance * Math.sin(jugadorActual.rotation.y);
+    camera.position.z = jugadorActual.position.z - cameraDistance * Math.cos(jugadorActual.rotation.y);
+
+    // Mantener la orientación de la cámara hacia el jugador sin rotar
+    camera.lookAt(new THREE.Vector3(jugadorActual.position.x, cameraHeight, jugadorActual.position.z));
+  }
+}*/
+
+// // Crea una instancia del cargador FBX para cargar el taxi
+// var taxiLoader = new THREE.FBXLoader();
+
+// // Carga el archivo FBX
+// taxiLoader.load(
+//     'taximodel.fbx',
+//     function ( object ) {
+//         // Añade el objeto cargado a la escena
+//         scene.add( object );
+//     },
+//     function ( xhr ) {
+//         // Función de progreso de carga
+//         console.log( ( xhr.loaded / xhr.total * 100 ) + '% cargado' );
+//     },
+//     function ( error ) {
+//         // Función de error de carga
+//         console.error( error );
+//     }
+// );
+
+//Movimiento WASD
+// let wPresionada = false;  // Variable que indica si la tecla W está siendo presionada
+// let aPresionada = false;  // Variable que indica si la tecla A está siendo presionada
+// let dPresionada = false;  // Variable que indica si la tecla D está siendo presionada
+
+// document.onkeydown = function (e) {
+//   if (!currentUser) {
+//     return;
+//   }
+
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   if (e.keyCode == 37) {
+//     aPresionada = true;
+//   }
+
+//   if (e.keyCode == 39) {
+//     dPresionada = true;
+//   }
+
+//   if (e.keyCode == 87) {
+//     wPresionada = true;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+// document.onkeyup = function (e) {
+//   if (!currentUser) {
+//     return;
+//   }
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   if (e.keyCode == 37) {
+//     aPresionada = false;
+//   }
+
+//   if (e.keyCode == 39) {
+//     dPresionada = false;
+//   }
+
+//   if (e.keyCode == 87) {
+//     wPresionada = false;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+// function actualizarJugador() {
+//   if (!currentUser) {
+//     return;
+//   }
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   const rotationAngle = Math.PI / 2; // Ángulo de rotación en radianes
+//   const moveDistance = 0.1; // Distancia de movimiento
+
+//   if (wPresionada) {
+//     const angle = jugadorActual.rotation.y;
+//     jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+//     jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+//   }
+
+//   if (aPresionada) {
+//     jugadorActual.rotation.y -= rotationAngle;
+//   }
+
+//   if (dPresionada) {
+//     jugadorActual.rotation.y += rotationAngle;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// }
+
+// document.onkeydown = function (e) {
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   const rotationAngle = Math.PI / 2; // Ángulo de rotación en radianes
+//   const moveDistance = 0.1; // Distancia de movimiento
+
+//   if (e.keyCode === 65) {
+//     // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
+//     jugadorActual.rotation.y -= rotationAngle;
+//   }
+
+//   if (e.keyCode === 68) {
+//     // Tecla D - Girar 90 grados en sentido de las agujas del reloj
+//     jugadorActual.rotation.y += rotationAngle;
+//   }
+
+//   if (e.keyCode === 87) {
+//     // Tecla W - Avanzar hacia adelante
+//     const angle = jugadorActual.rotation.y;
+//     jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+//     jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+//   }
+
+//   if (e.keyCode === 83) {
+//     // Tecla S - Retroceder hacia atrás
+//     const angle = jugadorActual.rotation.y;
+//     jugadorActual.position.x += Math.sin(angle) * moveDistance;
+//     jugadorActual.position.z += Math.cos(angle) * moveDistance;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+//En caso de flechas
+/*document.onkeydown = function (e) {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+  if (e.keyCode == 37) { //flecha izq
+    jugadorActual.position.x -= 1;
+  }
+
+  if (e.keyCode == 39) { //flecha derecha
+    jugadorActual.position.x += 1;
+  }
+
+  if (e.keyCode == 38) { //flecha arriba
+    jugadorActual.position.z -= 1;
+  }
+
+  if (e.keyCode == 40) { //flecha abajo
+    jugadorActual.position.z += 1;
+  }
+
+  writeUserData(currentUser.uid, jugadorActual.position);
+
+};*/
+
+// document.onkeydown = function (e) {
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+//   const moveDistance = 1; // Distancia de movimiento
+//   let angle = jugadorActual.rotation.y;
+
+//   updateCamera();
+
+//   // Verificar si la rotación es un múltiplo de 90 grados
+//   const is90DegreeRotation = Math.abs(angle - Math.PI / 2) % (Math.PI / 2) === 0;
+
+//   if (e.keyCode === 68) {
+//     // Tecla D - Girar 90 grados en sentido de las agujas del reloj
+//     jugadorActual.rotation.y -= Math.PI / 2;
+//     angle = jugadorActual.rotation.y;
+//   }
+
+//   if (e.keyCode === 65) {
+//     // Tecla A - Girar 90 grados en sentido contrario a las agujas del reloj
+//     jugadorActual.rotation.y += Math.PI / 2;
+//     angle = jugadorActual.rotation.y;
+//   }
+
+//   if (e.keyCode === 87) {
+//     // Tecla W - Avanzar hacia adelante en la dirección de rotación o en línea recta si la rotación no es múltiplo de 90 grados
+//     if (is90DegreeRotation) {
+//       jugadorActual.position.x += Math.sin(angle) * moveDistance;
+//       jugadorActual.position.z += Math.cos(angle) * moveDistance;
+//     } else {
+//       jugadorActual.position.x -= Math.cos(angle) * moveDistance;
+//       jugadorActual.position.z -= Math.sin(angle) * moveDistance;
+//     }
+//   }
+
+//   if (e.keyCode === 83) {
+//     // Tecla S - Retroceder hacia atrás en la dirección opuesta a la rotación o en línea recta si la rotación no es múltiplo de 90 grados
+//     if (is90DegreeRotation) {
+//       jugadorActual.position.x -= Math.sin(angle) * moveDistance;
+//       jugadorActual.position.z -= Math.cos(angle) * moveDistance;
+//     } else {
+//       jugadorActual.position.x += Math.cos(angle) * moveDistance;
+//       jugadorActual.position.z += Math.sin(angle) * moveDistance;
+//     }
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+
+//En caso de flechas
+// document.onkeydown = function (e) {
+//   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+//   updateCamera();
+
+//   if (e.keyCode == 37) { //flecha izq
+//     jugadorActual.position.x -= 1;
+//     jugadorActual.rotation.y = -Math.PI / 2;
+//   }
+
+//   if (e.keyCode == 39) { //flecha derecha
+//     jugadorActual.position.x += 1;
+//     jugadorActual.rotation.y = Math.PI / 2;
+//   }
+
+//   if (e.keyCode == 38) { //flecha arriba
+//     jugadorActual.position.z -= 1;
+//     jugadorActual.rotation.y = 0;
+//   }
+
+//   if (e.keyCode == 40) { //flecha abajo
+//     jugadorActual.position.z += 1;
+//     jugadorActual.rotation.y = Math.PI;
+//   }
+
+//   writeUserData(currentUser.uid, jugadorActual.position);
+// };
+// Mapeo de teclas
+const KEY_LEFT = 65;
+const KEY_RIGHT = 68;
+const KEY_UP = 87;
+const KEY_DOWN = 83;
+const KEY_SHIFT = 16;
+
+// Define una velocidad de movimiento
+const normalMovementSpeed = 10;
+const shiftMovementSpeed = normalMovementSpeed * 2;
+const powerUpMovementSpeed = normalMovementSpeed * 3;
+const robotMovementSpeed = 5;
+
+//Variable para validar si agarró el bidón de gasolina
+let isThePlayerPickUpGasoline = false;
+let isThePlayerCollisionRobot = false;
+let powerUpTimer;
+
+// Variable para controlar si se está presionando la tecla Shift
+let isShiftPressed = false;
+const smoothness = 0.1; // Ajusta este valor para controlar la suavidad de la rotación
+
+// Objeto para almacenar las teclas presionadas
+const keysPressed = {};
+let totalRotation = 0;
+
+// Asignar evento a la tecla presionada
+document.onkeydown = function (e) {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+  console.log(jugadorActual);
+
+  updateCamera();
+  // movePlayer();
+
+  keysPressed[e.keyCode] = true;
+
+  if (e.keyCode === KEY_SHIFT) {
+    // Tecla Shift presionada
+    isShiftPressed = true;
+  }
+
+  updatePlayerMovement();
+};
+
+document.onkeyup = function (e) {
+  delete keysPressed[e.keyCode];
+
+  if (e.keyCode === KEY_SHIFT) {
+    // Tecla Shift soltada
+    isShiftPressed = false;
+  }
+  updatePlayerMovement();
+};
+
+let movementSpeed = getMovementSpeed();
+
+// Actualizar el movimiento del jugador en cada fotograma
+function updatePlayerMovement() {
+  let jugadorActual = cityScene.getObjectByName(currentUser.uid);
+
+  if (isThePlayerPickUpGasoline) {
+    movementSpeed = getPowerUpSpeed();
+  } else {
+    movementSpeed = getMovementSpeed();
+  }  
+
+  if (keysPressed[KEY_LEFT]) {
+    // Tecla A - Mover hacia la izquierda
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(-movementSpeed, 0, 0));
+    movePlayerSmoothly(jugadorActual, targetPosition);
+    rotateSmoothly(jugadorActual, -Math.PI / 2);
+  }
+
+  if (keysPressed[KEY_RIGHT]) {
+    // Tecla D - Mover hacia la derecha
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(movementSpeed, 0, 0));
+    movePlayerSmoothly(jugadorActual, targetPosition);
+    rotateSmoothly(jugadorActual, Math.PI / 2);
+  }
+
+  if (keysPressed[KEY_UP]) {
+    // Tecla W - Mover hacia arriba
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(0, 0, -movementSpeed));
+    movePlayerSmoothly(jugadorActual, targetPosition);
+    rotateSmoothly(jugadorActual, Math.PI);
+  }
+
+  if (keysPressed[KEY_DOWN]) {
+    // Tecla S - Mover hacia abajo
+    const targetPosition = jugadorActual.position
+      .clone()
+      .add(new THREE.Vector3(0, 0, movementSpeed));
+    movePlayerSmoothly(jugadorActual, targetPosition);
+    rotateSmoothly(jugadorActual, 0);
+  }
+
+  if (isThePlayerPickUpGasoline) {
+    clearTimeout(powerUpTimer);
+    powerUpTimer = setTimeout(() => {
+      isThePlayerPickUpGasoline = false;
+      console.log("Ya pasó el tiempo");
+    }, 500);
+  }
+
+  console.log(keysPressed);
+
+  writeUserData(
+    currentUser.uid,
+    jugadorActual.position,
+    jugadorActual.rotation.y,
+    puntuacion,
+    currentUser.displayName
+  );
+
+  // // Restablecer la velocidad normal después de 5 segundos
+  // if (isThePlayerPickUpGasoline) {
+  //   clearTimeout(powerUpTimer);
+  //   powerUpTimer = setTimeout(() => {
+  //     isThePlayerPickUpGasoline = false;
+  //     console.log("Ya pasó el tiempo");
+  //   }, 5000);
+  // }
+
+  //Colisiones con los personajes.
+  if (peatonesArray[0].activo == true) {
+    checkModelBBCollision();
+  }
+  // if (peatonesArray[1].activo == true) {
+  //   checModelBB1WomanCollision();
+  // }
+  // if (peatonesArray[2].activo == true) {
+  //   checModelBB1GrandmaCollision();
+  // }
+  // if (peatonesArray[3].activo == true) {
+  //   checkModelBBCollision0();
+  // }
+  // if (peatonesArray[4].activo == true) {
+  //   checModelBB1WomanCollision2();
+  // }
+  // if (peatonesArray[5].activo == true) {
+  //   checModelBB1GrandmaCollision4();
+  // }
+
+
+  //Colisiones con los powerUps
+  // checPowerSkullCollision();
+  checPowerGasolineCollision();
+  checPowerGasolineCollision2();
+  checPowerGasolineCollision3();
+  checPowerGasolineCollision4();
+  //checDoublePointsCollision();
+
+  //Robot
+  //checPowerRobotCollision();
+
+  //Colisiones de los edificios.
+  // checkBuildingsCollisions();
+  // checkBuildingsCollisions2();
+  // //checkBuildingsCollisions3();
+  // checkBuildingsCollisions4();
+  // checkBuildingsCollisions5();
+  // checkBuildingsCollisions6();
+  // checkBuildingsCollisions7();
+  checkBuildingsCollisionsWall();
+  checkBuildingsCollisionsWall2();
+  checkBuildingsCollisionsWall3();
+  checkBuildingsCollisionsWall4();
+  checkBuildingsCollisionsWall5();
+  checkBuildingsCollisionsWall6();
+  checkBuildingsCollisionsWall7();
+
+  jugadorBB.setFromObject(jugadorActual);
+}
+
+// Función para obtener la velocidad de movimiento actual
+function getMovementSpeed() {
+  return isShiftPressed ? shiftMovementSpeed : normalMovementSpeed;
+}
+
+function getPowerUpSpeed() {
+  return isShiftPressed ? powerUpMovementSpeed : powerUpMovementSpeed;
+}
+
+
+
+// Función para mover suavemente al jugador
+function movePlayerSmoothly(object, targetPosition) {
+  // Calcula la distancia entre la posición actual y la posición objetivo
+  const distance = object.position.distanceTo(targetPosition);
+
+  // Define
+  // Define la velocidad de movimiento en función de la distancia
+  const movementSpeed = Math.min(distance, smoothness);
+
+  // Interpola suavemente la posición actual hacia la posición objetivo
+  object.position.lerp(targetPosition, movementSpeed);
+}
+
+// Función para rotar suavemente
+function rotateSmoothly(object, targetRotationY) {
+  const rotationSpeed = 0.1; // Ajusta la velocidad de rotación según sea necesario
+
+  let currentRotation = object.rotation.y;
+  let deltaRotation = targetRotationY - currentRotation;
+
+  // Verificar si es necesario realizar una rotación completa
+  if (Math.abs(deltaRotation) > Math.PI) {
+    if (deltaRotation > 0) {
+      deltaRotation -= 2 * Math.PI;
+    } else {
+      deltaRotation += 2 * Math.PI;
+    }
+  }
+
+  let newRotation = currentRotation + rotationSpeed * deltaRotation;
+
+  // Asegurarse de que la rotación esté dentro del rango de 0 a 2π (360 grados)
+  if (newRotation < 0) {
+    newRotation += 2 * Math.PI;
+  } else if (newRotation >= 2 * Math.PI) {
+    newRotation -= 2 * Math.PI;
+  }
+
+  object.rotation.y = newRotation;
+
+  // //Código de Jancito bb mosho
+  // // Calcula la diferencia entre la rotación actual y la rotación objetivo
+  // const rotationDiff = targetRotationY - object.rotation.y;
+
+  // // Utiliza una interpolación para suavizar la rotación
+  // object.rotation.y += rotationDiff * smoothness;
+}
+
+// Resize Handler
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener("resize", onWindowResize);
+
+const jugadorID = "jugador1";
+
+
+
+var modelBB;
+let fbx;
+//var jugadorBB;
+
+function loadAnimatedModelAndPlay() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/people/");
+  loader.load("FlagCheckered.fbx", (loadedfbx) => {
+    fbx = loadedfbx;
+    fbx.scale.setScalar(0.8);
+    fbx.rotateY(Math.PI / 2);
+    fbx.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbx.position.copy(new THREE.Vector3(147, 0, 140));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBB = new THREE.Box3().setFromObject(fbx);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/people/");
+    animLoader.load("FlagCheckered.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbx);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbx);
+
+    //checkCollisions();
+  });
+}
+
+// var modelBBBadRobot;
+// let fbxBadRobot;
+// //var jugadorBB;
+
+// function loadAnimatedModelAndPlayBadRobot() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/robot/");
+//   loader.load("robotReal.fbx", (loadedfbx) => {
+//     fbxBadRobot = loadedfbx;
+//     fbxBadRobot.scale.setScalar(0.1);
+//     fbxBadRobot.rotateY(Math.PI / 2);
+//     fbxBadRobot.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxBadRobot.position.copy(new THREE.Vector3(-83.61199506668436, 0, 0.5143906859829599));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelBBBadRobot = new THREE.Box3().setFromObject(fbxBadRobot);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/robot/");
+//     animLoader.load("robotReal.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxBadRobot);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxBadRobot);
+
+//     //checkCollisions();
+//   });
+// }
+// var modelBB0;
+// let fbx0;
+//var jugadorBB;
+
+// function loadAnimatedModelAndPlay0() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/people/");
+//   loader.load("Character1.fbx", (loadedfbx0) => {
+//     fbx0 = loadedfbx0;
+//     fbx0.scale.setScalar(0.1);
+//     fbx0.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbx0.position.copy(new THREE.Vector3(-140, 0, 50));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelBB0 = new THREE.Box3().setFromObject(fbx0);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/people/");
+//     animLoader.load("Character1.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbx0);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbx0);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelBB1;
+// let fbx1;
+//var jugadorBB;
+
+// function loadAnimatedModelAndPlayWoman() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/people/");
+//   loader.load("Character2_P.fbx", (loadedfbx22) => {
+//     fbx1 = loadedfbx22;
+//     fbx1.scale.setScalar(0.1);
+//     fbx1.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbx1.position.copy(new THREE.Vector3(165, 0, 37));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelBB1 = new THREE.Box3().setFromObject(fbx1);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/people/");
+//     animLoader.load("Character2_P.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbx1);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbx1);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelBB2;
+// let fbx2;
+
+// function loadAnimatedModelAndPlayWoman2() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/people/");
+//   loader.load("Character2_P.fbx", (loadedfbx2) => {
+//     fbx2 = loadedfbx2;
+//     fbx2.scale.setScalar(0.1);
+//     fbx2.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbx2.position.copy(new THREE.Vector3(-80, 0, -160));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelBB2 = new THREE.Box3().setFromObject(fbx2);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/people/");
+//     animLoader.load("Character2_P.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbx2);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbx2);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelBB3;
+// let fbx3;
+//var jugadorBB;
+
+// function loadAnimatedModelAndPlayGrandmaOhShitDamn() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/people/");
+//   loader.load("Character4_P.fbx", (loadedfbx23) => {
+//     fbx3 = loadedfbx23;
+//     fbx3.scale.setScalar(0.1);
+//     fbx3.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbx3.position.copy(new THREE.Vector3(-65, 0, 170));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelBB3 = new THREE.Box3().setFromObject(fbx3);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/people/");
+//     animLoader.load("Character4_P.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbx3);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbx3);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelBB4;
+// let fbx4;
+//var jugadorBB;
+
+// function loadAnimatedModelAndPlayGrandmaOhShitDamn4() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/people/");
+//   loader.load("Character4_P.fbx", (loadedfbx4) => {
+//     fbx4 = loadedfbx4;
+//     fbx4.scale.setScalar(0.1);
+//     fbx4.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbx4.position.copy(new THREE.Vector3(165, 0, -150));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelBB4 = new THREE.Box3().setFromObject(fbx4);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/people/");
+//     animLoader.load("Character4_P.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbx4);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbx4);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var powerUpBB3; //Caja de colision
+// let fbxPowerUp1; //fbx
+// //var jugadorBB;
+
+// function loadSkullPowerUp() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/powerUps/");
+//   loader.load("Skull_PowerUp1.fbx", (loadedfbx24) => {
+//     fbxPowerUp1 = loadedfbx24;
+//     fbxPowerUp1.scale.setScalar(0.1);
+//     fbxPowerUp1.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxPowerUp1.position.copy(new THREE.Vector3(-57, 0, 15)); //Posición
+
+//     // Crear la caja de colisión para el modelo animado
+//     powerUpBB3 = new THREE.Box3().setFromObject(fbxPowerUp1);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/powerUps/");
+//     animLoader.load("Skull_PowerUp1.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxPowerUp1);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxPowerUp1);
+
+//     //checkCollisions();
+//   });
+// }
+
+var powerUpBB4; //Caja de colision
+let fbxPowerUp2; //fbx
+//var jugadorBB;
+
+function loadSkullPowerUp2() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("Gasoline_PowerUp1.fbx", (loadedfbx25) => {
+    fbxPowerUp2 = loadedfbx25;
+    fbxPowerUp2.scale.setScalar(0.1);
+    fbxPowerUp2.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp2.position.copy(new THREE.Vector3(15, 0, 5)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB4 = new THREE.Box3().setFromObject(fbxPowerUp2);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("Gasoline_PowerUp1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp2);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxPowerUp2);
+
+    //checkCollisions();
+  });
+}
+
+var powerUpBB5; //Caja de colision
+let fbxPowerUp5; //fbx
+
+function loadSkullPowerUp3() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("Gasoline_PowerUp1.fbx", (loadedfbx25) => {
+    fbxPowerUp5 = loadedfbx25;
+    fbxPowerUp5.scale.setScalar(0.1);
+    fbxPowerUp5.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp5.position.copy(new THREE.Vector3(-37, 0, -5)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB5 = new THREE.Box3().setFromObject(fbxPowerUp5);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("Gasoline_PowerUp1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp5);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxPowerUp5);
+
+    //checkCollisions();
+  });
+}
+
+var powerUpBB6; //Caja de colision
+let fbxPowerUp6; //fbx
+
+function loadSkullPowerUp4() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("Gasoline_PowerUp1.fbx", (loadedfbx25) => {
+    fbxPowerUp6 = loadedfbx25;
+    fbxPowerUp6.scale.setScalar(0.1);
+    fbxPowerUp6.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp6.position.copy(new THREE.Vector3(-85, 0, -85)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB6 = new THREE.Box3().setFromObject(fbxPowerUp6);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("Gasoline_PowerUp1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp6);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxPowerUp6);
+
+    //checkCollisions();
+  });
+}
+
+var powerUpBB7; //Caja de colision
+let fbxPowerUp7; //fbx
+
+function loadSkullPowerUp5() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/powerUps/");
+  loader.load("Gasoline_PowerUp1.fbx", (loadedfbx25) => {
+    fbxPowerUp7 = loadedfbx25;
+    fbxPowerUp7.scale.setScalar(0.1);
+    fbxPowerUp7.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxPowerUp7.position.copy(new THREE.Vector3(45, 0, -85)); //Posición
+
+    // Crear la caja de colisión para el modelo animado
+    powerUpBB7 = new THREE.Box3().setFromObject(fbxPowerUp7);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/powerUps/");
+    animLoader.load("Gasoline_PowerUp1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxPowerUp7);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxPowerUp7);
+
+    //checkCollisions();
+  });
+}
+
+// var powerUpBB5; //Caja de colision
+// let fbxPowerUp3; //fbx
+// //var jugadorBB;
+
+// function loadSkullPowerUp3() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/powerUps/");
+//   loader.load("DoublePoints_PowerUP1.fbx", (loadedfbx26) => {
+//     fbxPowerUp3 = loadedfbx26;
+//     fbxPowerUp3.scale.setScalar(0.1);
+//     fbxPowerUp3.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxPowerUp3.position.copy(new THREE.Vector3(10, 0, -15)); //Posición
+
+//     // Crear la caja de colisión para el modelo animado
+//     powerUpBB5 = new THREE.Box3().setFromObject(fbxPowerUp3);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/powerUps/");
+//     animLoader.load("DoublePoints_PowerUP1.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxPowerUp3);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxPowerUp3);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelConstruction1;
+// let fbxConstruction;
+
+// function loadConstruction1() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("hotel.fbx", (loadedfbx1) => {
+//     fbxConstruction = loadedfbx1;
+//     fbxConstruction.scale.setScalar(0.1);
+//     fbxConstruction.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction.position.copy(new THREE.Vector3(90, 0, -120));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction1 = new THREE.Box3().setFromObject(fbxConstruction);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("hotel.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxConstruction);
+
+//     //checkCollisions();
+//   });
+// }
+
+var wall1;
+let fbxConstructionWall;
+
+function loadConstructionWallSide() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWall) => {
+    fbxConstructionWall = loadedfbWall;
+    fbxConstructionWall.scale.setScalar(0.1);
+    fbxConstructionWall.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall.position.copy(new THREE.Vector3(0, 0, -115));
+
+    // Crear la caja de colisión para el modelo animado
+    wall1 = new THREE.Box3().setFromObject(fbxConstructionWall);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall);
+
+    //checkCollisions();
+  });
+}
+
+var wall2;
+let fbxConstructionWall2;
+
+function loadConstructionWallSide2() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal2l) => {
+    fbxConstructionWall2 = loadedfbWal2l;
+    fbxConstructionWall2.rotateY(Math.PI / 2);
+    fbxConstructionWall2.scale.setScalar(0.1);
+    fbxConstructionWall2.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall2.position.copy(new THREE.Vector3(-115, 0, 0));
+
+    // Crear la caja de colisión para el modelo animado
+    wall2 = new THREE.Box3().setFromObject(fbxConstructionWall2);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall2);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall2);
+
+    //checkCollisions();
+  });
+}
+
+var wall3;
+let fbxConstructionWall3;
+
+function loadConstructionWallSide3() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal3l) => {
+    fbxConstructionWall3 = loadedfbWal3l;
+    fbxConstructionWall3.rotateY(Math.PI / 2);
+    fbxConstructionWall3.scale.setScalar(0.1);
+    fbxConstructionWall3.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall3.position.copy(new THREE.Vector3(275, 0, 5));
+
+    // Crear la caja de colisión para el modelo animado
+    wall3 = new THREE.Box3().setFromObject(fbxConstructionWall3);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall3);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall3);
+
+    //checkCollisions();
+  });
+}
+
+var wall4;
+let fbxConstructionWall4;
+
+function loadConstructionWallSide4() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal4l) => {
+    fbxConstructionWall4 = loadedfbWal4l;
+    fbxConstructionWall4.scale.setScalar(0.1);
+    fbxConstructionWall4.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall4.position.copy(new THREE.Vector3(0, 0, 285));
+
+    // Crear la caja de colisión para el modelo animado
+    wall4 = new THREE.Box3().setFromObject(fbxConstructionWall4);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall4);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall4);
+
+    //checkCollisions();
+  });
+}
+
+var wall5;
+let fbxConstructionWall5;
+
+function loadConstructionWallSide5() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal4l) => {
+    fbxConstructionWall5 = loadedfbWal4l;
+    fbxConstructionWall5.scale.setScalar(0.1);
+    fbxConstructionWall5.rotateY(Math.PI / 2);
+    fbxConstructionWall5.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall5.position.copy(new THREE.Vector3(-30, 0, 70));
+
+    // Crear la caja de colisión para el modelo animado
+    wall5 = new THREE.Box3().setFromObject(fbxConstructionWall5);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall5);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall5);
+
+    //checkCollisions();
+  });
+}
+
+var wall6;
+let fbxConstructionWall6;
+
+function loadConstructionWallSide6() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal4l) => {
+    fbxConstructionWall6 = loadedfbWal4l;
+    fbxConstructionWall6.scale.setScalar(0.1);
+    fbxConstructionWall6.rotateY(Math.PI / 2);
+    fbxConstructionWall6.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall6.position.copy(new THREE.Vector3(60, 0, -80));
+
+    // Crear la caja de colisión para el modelo animado
+    wall6 = new THREE.Box3().setFromObject(fbxConstructionWall6);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall6);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall6);
+
+    //checkCollisions();
+  });
+}
+
+var wall7;
+let fbxConstructionWall7;
+
+function loadConstructionWallSide7() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("wall_sides.fbx", (loadedfbWal4l) => {
+    fbxConstructionWall7 = loadedfbWal4l;
+    fbxConstructionWall7.scale.setScalar(0.1);
+    fbxConstructionWall7.rotateY(Math.PI / 2);
+    fbxConstructionWall7.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstructionWall7.position.copy(new THREE.Vector3(160, 0, 70));
+
+    // Crear la caja de colisión para el modelo animado
+    wall7 = new THREE.Box3().setFromObject(fbxConstructionWall7);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("wall_sides.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstructionWall7);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstructionWall7);
+
+    //checkCollisions();
+  });
+}
+
+
+
+// var modelConstruction2;
+// let fbxConstruction2;
+
+// function loadConstruction2() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("flowerBuilding.fbx", (loadedfbx2) => {
+//     fbxConstruction2 = loadedfbx2;
+//     fbxConstruction2.scale.setScalar(0.1);
+//     fbxConstruction2.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction2.position.copy(new THREE.Vector3(-90, 0, -10));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction2 = new THREE.Box3().setFromObject(fbxConstruction2);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("flowerBuilding.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction2);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxConstruction2);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelConstruction3;
+// let fbxConstruction3;
+
+// function loadConstruction3() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("redBuilding.fbx", (loadedfbx3) => {
+//     fbxConstruction3 = loadedfbx3;
+//     fbxConstruction3.scale.setScalar(0.1);
+//     fbxConstruction3.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction3.position.copy(new THREE.Vector3(0, 0, 130));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction3 = new THREE.Box3().setFromObject(fbxConstruction3);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("redBuilding.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction3);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxConstruction3);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelConstruction4;
+// let fbxConstruction4;
+
+// function loadConstruction4() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("greenBuilding.fbx", (loadedfbx4) => {
+//     fbxConstruction4 = loadedfbx4;
+//     fbxConstruction4.scale.setScalar(0.1);
+//     fbxConstruction4.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction4.position.copy(new THREE.Vector3(-130, 0, 130));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction4 = new THREE.Box3().setFromObject(fbxConstruction4);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("greenBuilding.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction4);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxConstruction4);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelConstruction5;
+// let fbxConstruction5;
+
+// function loadConstruction5() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("libraryBuilding.fbx", (loadedfbx5) => {
+//     fbxConstruction5 = loadedfbx5;
+//     fbxConstruction5.scale.setScalar(0.1);
+//     fbxConstruction5.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction5.position.copy(new THREE.Vector3(-90, 0, -100));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction5 = new THREE.Box3().setFromObject(fbxConstruction5);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("libraryBuilding.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction5);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxConstruction5);
+
+//     //checkCollisions();
+//   });
+// }
+
+// var modelConstruction6;
+// let fbxConstruction6;
+
+// function loadConstruction6() {
+//   const loader = new FBXLoader();
+//   loader.setPath("../resources/buildings/");
+//   loader.load("gasoline.fbx", (loadedfbx6) => {
+//     fbxConstruction6 = loadedfbx6;
+//     fbxConstruction6.scale.setScalar(0.1);
+//     fbxConstruction6.traverse((c) => {
+//       c.castShadow = true;
+//     });
+//     fbxConstruction6.position.copy(new THREE.Vector3(-20, 0, 150));
+
+//     // Crear la caja de colisión para el modelo animado
+//     modelConstruction6 = new THREE.Box3().setFromObject(fbxConstruction6);
+
+//     const animLoader = new FBXLoader();
+//     animLoader.setPath("../resources/buildings/");
+//     animLoader.load("gasoline.fbx", (anim) => {
+//       const mixer = new THREE.AnimationMixer(fbxConstruction6);
+//       animationMixer.push(mixer);
+//       const idleAction = mixer.clipAction(anim.animations[0]);
+//       idleAction.play();
+
+//       checkCollisions();
+//       animate();
+//     });
+
+//     cityScene.add(fbxConstruction6);
+
+//     //checkCollisions();
+//   });
+// }
+
+var modelConstruction7;
+let fbxConstruction7;
+
+function loadConstruction7() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/buildings/");
+  loader.load("redBuilding.fbx", (loadedfbx7) => {
+    fbxConstruction7 = loadedfbx7;
+    fbxConstruction7.scale.setScalar(0.1);
+    fbxConstruction7.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxConstruction7.position.copy(new THREE.Vector3(90, 0, 20));
+
+    // Crear la caja de colisión para el modelo animado
+    modelConstruction7 = new THREE.Box3().setFromObject(fbxConstruction7);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/buildings/");
+    animLoader.load("redBuilding.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxConstruction7);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxConstruction7);
+
+    //checkCollisions();
+  });
+}
+
+// Llamar a la función para cargar el modelo animado
+loadAnimatedModelAndPlay();
+// loadAnimatedModelAndPlay0();
+// loadAnimatedModelAndPlayWoman();
+// loadAnimatedModelAndPlayWoman2();
+// loadAnimatedModelAndPlayGrandmaOhShitDamn();
+// loadAnimatedModelAndPlayGrandmaOhShitDamn4();
+
+//Cargamos los powerups
+//loadSkullPowerUp();
+loadSkullPowerUp2();
+loadSkullPowerUp3();
+loadSkullPowerUp4();
+loadSkullPowerUp5();
+//loadSkullPowerUp3();
+
+//Bad Robots
+//loadAnimatedModelAndPlayBadRobot();
+
+// //Cargar las construcciones
+// loadConstruction1();
+// loadConstruction2();
+// //loadConstruction3();
+// loadConstruction4();
+// loadConstruction5();
+// loadConstruction6();
+// loadConstruction7();
+loadConstructionWallSide();
+loadConstructionWallSide2();
+loadConstructionWallSide3();
+loadConstructionWallSide4();
+
+loadConstructionWallSide5();
+loadConstructionWallSide6();
+loadConstructionWallSide7();
+
+function checkCollisions() {
+  // Obtener la caja de colisión del jugador
+  jugadorBB = new THREE.Box3().setFromObject(
+    cityScene.getObjectByName(jugadorNames)
+  );
+}
+
+/*function checkModelBBCollision() {
+  // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+  //Aquí se genera la lógica de la colisión
+  if (modelBB.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo fbx y el jugador");
+     fbx.position.y -= 10;
+     modelBB.min.y -= 10; // Ejemplo: incrementar los límites mínimos en el eje x en 1 unidad
+     modelBB.max.y -= 10; // Ejemplo: incrementar los límites máximos en el eje x en 1 unidad
+  }
+}*/
+
+function checkModelBBCollision() {
+  // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+  //Aquí se genera la lógica de la colisión para el character1
+  if (modelBB.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del hombre y el jugador");
+
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // // Obtener la posición actual del modelo
+    const modelPosition = fbx.position.clone();
+
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+
+    // // Actualizar la posición del modelo
+    fbx.position.copy(modelPosition);
+
+    // Actualizar la caja de colisión del modelo
+    modelBB.min.add(desplazamiento);
+    modelBB.max.add(desplazamiento);
+
+    cityScene.remove(fbx);
+    //cityScene.remove(modelBB);
+
+    puntuacion += 100;
+    console.log("Puntuación =", puntuacion);
+    writePeatonData(1, false);
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados = 0;
+    const totalJugadores = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (modelBB.intersectsBox(jugadorBB)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados === totalJugadores) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+  }
+}
+
+// function checkModelBBCollision0() {
+//   // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+//   //Aquí se genera la lógica de la colisión para el character1
+//   if (modelBB0.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo del hombre y el jugador");
+
+//     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // // Obtener la posición actual del modelo
+//     const modelPosition = fbx0.position.clone();
+
+//     // // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition.add(desplazamiento);
+
+//     // // Actualizar la posición del modelo
+//     fbx0.position.copy(modelPosition);
+
+//     // Actualizar la caja de colisión del modelo
+//     modelBB0.min.add(desplazamiento);
+//     modelBB0.max.add(desplazamiento);
+
+//     cityScene.remove(fbx0);
+//     //cityScene.remove(modelBB);
+
+//     puntuacion += 100;
+//     console.log("Puntuación =", puntuacion);
+//     writePeatonData(4, false);
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados = 0;
+//     const totalJugadores = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (modelBB0.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados === totalJugadores) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+
+//     // Obtener el elemento <span> de la puntuación
+//     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+//     // Actualizar el contenido del elemento con la puntuación actual
+//     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+//   }
+// }
+
+// function checModelBB1WomanCollision() {
+//   if (modelBB1.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo de la mujer y el jugador");
+
+//     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // // Obtener la posición actual del modelo
+//     const modelPosition1 = fbx1.position.clone();
+
+//     // // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition1.add(desplazamiento1);
+
+//     // Actualizar la posición del modelo
+//     fbx1.position.copy(modelPosition1);
+
+//     // Actualizar la caja de colisión del modelo
+//     modelBB1.min.add(desplazamiento1);
+//     modelBB1.max.add(desplazamiento1);
+
+//     cityScene.remove(fbx1);
+
+//     puntuacion += 100;
+//     console.log("Puntuación =", puntuacion);
+//     writePeatonData(2, false);
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (modelBB1.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+
+//     // Obtener el elemento <span> de la puntuación
+//     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+//     // Actualizar el contenido del elemento con la puntuación actual
+//     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+//   }
+// }
+
+// function checModelBB1WomanCollision2() {
+//   if (modelBB2.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo de la mujer y el jugador");
+
+//     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // // Obtener la posición actual del modelo
+//     const modelPosition1 = fbx2.position.clone();
+
+//     // // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition1.add(desplazamiento1);
+
+//     // Actualizar la posición del modelo
+//     fbx2.position.copy(modelPosition1);
+
+//     // Actualizar la caja de colisión del modelo
+//     modelBB2.min.add(desplazamiento1);
+//     modelBB2.max.add(desplazamiento1);
+
+//     cityScene.remove(fbx2);
+
+//     puntuacion += 100;
+//     console.log("Puntuación =", puntuacion);
+//     writePeatonData(5, false);
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (modelBB2.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+
+//     // Obtener el elemento <span> de la puntuación
+//     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+//     // Actualizar el contenido del elemento con la puntuación actual
+//     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+//   }
+// }
+
+// function checModelBB1GrandmaCollision() {
+//   if (modelBB3.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo de la mujer y el jugador");
+
+//     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // // Obtener la posición actual del modelo
+//     const modelPosition1 = fbx3.position.clone();
+
+//     // // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition1.add(desplazamiento1);
+
+//     // // Actualizar la posición del modelo
+//     fbx3.position.copy(modelPosition1);
+
+//     // Actualizar la caja de colisión del modelo
+//     modelBB3.min.add(desplazamiento1);
+//     modelBB3.max.add(desplazamiento1);
+
+//     cityScene.remove(fbx3);
+
+//     puntuacion += 100;
+//     console.log("Puntuación =", puntuacion);
+//     writePeatonData(3, false);
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (modelBB3.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+
+//     // Obtener el elemento <span> de la puntuación
+//     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+//     // Actualizar el contenido del elemento con la puntuación actual
+//     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+//   }
+// }
+
+// function checModelBB1GrandmaCollision4() {
+//   if (modelBB4.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo de la mujer y el jugador");
+
+//     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // // Obtener la posición actual del modelo
+//     const modelPosition1 = fbx4.position.clone();
+
+//     // // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition1.add(desplazamiento1);
+
+//     // // Actualizar la posición del modelo
+//     fbx4.position.copy(modelPosition1);
+
+//     // Actualizar la caja de colisión del modelo
+//     modelBB4.min.add(desplazamiento1);
+//     modelBB4.max.add(desplazamiento1);
+
+//     cityScene.remove(fbx4);
+
+//     puntuacion += 100;
+//     console.log("Puntuación =", puntuacion);
+//     writePeatonData(6, false);
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (modelBB4.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+
+//     // Obtener el elemento <span> de la puntuación
+//     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+//     // Actualizar el contenido del elemento con la puntuación actual
+//     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+//   }
+// }
+
+// function checPowerSkullCollision() {
+//   if (powerUpBB3.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo del powerup");
+
+//     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // Obtener la posición actual del modelo
+//     const modelPosition1 = fbxPowerUp1.position.clone();
+
+//     // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition1.add(desplazamiento1);
+
+//     // Actualizar la posición del modelo
+//     fbxPowerUp1.position.copy(modelPosition1);
+
+//     // Actualizar la caja de colisión del modelo
+//     powerUpBB3.min.add(desplazamiento1);
+//     powerUpBB3.max.add(desplazamiento1);
+
+//     const listenerPowerUp = new THREE.AudioListener();
+//     camera.add(listenerPowerUp);
+
+//     const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+//     const audioLoader = new THREE.AudioLoader();
+//     audioLoader.load(
+//       "../resources/powerUps/PowerUpSound.mp3",
+//       function (buffer) {
+//         soundPOwer.setBuffer(buffer);
+//         soundPOwer.setLoop(false);
+//         soundPOwer.setVolume(0.1);
+//         soundPOwer.play();
+//       }
+//     );
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (powerUpBB3.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+//   }
+// }
+
+function checPowerGasolineCollision() {
+  if (powerUpBB4.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    isThePlayerPickUpGasoline = true;
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp2.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp2.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB4.min.add(desplazamiento1);
+    powerUpBB4.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB4.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+function checPowerGasolineCollision2() {
+  if (powerUpBB5.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    isThePlayerPickUpGasoline = true;
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp5.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp5.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB5.min.add(desplazamiento1);
+    powerUpBB5.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB5.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+function checPowerGasolineCollision3() {
+  if (powerUpBB6.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    isThePlayerPickUpGasoline = true;
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp6.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp6.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB6.min.add(desplazamiento1);
+    powerUpBB6.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB6.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+function checPowerGasolineCollision4() {
+  if (powerUpBB7.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del powerup");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    isThePlayerPickUpGasoline = true;
+
+    // Obtener la posición actual del modelo
+    const modelPosition1 = fbxPowerUp7.position.clone();
+
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbxPowerUp7.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    powerUpBB7.min.add(desplazamiento1);
+    powerUpBB7.max.add(desplazamiento1);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/PowerUpSound.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.1);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (powerUpBB7.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+  }
+}
+
+
+
+// var initialPositionIA = new THREE.Vector3(-83.61199506668436, 0, 0.5143906859829599);
+// var finalPositionIA = new THREE.Vector3(-40, 0, 0.5143906859829599);
+// var initialBBPositionIA = initialPositionIA.clone();
+// var finalBBPositionIA = finalPositionIA.clone();
+
+
+// var directionIA = finalPositionIA.clone().sub(initialPositionIA).normalize();
+// var distanceIA = finalPositionIA.distanceTo(initialPositionIA);
+
+// var animationDurationIA = 1.5; // Duración de la animación en segundos
+// var animationTimeIA = 0;
+// var animationSpeedIA = distanceIA / animationDurationIA;
+
+// function animateMovementRobot(delta) {
+//   if (animationTimeIA < animationDurationIA) {
+//     // Calcular la nueva posición basada en el tiempo de animación
+//     var newPositionIA = initialPositionIA.clone().add(directionIA.clone().multiplyScalar(animationTimeIA * animationSpeedIA));
+
+//     // Calcular la diferencia entre la posición inicial y final del modelo
+//     var positionOffset = newPositionIA.clone().sub(initialPositionIA);
+
+//     // Actualizar la posición del modelo
+//     fbxBadRobot.position.copy(newPositionIA);
+
+//     // Actualizar la posición de la caja de colisión
+//     modelBBBadRobot.min.add(positionOffset);
+//     modelBBBadRobot.max.add(positionOffset);
+
+//     // Actualizar la posición inicial y final de la caja de colisión
+//     initialBBPositionIA.add(positionOffset);
+//     finalBBPositionIA.add(positionOffset);
+
+//     animationTimeIA += delta;
+//   } else {
+//     // Invertir la dirección para el siguiente ciclo de movimiento
+//     directionIA.multiplyScalar(-1);
+
+//     // Intercambiar las posiciones inicial y final para el siguiente ciclo de movimiento
+//     var tempPosition = initialPositionIA.clone();
+//     initialPositionIA = finalPositionIA.clone();
+//     finalPositionIA = tempPosition.clone();
+
+//     // Intercambiar las posiciones inicial y final de la caja de colisión para el siguiente ciclo de movimiento
+//     var tempBBPosition = initialBBPositionIA.clone();
+//     initialBBPositionIA = finalBBPositionIA.clone();
+//     finalBBPositionIA = tempBBPosition.clone();
+
+//     animationTimeIA = 0; // Reiniciar el tiempo de animación para el siguiente ciclo
+
+//     // Rotar el modelo 90 grados a la derecha
+//     fbxBadRobot.rotateY(Math.PI);
+//   }
+
+//   checPowerRobotCollision();
+// }
+
+
+
+// function checPowerRobotCollision() {
+//   if (modelBBBadRobot.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo del powerup");
+//     isThePlayerCollisionRobot = true;
+
+//     // const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+//     // isThePlayerPickUpGasoline = true;
+
+//     // // Obtener la posición actual del modelo
+//     // const modelPosition1 = fbxPowerUp2.position.clone();
+
+//     // // Aplicar el desplazamiento a la posición del modelo
+//     // modelPosition1.add(desplazamiento1);
+
+//     // // Actualizar la posición del modelo
+//     // fbxPowerUp2.position.copy(modelPosition1);
+
+//     // // Actualizar la caja de colisión del modelo
+//     // powerUpBB4.min.add(desplazamiento1);
+//     // powerUpBB4.max.add(desplazamiento1);
+
+//     const listenerPowerUp = new THREE.AudioListener();
+//     camera.add(listenerPowerUp);
+
+//     const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+//     const audioLoader = new THREE.AudioLoader();
+//     audioLoader.load(
+//       "../resources/powerUps/robotSoundEvil.mp3",
+//       function (buffer) {
+//         soundPOwer.setBuffer(buffer);
+//         soundPOwer.setLoop(false);
+//         soundPOwer.setVolume(0.1);
+//         soundPOwer.play();
+//       }
+//     );
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (modelBBBadRobot.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+//   }
+// }
+
+// function checDoublePointsCollision() {
+//   if (powerUpBB5.intersectsBox(jugadorBB)) {
+//     console.log("Colisión con el modelo del powerup");
+
+//     const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+//     // Obtener la posición actual del modelo
+//     const modelPosition1 = fbxPowerUp3.position.clone();
+
+//     // Aplicar el desplazamiento a la posición del modelo
+//     modelPosition1.add(desplazamiento1);
+
+//     // Actualizar la posición del modelo
+//     fbxPowerUp3.position.copy(modelPosition1);
+
+//     // Actualizar la caja de colisión del modelo
+//     powerUpBB5.min.add(desplazamiento1);
+//     powerUpBB5.max.add(desplazamiento1);
+
+//     puntuacion *= 2;
+//     console.log("Puntuación actual:", puntuacion);
+
+//     const listenerPowerUp = new THREE.AudioListener();
+//     camera.add(listenerPowerUp);
+
+//     const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+//     const audioLoader = new THREE.AudioLoader();
+//     audioLoader.load(
+//       "../resources/powerUps/PowerUpSound.mp3",
+//       function (buffer) {
+//         soundPOwer.setBuffer(buffer);
+//         soundPOwer.setLoop(false);
+//         soundPOwer.setVolume(0.1);
+//         soundPOwer.play();
+//       }
+//     );
+
+//     // Verificar si todos los jugadores han colisionado
+//     let jugadoresColisionados1 = 0;
+//     const totalJugadores1 = Object.keys(jugadorNames).length;
+
+//     for (const key in jugadorNames) {
+//       if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//         const jugadorInfo = jugadorNames[key];
+//         const jugadorBB = new THREE.Box3().setFromObject(
+//           cityScene.getObjectByName(jugadorInfo.name)
+//         );
+
+//         if (powerUpBB5.intersectsBox(jugadorBB)) {
+//           jugadoresColisionados1++;
+//           console.log("Colisión con el jugador:", key);
+
+//         }
+//       }
+//     }
+
+//     if (jugadoresColisionados1 === totalJugadores1) {
+//       console.log("Todos los jugadores han colisionado con el modelo");
+//     }
+
+//     // Obtener el elemento <span> de la puntuación
+//     const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+//     // Actualizar el contenido del elemento con la puntuación actual
+//     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+//   }
+// }
+
+let jugadoresColisionados = 0; // Definir la variable jugadoresColisionados antes de su uso
+
+// function checkBuildingsCollisions() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction1 && jugadorBB.intersectsBox(modelConstruction1)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+function checkBuildingsCollisionsWall() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall1 && jugadorBB.intersectsBox(wall1)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall2() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall2 && jugadorBB.intersectsBox(wall2)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall2.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(-2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall3() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall3 && jugadorBB.intersectsBox(wall3)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall3.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall4() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall4 && jugadorBB.intersectsBox(wall4)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall4.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall5() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall5 && jugadorBB.intersectsBox(wall5)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall5.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall6() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall6 && jugadorBB.intersectsBox(wall6)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall6.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+function checkBuildingsCollisionsWall7() {
+  for (const key in jugadorNames) {
+    if (Object.hasOwnProperty.call(jugadorNames, key)) {
+      const jugadorInfo = jugadorNames[key];
+      const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+      if (jugador && jugadorInfo) {
+        const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+        if (wall7 && jugadorBB.intersectsBox(wall7)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+
+          // Calcular el vector de retroceso
+          const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+          const construccionPosition = new THREE.Vector3().copy(
+            fbxConstructionWall7.position
+          );
+          const retroceso = jugadorPosition
+            .sub(construccionPosition)
+            .normalize()
+            .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+          // Retroceder al jugador
+          jugador.position.add(retroceso);
+        }
+      }
+    }
+  }
+}
+
+// function checkBuildingsCollisions2() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction2 && jugadorBB.intersectsBox(modelConstruction2)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction2.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions3() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction3 && jugadorBB.intersectsBox(modelConstruction3)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction3.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions4() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction4 && jugadorBB.intersectsBox(modelConstruction4)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction4.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions5() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction5 && jugadorBB.intersectsBox(modelConstruction5)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction5.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions6() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction6 && jugadorBB.intersectsBox(modelConstruction6)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction6.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(1.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions7() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction7 && jugadorBB.intersectsBox(modelConstruction7)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Calcular el vector de retroceso
+//           const jugadorPosition = new THREE.Vector3().copy(jugador.position);
+//           const construccionPosition = new THREE.Vector3().copy(
+//             fbxConstruction7.position
+//           );
+//           const retroceso = jugadorPosition
+//             .sub(construccionPosition)
+//             .normalize()
+//             .multiplyScalar(2.5); // Ajusta el valor de retroceso según sea necesario
+
+//           // Retroceder al jugador
+//           jugador.position.add(retroceso);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction1 && jugadorBB.intersectsBox(modelConstruction1)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+
+//           // Retroceder al jugador
+//           const retroceso = 10; // Ajusta el valor según sea necesario
+//           jugador.position.x -= retroceso;
+//           jugador.position.z -= retroceso;
+//         }
+//       }
+//     }
+//   }
+// }
+
+// function checkBuildingsCollisions() {
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugador = cityScene.getObjectByName(jugadorInfo.name);
+
+//       if (jugador && jugadorInfo) {
+//         const jugadorBB = new THREE.Box3().setFromObject(jugador);
+
+//         if (modelConstruction1 && jugadorBB.intersectsBox(modelConstruction1)) {
+//           jugadoresColisionados++;
+//           console.log("Colisión con el jugador:", key);
+//         }
+//       }
+//     }
+//   }
+// }
+
+// Verificar colisiones en cada actualización de fotograma
+// function checkBuildingsCollisions() {
+//   // Obtener las cajas de colisión del jugador y el modelo colisionado
+//   const playerBB = modelPlayerBB.clone(); // Clonar la caja de colisión del jugador
+//   const constructionBB = modelConstruction1.clone(); // Clonar la caja de colisión del modelo colisionado
+
+//   const jugadorInfo = jugadorNames[playerName];
+//   const jugador = cityScene.getObjectByName(jugadorInfo.name);
+//   // Mover las cajas de colisión según la posición actual del jugador y el modelo colisionado
+//   playerBB.translate(jugador.position); // Mover la caja de colisión del jugador
+//   constructionBB.translate(fbxConstruction.position); // Mover la caja de colisión del modelo colisionado
+
+//   for (const key in jugadorNames) {
+//     if (Object.hasOwnProperty.call(jugadorNames, key)) {
+//       const jugadorInfo = jugadorNames[key];
+//       const jugadorBB = new THREE.Box3().setFromObject(
+//         cityScene.getObjectByName(jugadorInfo.name)
+//       );
+
+//       if (modelBB.intersectsBox(jugadorBB)) {
+//         jugadoresColisionados++;
+//         console.log("Colisión con el jugador:", key);
+//       }
+//     }
+//   }
+
+//   // Comprobar si las cajas de colisión se superponen
+//   if (playerBB.intersectsBox(constructionBB)) {
+//     // Las cajas de colisión se superponen, lo que indica una colisión
+
+//     // Aquí puedes agregar el código que deseas ejecutar cuando haya una colisión
+//     // Por ejemplo, puedes detener el movimiento del jugador o aplicar alguna acción específica
+
+//     // Para detener el movimiento del jugador, puedes deshabilitar los controles de movimiento:
+//     // controls.enabled = false;
+
+//     // O puedes establecer una variable de estado para indicar que el jugador está colisionando:
+//     // isColliding = true;
+//   } else {
+//     // Las cajas de colisión no se superponen, no hay colisión
+
+//     // Aquí puedes agregar el código que deseas ejecutar cuando no haya colisión
+//     // Por ejemplo, puedes permitir que el jugador se mueva nuevamente o revertir la acción realizada en la colisión
+
+//     // Para permitir el movimiento del jugador nuevamente, puedes habilitar los controles de movimiento:
+//     // controls.enabled = true;
+
+//     // Si usaste una variable de estado, puedes restablecerla:
+//     // isColliding = false;
+//   }
+// }
+
+let jugadorBB = new THREE.Box3(); // Inicializar jugadorBB con una instancia de Box3
+
+// function movePlayer() {
+//   // Lógica para mover al jugador
+//   // ...
+
+//   // Actualizar la posición de la caja de colisión del jugador
+//   jugadorBB.setFromObject(jugadorActual);
+// }
+
+//const cameraControl = new OrbitControls(camera, renderer.domElement);
+
+/*function checkCollisions() {
+  if (spongebobBB.intersectsSphere(patrickBB)) {
+    patrick.material.wireframe = true;
+  } else {
+    patrick.material.wireframe = false;
+  }
+  if (spongebobBB.containsBox(mrKrabsBB)) {
+    mrKrabs.scale.y = 2;
+  } else {
+    mrKrabs.scale.y = 1;
+  }
+  if (spongebobBB.intersectsBox(mrKrabsBB)) {
+    mrKrabs.material.color = new THREE.Color("orange");
+  } else {
+    mrKrabs.material.color = new THREE.Color("red");
+  }
+
+  if (spongebobBB.intersectsBox(squidwardBB)) {
+    squidward.position.set(0, 0.5, -2);
+  } else {
+    squidward.position.set(0, 0.5, 0);
+  }
+
+  if (spongebobBB.intersectsBox(modelBB)) {
+    // Establecer la posición deseada del modelo animado cuando hay colisión
+    fbx.position.set(0, 0.6, 0);
+  }
+
+  const sandyIntersection = spongebobBB.intersect(sandyBB);
+  if (!sandyIntersection.isEmpty()) {
+    sandy.material.opacity = 0.5;
+  } else {
+    sandy.material.opacity = 1;
+  }
+}*/
+
+/*function animate() {
+  spongebobBB
+    .copy(spongebob.geometry.boundingBox)
+    .applyMatrix4(spongebob.matrixWorld);
+  checkCollisions();
+  renderer.render(cityScene, camera);
+  requestAnimationFrame(animate);
+}
+
+animate();*/
+//raf();
+
+/*loadAnimatedModelAndPlay(
+  "../resources/people/",
+  "Character1.fbx",
+  "Character1.fbx",
+  new THREE.Vector3(-57, 0, 0)
+);*/
+//function loadAnimatedModelAndPlay(path, modelFile, animFile, offset)
+
+/*function _RAF(previousRAF, threejs, scene, camera) {
+  requestAnimationFrame((t) => {
+    if (previousRAF === null) {
+      previousRAF = t;
+    }
+
+    _RAF(previousRAF, threejs, scene, camera);
+
+    threejs.render(scene, camera);
+    _Step(t - previousRAF);
+    previousRAF = t;
+  });
+}*/
+
+/*function _Step(timeElapsed) {
+  const timeElapsedS = timeElapsed * 0.001;
+  if (mixers) {
+    mixers.map((m) => m.update(timeElapsedS));
+  }
+
+  if (controls) {
+    controls.Update(timeElapsedS);
+  }
+}*/
+
+function animate() {
+  requestAnimationFrame(animate);
+  const deltaTime = clock.getDelta();
+  //createFogParticles ();
+
+  // spongebobBB
+  //   .copy(spongebob.geometry.boundingBox)
+  //   .applyMatrix4(spongebob.matrixWorld);
+  //checkCollisions();
+
+  //movePlayer();
+
+  // Verificar colisiones en cada fotograma
+  //checkModelBBCollision();
+  //updateCamera();
+  if (!cameraInitialized) {
+    camera.position.set(25, 10, 25); // Ajusta la altura según tus necesidades
+    camera.lookAt(new THREE.Vector3(25, 0, 25)); // Punto de enfoque hacia abajo
+    cameraInitialized = true;
+  }
+
+  for (let i = 0; i < animationMixer.length; i++) {
+    animationMixer[i].update(deltaTime);
+  }
+
+  //animateMovementRobot(deltaTime);
+  //emitSnowParticles();
+  //actualizarJugador();
+  renderer.render(cityScene, camera);
+}
+
+animate();
+
+// function raf() {
+//   requestAnimationFrame((t) => {
+//     if (previosRAF === null) {
+//       previosRAF = t;
+//     }
+
+//     raf();
+
+//     renderer.render(cityScene, camera);
+//     step(t - previosRAF);
+//     previosRAF = t;
+//   });
+// }
+
+// function step(timeElapsed) {
+//   const timeElapsedS = timeElapsed * 0.001;
+//   if (animationMixer) {
+//     animationMixer.map((m) => m.update(timeElapsedS));
+//   }
+
+//   //   if (this._controls) {
+//   //     this._controls.Update(timeElapsedS);
+//   //   }
+
+//   //this._thirdPersonCamera.Update(timeElapsedS);
+// }
+
+// class ThirdPersonCamera {
+//   constructor(params) {
+//     this._params = params;
+//     this._camera = params.camera;
+
+//     this._currentPosition = new THREE.Vector3();
+//     this._currentLookat = new THREE.Vector3();
+//   }
+
+//   _CalculateIdealOffset() {
+//     const idealOffset = new THREE.Vector3(0, 90, -5);
+//     //idealOffset.applyQuaternion(this._params.target.Rotation);
+//     idealOffset.add(this._params.target.Position);
+//     return idealOffset;
+//   }
+
+//   _CalculateIdealLookat() {
+//     const idealLookat = new THREE.Vector3(0, 0, 0);
+//     idealLookat.applyQuaternion(this._params.target.Rotation);
+//     idealLookat.add(this._params.target.Position);
+//     return idealLookat;
+//   }
+
+//   Update(timeElapsed) {
+//     const idealOffset = this._CalculateIdealOffset();
+//     const idealLookat = this._CalculateIdealLookat();
+
+//     // const t = 0.05;
+//     // const t = 4.0 * timeElapsed;
+//     const t = 1.0 - Math.pow(0.001, timeElapsed);
+
+//     this._currentPosition.lerp(idealOffset, t);
+//     this._currentLookat.lerp(idealLookat, t);
+
+//     this._camera.position.copy(this._currentPosition);
+//     this._camera.lookAt(this._currentLookat);
+//   }
+// }
