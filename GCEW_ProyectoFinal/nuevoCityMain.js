@@ -651,6 +651,7 @@ onValue(peatonesCountRef, (snapshot) => {
 
   if (todosInactivos) {
     console.log("Todos los peatones han sido conseguidos");
+    writePeatonDataInicio(peatonesArray);
     window.location.href = "../gameOver.html";
   } else {
     // console.log("Al menos uno de los elementos es activo");
