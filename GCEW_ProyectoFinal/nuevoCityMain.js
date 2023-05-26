@@ -60,7 +60,7 @@ async function login() {
       currentUser = user;
       console.log(user);
       const rotY = 0;
-      writeUserData(user.uid, { x: 0, z: 0 }, rotY, puntuacion); //ponermos la rotacion
+      writeUserData(user.uid, { x: 0, z: 0 }, rotY, puntuacion, user.displayName); //ponermos la rotacion
 
       writePeatonDataInicio(peatonesArray);
 
@@ -660,13 +660,14 @@ onValue(peatonesCountRef, (snapshot) => {
 });
 
 
-function writeUserData(userId, position, rotation, puntosJugador) {
+function writeUserData(userId, position, rotation, puntosJugador, nombreJugador) {
   // const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
     z: position.z,
     rotY: rotation,
-    puntos: puntosJugador
+    puntos: puntosJugador,
+    nombre: nombreJugador,
   });
 }
 function writePeatonData(peatonId, activo) {
@@ -1060,7 +1061,8 @@ function updatePlayerMovement() {
     currentUser.uid,
     jugadorActual.position,
     jugadorActual.rotation.y,
-    puntuacion
+    puntuacion,
+    currentUser.displayName
   );
 
   // // Restablecer la velocidad normal después de 5 segundos
