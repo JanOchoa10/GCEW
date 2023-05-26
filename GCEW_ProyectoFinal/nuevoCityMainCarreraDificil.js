@@ -184,6 +184,29 @@ cityScene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0x947cfd, 1.0); //Color de la luz e Intensidad
 cityScene.add(ambientLight);
 
+// // Crear la luz focal
+// var spotLight = new THREE.SpotLight(0xffffff);
+// spotLight.position.set(0, 10, 0); // Posición de la luz
+// spotLight.target.position.set(0, 0, 0); // Dirección hacia donde apunta la luz
+// spotLight.castShadow = true; // Activar sombras si se desea
+// cityScene.add(spotLight);
+
+const soundBackground = new THREE.AudioListener();
+camera.add(soundBackground);
+
+const soundBack = new THREE.Audio(soundBackground);
+
+const audioLoader2 = new THREE.AudioLoader();
+audioLoader2.load(
+  "../resources/powerUps/Taksi_CityMain.mp3",
+  function (buffer) {
+    soundBack.setBuffer(buffer);
+    soundBack.setLoop(true);
+    soundBack.setVolume(0.1);
+    soundBack.play();
+  }
+);
+
 //creamos el mixer para la animacion
 let animationMixer = [];
 //let previosRAF = null;

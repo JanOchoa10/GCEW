@@ -184,6 +184,29 @@ cityScene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0xFDA793, 0.65); //Color de la luz e Intensidad
 cityScene.add(ambientLight);
 
+// Crear la luz focal
+var spotLight = new THREE.SpotLight(0xffffff);
+spotLight.position.set(0, 10, 0); // Posición de la luz
+spotLight.target.position.set(0, 0, 0); // Dirección hacia donde apunta la luz
+spotLight.castShadow = true; // Activar sombras si se desea
+cityScene.add(spotLight);
+
+const soundBackground = new THREE.AudioListener();
+camera.add(soundBackground);
+
+const soundBack = new THREE.Audio(soundBackground);
+
+const audioLoader2 = new THREE.AudioLoader();
+audioLoader2.load(
+  "../resources/powerUps/Taksi_FarmMain.mp3",
+  function (buffer) {
+    soundBack.setBuffer(buffer);
+    soundBack.setLoop(true);
+    soundBack.setVolume(0.1);
+    soundBack.play();
+  }
+);
+
 //creamos el mixer para la animacion
 let animationMixer = [];
 //let previosRAF = null;
@@ -2108,6 +2131,41 @@ function loadTrees4() {
   });
 }
 
+var BBtree5;
+let tree5;
+
+function loadTrees5() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/farmModels/");
+  loader.load("tree2.fbx", (loadedfbx7) => {
+    tree5 = loadedfbx7;
+    tree5.scale.setScalar(0.1);
+    tree5.traverse((c) => {
+      c.castShadow = true;
+    });
+    tree5.position.copy(new THREE.Vector3(-150, 0, 45));
+
+    // Crear la caja de colisión para el modelo animado
+    BBtree5 = new THREE.Box3().setFromObject(tree5);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/farmModels/");
+    animLoader.load("tree2.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(tree5);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(tree5);
+
+    //checkCollisions();
+  });
+}
+
 // Llamar a la función para cargar el modelo animado
 loadAnimatedModelAndPlay();
 loadAnimatedModelAndPlay0();
@@ -2139,6 +2197,7 @@ loadTrees1();
 loadTrees2();
 loadTrees3();
 loadTrees4();
+loadTrees5();
 
 function checkCollisions() {
   // Obtener la caja de colisión del jugador

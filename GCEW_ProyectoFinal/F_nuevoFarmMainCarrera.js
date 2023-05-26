@@ -184,6 +184,22 @@ cityScene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0xFDA793, 0.65); //Color de la luz e Intensidad
 cityScene.add(ambientLight);
 
+const soundBackground = new THREE.AudioListener();
+camera.add(soundBackground);
+
+const soundBack = new THREE.Audio(soundBackground);
+
+const audioLoader2 = new THREE.AudioLoader();
+audioLoader2.load(
+  "../resources/powerUps/Taksi_FarmMain.mp3",
+  function (buffer) {
+    soundBack.setBuffer(buffer);
+    soundBack.setLoop(true);
+    soundBack.setVolume(0.1);
+    soundBack.play();
+  }
+);
+
 //creamos el mixer para la animacion
 let animationMixer = [];
 //let previosRAF = null;
