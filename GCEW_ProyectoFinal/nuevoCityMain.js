@@ -567,7 +567,23 @@ onValue(peatonesCountRef, (snapshot) => {
     cityScene.remove(fbx);
   }
 
-  if (peatonesArray[0].activo == true) {
+  if (peatonesArray[3].activo == true) {
+    // loadAnimatedModelAndPlay();
+  } else if (peatonesArray[3].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // Obtener la posición actual del modelo
+    const modelPosition = fbx0.position.clone();
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // Actualizar la posición del modelo
+    fbx0.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB0.min.add(desplazamiento);
+    modelBB0.max.add(desplazamiento);
+    cityScene.remove(fbx0);
+  }
+
+  if (peatonesArray[1].activo == true) {
     // loadAnimatedModelAndPlayWoman();
   } else if (peatonesArray[1].activo == false) {
     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
@@ -583,7 +599,23 @@ onValue(peatonesCountRef, (snapshot) => {
     cityScene.remove(fbx1);
   }
 
-  if (peatonesArray[0].activo == true) {
+  if (peatonesArray[4].activo == true) {
+    // loadAnimatedModelAndPlayWoman();
+  } else if (peatonesArray[4].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // Obtener la posición actual del modelo
+    const modelPosition = fbx2.position.clone();
+    // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // Actualizar la posición del modelo
+    fbx2.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB2.min.add(desplazamiento);
+    modelBB2.max.add(desplazamiento);
+    cityScene.remove(fbx2);
+  }
+
+  if (peatonesArray[2].activo == true) {
     // loadAnimatedModelAndPlayGrandmaOhShitDamn();
   } else if (peatonesArray[2].activo == false) {
     const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
@@ -598,11 +630,27 @@ onValue(peatonesCountRef, (snapshot) => {
     modelBB3.max.add(desplazamiento);
     cityScene.remove(fbx3);
   }
+  
+  if (peatonesArray[5].activo == true) {
+    // loadAnimatedModelAndPlayGrandmaOhShitDamn();
+  } else if (peatonesArray[5].activo == false) {
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+    // // Obtener la posición actual del modelo
+    const modelPosition = fbx4.position.clone();
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+    // // Actualizar la posición del modelo
+    fbx4.position.copy(modelPosition);
+    // Actualizar la caja de colisión del modelo
+    modelBB4.min.add(desplazamiento);
+    modelBB4.max.add(desplazamiento);
+    cityScene.remove(fbx4);
+  }
 
   const todosInactivos = peatonesArray.every(elemento => elemento.activo === false);
 
   if (todosInactivos) {
-    console.log("Todos los elementos son inactivos");
+    console.log("Todos los peatones han sido conseguidos");
   } else {
     // console.log("Al menos uno de los elementos es activo");
   }
@@ -1032,6 +1080,16 @@ function updatePlayerMovement() {
   if (peatonesArray[2].activo == true) {
     checModelBB1GrandmaCollision();
   }
+  if (peatonesArray[3].activo == true) {
+    checkModelBBCollision0();
+  }
+  if (peatonesArray[4].activo == true) {
+    checModelBB1WomanCollision2();
+  }
+  if (peatonesArray[5].activo == true) {
+    checModelBB1GrandmaCollision4();
+  }
+
 
   //Colisiones con los powerUps
   checPowerSkullCollision();
@@ -1160,6 +1218,41 @@ function loadAnimatedModelAndPlay() {
     //checkCollisions();
   });
 }
+var modelBB0;
+let fbx0;
+//var jugadorBB;
+
+function loadAnimatedModelAndPlay0() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/people/");
+  loader.load("Character1.fbx", (loadedfbx0) => {
+    fbx0 = loadedfbx0;
+    fbx0.scale.setScalar(0.1);
+    fbx0.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbx0.position.copy(new THREE.Vector3(-140, 0, 50));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBB0 = new THREE.Box3().setFromObject(fbx0);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/people/");
+    animLoader.load("Character1.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbx0);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbx0);
+
+    //checkCollisions();
+  });
+}
 
 var modelBB1;
 let fbx1;
@@ -1174,7 +1267,7 @@ function loadAnimatedModelAndPlayWoman() {
     fbx1.traverse((c) => {
       c.castShadow = true;
     });
-    fbx1.position.copy(new THREE.Vector3(-90, 0, -160));
+    fbx1.position.copy(new THREE.Vector3(165, 0, 37));
 
     // Crear la caja de colisión para el modelo animado
     modelBB1 = new THREE.Box3().setFromObject(fbx1);
@@ -1192,6 +1285,41 @@ function loadAnimatedModelAndPlayWoman() {
     });
 
     cityScene.add(fbx1);
+
+    //checkCollisions();
+  });
+}
+
+var modelBB2;
+let fbx2;
+
+function loadAnimatedModelAndPlayWoman2() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/people/");
+  loader.load("Character2_P.fbx", (loadedfbx2) => {
+    fbx2 = loadedfbx2;
+    fbx2.scale.setScalar(0.1);
+    fbx2.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbx2.position.copy(new THREE.Vector3(-80, 0, -160));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBB2 = new THREE.Box3().setFromObject(fbx2);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/people/");
+    animLoader.load("Character2_P.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbx2);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbx2);
 
     //checkCollisions();
   });
@@ -1228,6 +1356,42 @@ function loadAnimatedModelAndPlayGrandmaOhShitDamn() {
     });
 
     cityScene.add(fbx3);
+
+    //checkCollisions();
+  });
+}
+
+var modelBB4;
+let fbx4;
+//var jugadorBB;
+
+function loadAnimatedModelAndPlayGrandmaOhShitDamn4() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/people/");
+  loader.load("Character4_P.fbx", (loadedfbx4) => {
+    fbx4 = loadedfbx4;
+    fbx4.scale.setScalar(0.1);
+    fbx4.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbx4.position.copy(new THREE.Vector3(165, 0, -150));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBB4 = new THREE.Box3().setFromObject(fbx4);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/people/");
+    animLoader.load("Character4_P.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbx4);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbx4);
 
     //checkCollisions();
   });
@@ -1730,8 +1894,11 @@ function loadConstruction7() {
 
 // Llamar a la función para cargar el modelo animado
 loadAnimatedModelAndPlay();
+loadAnimatedModelAndPlay0();
 loadAnimatedModelAndPlayWoman();
+loadAnimatedModelAndPlayWoman2();
 loadAnimatedModelAndPlayGrandmaOhShitDamn();
+loadAnimatedModelAndPlayGrandmaOhShitDamn4();
 
 //Cargamos los powerups
 loadSkullPowerUp();
@@ -1829,6 +1996,65 @@ function checkModelBBCollision() {
   }
 }
 
+function checkModelBBCollision0() {
+  // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+  //Aquí se genera la lógica de la colisión para el character1
+  if (modelBB0.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del hombre y el jugador");
+
+    const desplazamiento = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // // Obtener la posición actual del modelo
+    const modelPosition = fbx0.position.clone();
+
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition.add(desplazamiento);
+
+    // // Actualizar la posición del modelo
+    fbx0.position.copy(modelPosition);
+
+    // Actualizar la caja de colisión del modelo
+    modelBB0.min.add(desplazamiento);
+    modelBB0.max.add(desplazamiento);
+
+    cityScene.remove(fbx0);
+    //cityScene.remove(modelBB);
+
+    puntuacion += 100;
+    console.log("Puntuación =", puntuacion);
+    writePeatonData(4, false);
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados = 0;
+    const totalJugadores = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (modelBB0.intersectsBox(jugadorBB)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados === totalJugadores) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+  }
+}
+
 function checModelBB1WomanCollision() {
   if (modelBB1.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo de la mujer y el jugador");
@@ -1884,6 +2110,61 @@ function checModelBB1WomanCollision() {
   }
 }
 
+function checModelBB1WomanCollision2() {
+  if (modelBB2.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo de la mujer y el jugador");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // // Obtener la posición actual del modelo
+    const modelPosition1 = fbx2.position.clone();
+
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // Actualizar la posición del modelo
+    fbx2.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    modelBB2.min.add(desplazamiento1);
+    modelBB2.max.add(desplazamiento1);
+
+    cityScene.remove(fbx2);
+
+    puntuacion += 100;
+    console.log("Puntuación =", puntuacion);
+    writePeatonData(5, false);
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (modelBB2.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+  }
+}
+
 function checModelBB1GrandmaCollision() {
   if (modelBB3.intersectsBox(jugadorBB)) {
     console.log("Colisión con el modelo de la mujer y el jugador");
@@ -1921,6 +2202,61 @@ function checModelBB1GrandmaCollision() {
         );
 
         if (modelBB3.intersectsBox(jugadorBB)) {
+          jugadoresColisionados1++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados1 === totalJugadores1) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+  }
+}
+
+function checModelBB1GrandmaCollision4() {
+  if (modelBB4.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo de la mujer y el jugador");
+
+    const desplazamiento1 = new THREE.Vector3(0, -10, 0); // Desplazamiento hacia abajo
+
+    // // Obtener la posición actual del modelo
+    const modelPosition1 = fbx4.position.clone();
+
+    // // Aplicar el desplazamiento a la posición del modelo
+    modelPosition1.add(desplazamiento1);
+
+    // // Actualizar la posición del modelo
+    fbx4.position.copy(modelPosition1);
+
+    // Actualizar la caja de colisión del modelo
+    modelBB4.min.add(desplazamiento1);
+    modelBB4.max.add(desplazamiento1);
+
+    cityScene.remove(fbx4);
+
+    puntuacion += 100;
+    console.log("Puntuación =", puntuacion);
+    writePeatonData(6, false);
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados1 = 0;
+    const totalJugadores1 = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (modelBB4.intersectsBox(jugadorBB)) {
           jugadoresColisionados1++;
           console.log("Colisión con el jugador:", key);
         }
