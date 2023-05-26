@@ -162,7 +162,7 @@ controls.target.set(0, 1, 0)*/
 // directionalLight.position.set(1, 5, -1);
 // directionalLight.castShadow = true;             ELIUD
 
-//creamos una luz direccional
+//creamos una luz focal
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
 directionalLight.position.set(-100, 100, 100);
 directionalLight.target.position.set(0, 0, 0);
@@ -183,6 +183,29 @@ cityScene.add(directionalLight);
 //creamos una luz ambiental
 const ambientLight = new THREE.AmbientLight(0x947cfd, 1.0); //Color de la luz e Intensidad
 cityScene.add(ambientLight);
+
+// Crear la luz focal
+var spotLight = new THREE.SpotLight(0xffffff);
+spotLight.position.set(0, 10, 0); // Posición de la luz
+spotLight.target.position.set(0, 0, 0); // Dirección hacia donde apunta la luz
+spotLight.castShadow = true; // Activar sombras si se desea
+cityScene.add(spotLight);
+
+const soundBackground = new THREE.AudioListener();
+camera.add(soundBackground);
+
+const soundBack = new THREE.Audio(soundBackground);
+
+const audioLoader2 = new THREE.AudioLoader();
+audioLoader2.load(
+  "../resources/powerUps/Taksi_CityMain.mp3",
+  function (buffer) {
+    soundBack.setBuffer(buffer);
+    soundBack.setLoop(true);
+    soundBack.setVolume(0.1);
+    soundBack.play();
+  }
+);
 
 //creamos el mixer para la animacion
 let animationMixer = [];
@@ -542,14 +565,13 @@ onValue(peatonesCountRef, (snapshot) => {
   Object.entries(data).forEach(([key, value]) => {
     const peaton = {
       id: key,
-      activo: value.activo
+      activo: value.activo,
       // x: value.x,
       // z: value.z
     };
     peatonesArray.push(peaton);
   });
-  console.log('Peatones obtenidos desde Firebase:', peatonesArray);
-
+  console.log("Peatones obtenidos desde Firebase:", peatonesArray);
 
   if (peatonesArray[0].activo == true) {
     // loadAnimatedModelAndPlay();
@@ -647,7 +669,9 @@ onValue(peatonesCountRef, (snapshot) => {
     cityScene.remove(fbx4);
   }
 
-  const todosInactivos = peatonesArray.every(elemento => elemento.activo === false);
+  const todosInactivos = peatonesArray.every(
+    (elemento) => elemento.activo === false
+  );
 
   if (todosInactivos) {
     console.log("Todos los peatones han sido conseguidos");
@@ -656,7 +680,6 @@ onValue(peatonesCountRef, (snapshot) => {
   } else {
     // console.log("Al menos uno de los elementos es activo");
   }
-
 });
 
 
@@ -674,8 +697,6 @@ function writeUserData(userId, position, rotation, puntosJugador, nombreJugador,
 }
 
 function actualizarPuntuaciones() {
-
-
   console.log("Bajamos 100 puntos a todos");
 
   const usuarioArray = [];
@@ -711,7 +732,6 @@ function actualizarPuntuaciones() {
       );
     }
   });
-
 }
 
 const usuarioArraySiempre = [];
@@ -747,7 +767,7 @@ onValue(usuariosCountRefSiempre, (snapshot) => {
 function writePeatonData(peatonId, activo) {
   // const db = getDatabase();
   set(ref(db, "peatones/" + peatonId), {
-    activo: activo
+    activo: activo,
   });
 }
 
@@ -755,7 +775,7 @@ function writePeatonDataInicio(peatonesArray) {
   // const db = getDatabase();
   peatonesArray.forEach((peaton) => {
     set(ref(db, "peatones/" + peaton.id), {
-      activo: true
+      activo: true,
     });
   });
 }
@@ -779,8 +799,6 @@ function updateCamera() {
     );
   }
 }
-
-
 
 /*function updateCamera() {
   const jugadorActual = cityScene.getObjectByName(currentUser.uid);
@@ -1170,7 +1188,6 @@ function updatePlayerMovement() {
     checModelBB1GrandmaCollision4();
   }
 
-
   //Colisiones con los powerUps
   checPowerSkullCollision();
   checPowerGasolineCollision();
@@ -1260,8 +1277,6 @@ function onWindowResize() {
 window.addEventListener("resize", onWindowResize);
 
 const jugadorID = "jugador1";
-
-
 
 var modelBB;
 let fbx;
@@ -2528,7 +2543,6 @@ function checDoublePointsCollision() {
         if (powerUpBB5.intersectsBox(jugadorBB)) {
           jugadoresColisionados1++;
           console.log("Colisión con el jugador:", key);
-
         }
       }
     }
