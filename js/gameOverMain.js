@@ -7,7 +7,7 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples
 // Obtener la referencia al elemento del contador
 const contadorElemento = document.getElementById("contador");
 
-let tiempoRestante = 15; // Tiempo inicial en segundos
+let tiempoRestante = 20; // Tiempo inicial en segundos
 
 // Actualizar el contenido del contador cada segundo
 const intervalo = setInterval(() => {
@@ -275,9 +275,9 @@ class ParticleSystemDemo {
   initializegame_() {
     this._Initialize();
 
-    this.previousRAF_ = null;
-    this.raf_();
-    this.onWindowResize_();
+    this._previousRAF_ = null;
+    this._RAF();
+    this._OnWindowResize();
   }
 
 
@@ -298,12 +298,13 @@ class ParticleSystemDemo {
       this._OnWindowResize();
     }, false);
 
-    const fov = 60;
+    const fov = 80;
     const aspect = 1920 / 1080;
     const near = 1.0;
     const far = 1000.0;
     this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    this._camera.position.set(25, 10, 0);
+    this._camera.position.set(35, 0, -15);
+
     this._scene = new THREE.Scene();
 
     let light = new THREE.DirectionalLight(0x7e9cce, 5.0);
@@ -423,6 +424,8 @@ class ParticleSystemDemo {
 
     const controls = new OrbitControls(
       this._camera, this._threejs.domElement);
+    controls.autoRotate = true; // Habilitar rotación automática
+    controls.autoRotateSpeed = 0.5; // Velocidad de rotación automática
     controls.target.set(0, 0, 0);
     controls.update();
 
@@ -445,9 +448,14 @@ class ParticleSystemDemo {
       gltf.scene.traverse(c => {
         c.castShadow = true;
       });
+
+      // Ajustar la posición del modelo
+      gltf.scene.position.set(0, 0, 0); // Mueve el modelo 5 unidades hacia adelante en el eje Z
+
       this._scene.add(gltf.scene);
     });
   }
+
 
   _OnWindowResize() {
     this._camera.aspect = window.innerWidth / window.innerHeight;
