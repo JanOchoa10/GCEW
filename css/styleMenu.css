@@ -58,4 +58,16 @@ body.dark-mode {
   height: 100%;
 }
 
+.navbar-back {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  font-size: 24px;
+  cursor: pointer;
+  align-items: center;
+}
 
+.navbar-back a{
+  text-decoration: none;
+  border-bottom: none;
+}
