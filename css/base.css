@@ -7,11 +7,61 @@ body {
   padding: 0;
   overscroll-behavior: none;
   overflow: hidden;
+  font-family: "Press Start 2P", cursive;
 }
 
 #puntuacion-texto {
-  color: white;
+  color: #ffffff;
   position: absolute;
-  right: 10px; 
+  right: 10px;
+  font-size: 66px;
 }
 
+
+/* Estilos para los botones */
+button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #1e90ff;
+  /* color: #ffffff; */
+  font-family: "Press Start 2P", cursive;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+button:hover {
+  background-color: #0066cc;
+  /* position: absolute; */
+}
+
+/* Estilos específicos para cada botón */
+#button-login {
+  background-color: #32cd32;
+  margin: 15px;
+  position: absolute;
+}
+
+#button-logout {
+  background-color: #ff4500;
+  margin: 15px;
+  margin-left: 100px;
+  position: absolute;
+}
+
+#button-pause {
+  background-color: #ffd700;
+  margin: 15px;
+  margin-left: 195px;
+  position: absolute;
+}
+
+#button-regresar {
+  width: 20%;
+  color: white;
+  background-color: #0066cc;
+  align-self: flex-end;
+  margin-top: 20px;
+}
