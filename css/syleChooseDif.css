@@ -4,14 +4,30 @@
   box-sizing: border-box;
 }
 
-body {
-  background-image: url("../images/imgMenu2.png"); /*#7671F5 */
+/* body {
+  background-image: url("../images/imgMenu2.png");
   color: black;
   font-family: "Quicksand", sans-serif;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+} */
+
+body {
+  background-image: url("../images/imgMenu2.png");
+  color: black;
+  font-family: "Quicksand", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body.dark-mode {
+  background-image: none; /* Elimina la imagen de fondo en modo oscuro */
+  background-color: #111; /* Establece un color de fondo en modo oscuro */
+  color: #fff; /* Cambia el color del texto en modo oscuro */
 }
 
 .navbar {
