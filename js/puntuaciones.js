@@ -240,7 +240,7 @@ function botones() {
         // Si la respuesta es verdadera, redirigir al usuario a la página de usuario
         if (result == true) {
           // window.location.href = 'user-page';
-          window.location.href = 'mensajes.php';
+          window.location.href = 'mensajes.php' + '?usuario=' + usuario;
 
         } else {
           // Si la respuesta es falsa, mostrar un mensaje de error al usuario

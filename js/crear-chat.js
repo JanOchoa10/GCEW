@@ -142,8 +142,12 @@ function mostrarMensajes() {
             // Crear un formulario dinámicamente
             var form = document.createElement('form');
             form.method = 'POST';
+            var url = window.location.href; // Obtiene la URL actual
+            var contenidoDespuesDeBarra = url.substring(url.lastIndexOf('/') + 1);
 
-            form.action = 'mensajes';
+            console.log(contenidoDespuesDeBarra); // Muestra el contenido después de la última barra en la consola
+
+            form.action = contenidoDespuesDeBarra;
 
             // Agregar campo oculto para mensajesDecode
             var mensajesInput = document.createElement('input');
