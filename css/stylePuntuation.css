@@ -6,6 +6,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-family: 'Press Start 2P', cursive; 
+  /* Tipografía para videojuegos */
 }
 
 body.dark-mode {
@@ -13,7 +15,7 @@ body.dark-mode {
   /* Elimina la imagen de fondo en modo oscuro */
   background-color: #111;
   /* Establece un color de fondo en modo oscuro */
-  color: #fff;
+  /* color: #fff;  */
   /* Cambia el color del texto en modo oscuro */
 }
 

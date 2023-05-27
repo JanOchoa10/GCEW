@@ -7,6 +7,7 @@ body {
   padding: 0;
   overscroll-behavior: none;
   overflow: hidden;
+  font-family: 'Press Start 2P', cursive; /* Tipografía para videojuegos */
 }
 
 #contador-container {
@@ -16,7 +17,7 @@ body {
   width: 100%;
   /* background-color: aliceblue; */
   z-index: 9999;
-  font-family: "Arial", sans-serif;
+  /* font-family: "Arial", sans-serif; */
 }
 
 #contador-barra {

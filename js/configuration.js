@@ -89,6 +89,21 @@ function changeResolution(resolution) {
       // Por ejemplo, puedes guardar la resolución seleccionada en una variable global
       // y utilizarla en otras partes de tu aplicación
       var selectedResolution = resolution;
+
+      // var resolution = window.innerWidth + 'x' + window.innerHeight;
+      // console.log(resolution); // Imprime la resolución actual en la consola
+
+      // window.resizeTo(800, 600); // Cambiar el tamaño a 800x600 píxeles
+      var resolution = selectedResolution; // Resolución en formato "1280x720"
+
+      // Separar los valores de ancho y altura
+      var values = resolution.split("x");
+      var width = parseInt(values[0], 10);
+      var height = parseInt(values[1], 10);
+
+      // Cambiar el tamaño de la ventana del navegador
+      window.resizeTo(width, height);
+
       console.log("Resolución seleccionada: " + selectedResolution);
 
       // También puedes llamar a una función específica para realizar la acción correspondiente al cambio de resolución
