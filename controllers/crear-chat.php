@@ -52,71 +52,55 @@ if (isset($_POST['btnCrearChat'])) {
         }
     }
 
+    $chatClase = new Chat();
+
+    $miChatJSON = $chatClase->obtenerChats();
+    $chatDecode = json_decode($miChatJSON)->Chats;
+
+    // A partir de sus uid obtenemos sus id de la base de datos
+    $miUsuarioJSON = $usuarioClase->obtenerUsuarios();
+    $usuarioDecode = json_decode($miUsuarioJSON)->Usuarios;
 
 
-    // // Verificar si la consulta devuelve filas (es decir, el chat ya existe)
-    // if ($resultadoCreador->num_rows > 0) {
-    //     // El chat ya existe, realizar las acciones necesarias
-    // } else {
-    //     // El chat no existe, llamar al procedimiento almacenado para crearlo
-    //     $crearUsuarioCreador = "CALL sp_usuario('I', NULL, '$idCreador', '$nombreCreador', '$imagenCreador', '$emailCreador');";
-    //     if ($conn->query($crearUsuarioCreador) === TRUE) {
-    //         // El chat se creó exitosamente
-    //     } else {
-    //         echo "Error al llamar al crearUsuarioCreador: " . $conn->error;
-    //     }
-    // }
+    $idCreadorInt = 0;
+    $idAContactarInt = 0;
 
-    // // Liberar los resultados
-    // $resultadoCreador->free();
+    foreach ($usuarioDecode as $usuarioD) {
+        if ($idCreador == $usuarioD->uid) {
+            $idCreadorInt = $usuarioD->id_usuario;
+            break;
+        }
+    }
 
-    // // Consulta para verificar si existe un chat entre los usuarios
-    // $verificarUsuarioAContactar = "CALL sp_usuario('O', NULL, '$idAContactar', NULL, NULL, NULL);";
+    foreach ($usuarioDecode as $usuarioD) {
+        if ($idAContactar == $usuarioD->uid) {
+            $idAContactarInt = $usuarioD->id_usuario;
+            break;
+        }
+    }
 
-    // // Ejecutar la consulta
-    // $resultadoAContactar = $conn->query($verificarUsuarioAContactar);
 
-    // // Verificar si la consulta devuelve filas (es decir, el chat ya existe)
-    // if ($resultadoAContactar->num_rows > 0) {
-    //     // El chat ya existe, realizar las acciones necesarias
-    // } else {
-    //     // El chat no existe, llamar al procedimiento almacenado para crearlo
-    //     $crearUsuarioAContactar = "CALL sp_usuario('I', NULL, '$idAContactar', '$nombreAContactar', '$imagenAContactar', '$emailAContactar');";
-    //     if ($conn->query($crearUsuarioAContactar) === TRUE) {
-    //         // El chat se creó exitosamente
-    //     } else {
-    //         echo "Error al llamar al crearUsuarioAContactar: " . $conn->error;
-    //     }
-    // }
+    $existeChat = false;
 
-    // // Liberar los resultados
-    // $resultadoAContactar->free();
+    foreach ($chatDecode as $chatD) {
+        if (
+            $idCreadorInt == $chatD->id_usuario_creador && $idAContactarInt == $chatD->id_usuario_receptor
+            || $idCreadorInt == $chatD->id_usuario_receptor && $idAContactarInt == $chatD->id_usuario_creador
+        ) {
+            $existeChat = true;
+            break;
+        }
+    }
 
-    // // Consulta para verificar si existe un chat entre los usuarios
-    // $verificarChat = "CALL sp_chat('O', NULL, '$idCreador', '$idAContactar');";
 
-    // // Ejecutar la consulta
-    // $resultado = $conn->query($verificarChat);
+    if (!$existeChat) {
+        $res3 = $chatClase->altaChat($idCreadorInt, $idAContactarInt);
 
-    // // Verificar si la consulta devuelve filas (es decir, el chat ya existe)
-    // if ($resultado->num_rows > 0) {
-    //     // El chat ya existe, realizar las acciones necesarias
-    // } else {
-    //     // El chat no existe, llamar al procedimiento almacenado para crearlo
-    //     $crearChat = "CALL sp_chat('I', NULL, '$idCreador', '$idAContactar');";
-    //     if ($conn->query($crearChat) === TRUE) {
-    //         // El chat se creó exitosamente
-    //     } else {
-    //         echo "Error al llamar al crearChat: " . $conn->error;
-    //     }
-    // }
-
-    // // Liberar los resultados
-    // $resultado->free();
-
-    // // Cerrar la conexión
-    // $conn->close();
-
+        if (!$res3) {
+            echo 'Error al crear el chat';
+            exit;
+        }
+    }
 
     echo 1;
 }
