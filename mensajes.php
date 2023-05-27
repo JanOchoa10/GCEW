@@ -98,7 +98,6 @@ foreach ($decodesUsers as $usuarioD) {
                         foreach ($chatsDecode as $ucuD) {
                             if ($usuarioActual == $ucuD->id_usuario_creador || $usuarioActual == $ucuD->id_usuario_receptor) {
                                 $usuarioABuscar = ($usuarioActual == $ucuD->id_usuario_receptor) ? $ucuD->id_usuario_creador : $ucuD->id_usuario_receptor;
-                                echo '<script>console.log(' . json_encode($chatsDecode) . ');</script>';
 
                                 foreach ($usuarioDecode as $usuarioD) {
                                     if ($usuarioABuscar == $usuarioD->id_usuario) {
@@ -108,29 +107,33 @@ foreach ($decodesUsers as $usuarioD) {
                                 }
 
                                 $usuarioJSON = $usuarioClase->obtenerUnUsuario($usuarioABuscar);
-                                $usuarioDecode = json_decode($usuarioJSON)->Usuarios;
+                                $usuarioDecode3 = json_decode($usuarioJSON)->Usuarios;
                                 $hayChatEnEsteUsuario = true;
                                 $ultimoMensaje = "";
                                 $horaDelUltimoMensaje = "";
-                                // foreach ($mensajesDecode as $mensajeD) {
-                                //     if ($ucuD->id_chat == $mensajeD->id_chat) {
-                                //         if ($usuarioActual == $mensajeD->id_usuario_creador) {
-                                //             $preMensaje = 'Tú: ';
-                                //         } elseif ($usuarioActual == $mensajeD->id_usuario_receptor) {
-                                //             $preMensaje = '-> ';
-                                //         }
-                                //         $ultimoMensaje = $preMensaje . $mensajeD->Mensaje;
-                                //         $fechaCreacion = new DateTime($mensajeD->FechaCreacion);
-                                //         $fechaFormateada = $fechaCreacion->format('d-m-Y');
-                                //         $horaFormateada = $fechaCreacion->format('h:i A');
-                                //         // $horaDelUltimoMensaje = $fechaFormateada . " " . $horaFormateada;
-                                //     }
-                                // }
+                                foreach ($mensajesDecode as $mensajeD) {
+                                    if ($ucuD->id_chat == $mensajeD->id_chat) {
+                                        if ($usuarioActual == $mensajeD->id_usuario_creador) {
+                                            $preMensaje = 'Tú: ';
+                                        } elseif ($usuarioActual == $mensajeD->id_usuario_receptor) {
+                                            $preMensaje = '-> ';
+                                        }
+                                        $ultimoMensaje = $preMensaje . $mensajeD->texto;
+                                        $fechaCreacion = new DateTime($mensajeD->fecha_creacion);
+                                        $fechaFormateada = $fechaCreacion->format('d-m-Y');
+                                        $horaFormateada = $fechaCreacion->format('h:i A');
+                                        // $horaDelUltimoMensaje = $fechaFormateada . " " . $horaFormateada;
+                                    }
+                                }
+                                // echo '<script>console.log(' . json_encode($chatsDecode) . ');</script>';
 
                                 // echo '<script>console.log("Sí llega");</script>';
-                                // echo '<script>console.log(' . json_encode($usuarioDecode) . ');</script>';
-                                foreach ($usuarioDecode as $usuarioD) {
-                                    echo '<script>console.log(' . json_encode($chatsDecode) . ');</script>';
+                                // echo '<script>console.log(' . json_encode($usuarioDecode3) . ');</script>';
+                                // $miUsuarioJSON = $usuarioClase->obtenerUsuarios();
+                                // $usuarioDecode3 = json_decode($miUsuarioJSON)->Usuarios;
+                                echo '<script>console.log(' . json_encode($usuarioDecode3) . ');</script>';
+                                foreach ($usuarioDecode3 as $usuarioD) {
+
                     ?>
                                     <!-- <form id="formularioIrAChat"> -->
                                     <button class="w-100 p-2 btnChat" type="submit" value="<?php echo $ucuD->id_chat; ?>">
