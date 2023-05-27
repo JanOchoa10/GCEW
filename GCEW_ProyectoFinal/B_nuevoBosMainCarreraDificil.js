@@ -60,7 +60,7 @@ async function login() {
       currentUser = user;
       console.log(user);
       const rotY = 0;
-      writeUserData(user.uid, { x: -150, z: 110}, rotY, puntuacion, user.displayName); //ponermos la rotacion
+      writeUserData(user.uid, { x: -150, z: 110 }, rotY, puntuacion, user.displayName, user.email, user.photoURL); //ponermos la rotacion
 
       writePeatonDataInicio(peatonesArray);
 
@@ -667,7 +667,9 @@ onValue(peatonesCountRef, (snapshot) => {
   if (todosInactivos) {
     console.log("Todos los peatones han sido conseguidos");
     writePeatonDataInicio(peatonesArray);
-    window.location.href = "../gameOver.html";
+    setTimeout(function () {
+      window.location.href = "../gameOver.html" + '?usuario=' + currentUser.uid;
+    }, 500);
   } else {
     // console.log("Al menos uno de los elementos es activo");
   }
@@ -675,7 +677,7 @@ onValue(peatonesCountRef, (snapshot) => {
 });
 
 
-function writeUserData(userId, position, rotation, puntosJugador, nombreJugador) {
+function writeUserData(userId, position, rotation, puntosJugador, nombreJugador, emailJugador, imagenJugador) {
   // const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
@@ -683,6 +685,8 @@ function writeUserData(userId, position, rotation, puntosJugador, nombreJugador)
     rotY: rotation,
     puntos: puntosJugador,
     nombre: nombreJugador,
+    email: emailJugador,
+    imagen: imagenJugador
   });
 }
 function writePeatonData(peatonId, activo) {
@@ -1081,7 +1085,9 @@ function updatePlayerMovement() {
     jugadorActual.position,
     jugadorActual.rotation.y,
     puntuacion,
-    currentUser.displayName
+    currentUser.displayName,
+    currentUser.email,
+    currentUser.photoURL
   );
 
   // // Restablecer la velocidad normal después de 5 segundos
@@ -2185,7 +2191,7 @@ function checkModelBBCollision() {
     cityScene.remove(fbx);
     //cityScene.remove(modelBB);
 
-    puntuacion += 100;
+    puntuacion += 500;
     console.log("Puntuación =", puntuacion);
     writePeatonData(1, false);
 
