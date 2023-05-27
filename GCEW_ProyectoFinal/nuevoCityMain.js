@@ -712,6 +712,8 @@ function actualizarPuntuaciones() {
         rotY: value.rotY,
         puntos: value.puntos,
         nombre: value.nombre,
+        email: value.email,
+        imagen: value.imagen
       };
       usuarioArray.push(usuario);
     });
@@ -728,7 +730,9 @@ function actualizarPuntuaciones() {
         { x: usuario.x, z: usuario.z },
         usuario.rotY,
         nuevaPuntuacion,
-        usuario.nombre
+        usuario.nombre,
+        usuario.email,
+        usuario.imagen
       );
     }
   });
