@@ -60,7 +60,7 @@ async function login() {
       currentUser = user;
       console.log(user);
       const rotY = 0;
-      writeUserData(user.uid, { x: 0, z: 0 }, rotY, puntuacion, user.displayName); //ponermos la rotacion
+      writeUserData(user.uid, { x: 0, z: 0 }, rotY, puntuacion, user.displayName, user.email, user.photoURL); //ponermos la rotacion
 
       writePeatonDataInicio(peatonesArray);
 
@@ -675,7 +675,7 @@ onValue(peatonesCountRef, (snapshot) => {
   if (todosInactivos) {
     console.log("Todos los peatones han sido conseguidos");
     writePeatonDataInicio(peatonesArray);
-    window.location.href = "../gameOver.html";
+    window.location.href = "../gameOver.html" + '?usuario=' + currentUser.uid;
   } else {
     // console.log("Al menos uno de los elementos es activo");
   }
@@ -683,7 +683,7 @@ onValue(peatonesCountRef, (snapshot) => {
 });
 
 
-function writeUserData(userId, position, rotation, puntosJugador, nombreJugador) {
+function writeUserData(userId, position, rotation, puntosJugador, nombreJugador, emailJugador, imagenJugador) {
   // const db = getDatabase();
   set(ref(db, "jugador/" + userId), {
     x: position.x,
@@ -691,6 +691,8 @@ function writeUserData(userId, position, rotation, puntosJugador, nombreJugador)
     rotY: rotation,
     puntos: puntosJugador,
     nombre: nombreJugador,
+    email: emailJugador,
+    imagen: imagenJugador
   });
 }
 
@@ -712,6 +714,8 @@ function actualizarPuntuaciones() {
         rotY: value.rotY,
         puntos: value.puntos,
         nombre: value.nombre,
+        email: value.email,
+        imagen: value.imagen
       };
       usuarioArray.push(usuario);
     });
@@ -728,7 +732,9 @@ function actualizarPuntuaciones() {
         { x: usuario.x, z: usuario.z },
         usuario.rotY,
         nuevaPuntuacion,
-        usuario.nombre
+        usuario.nombre,
+        usuario.email,
+        usuario.imagen
       );
     }
   });
@@ -1157,7 +1163,9 @@ function updatePlayerMovement() {
     jugadorActual.position,
     jugadorActual.rotation.y,
     puntuacion,
-    currentUser.displayName
+    currentUser.displayName,
+    currentUser.email,
+    currentUser.photoURL
   );
 
   // // Restablecer la velocidad normal después de 5 segundos
@@ -1194,6 +1202,9 @@ function updatePlayerMovement() {
   // checPowerSkullCollision();
   // checPowerGasolineCollision();
   // checDoublePointsCollision();
+
+  //Colision de robot
+  checkModelBBCollisionRobot();
 
   //Colisiones de los edificios.
   checkBuildingsCollisions();
@@ -1313,6 +1324,42 @@ function loadAnimatedModelAndPlay() {
     });
 
     cityScene.add(fbx);
+
+    //checkCollisions();
+  });
+}
+
+var modelBBRobot;
+let fbxRobot;
+//var jugadorBB;
+
+function loadAnimatedModelRobot() {
+  const loader = new FBXLoader();
+  loader.setPath("../resources/robot/");
+  loader.load("robotReal.fbx", (loadedfbx) => {
+    fbxRobot = loadedfbx;
+    fbxRobot.scale.setScalar(0.1);
+    fbxRobot.traverse((c) => {
+      c.castShadow = true;
+    });
+    fbxRobot.position.copy(new THREE.Vector3(-7, 0, -80));
+
+    // Crear la caja de colisión para el modelo animado
+    modelBBRobot = new THREE.Box3().setFromObject(fbxRobot);
+
+    const animLoader = new FBXLoader();
+    animLoader.setPath("../resources/robot/");
+    animLoader.load("robotReal.fbx", (anim) => {
+      const mixer = new THREE.AnimationMixer(fbxRobot);
+      animationMixer.push(mixer);
+      const idleAction = mixer.clipAction(anim.animations[0]);
+      idleAction.play();
+
+      checkCollisions();
+      animate();
+    });
+
+    cityScene.add(fbxRobot);
 
     //checkCollisions();
   });
@@ -2179,6 +2226,9 @@ loadAnimatedModelAndPlayGrandmaOhShitDamn4();
 // loadSkullPowerUp2();
 // loadSkullPowerUp3();
 
+//Cargar Inteligencia artficial
+loadAnimatedModelRobot();
+
 //Cargar las construcciones
 loadConstruction1();
 loadConstruction2();
@@ -2274,6 +2324,88 @@ function checkModelBBCollision() {
 
     // Actualizar el contenido del elemento con la puntuación actual
     puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+  }
+}
+
+function checkModelBBCollisionRobot() {
+  // Comprobar colisión entre fbx (modelBB) y jugadorBB
+
+  //Aquí se genera la lógica de la colisión para el character1
+  if (modelBBRobot.intersectsBox(jugadorBB)) {
+    console.log("Colisión con el modelo del hombre y el jugador");
+
+    puntuacion -= 1;
+    console.log("Puntuación =", puntuacion);
+    //writePeatonData(1, false);
+
+    const listenerPowerUp = new THREE.AudioListener();
+    camera.add(listenerPowerUp);
+
+    const soundPOwer = new THREE.Audio(listenerPowerUp);
+
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(
+      "../resources/powerUps/robotSoundEvil.mp3",
+      function (buffer) {
+        soundPOwer.setBuffer(buffer);
+        soundPOwer.setLoop(false);
+        soundPOwer.setVolume(0.05);
+        soundPOwer.play();
+      }
+    );
+
+    // Verificar si todos los jugadores han colisionado
+    let jugadoresColisionados = 0;
+    const totalJugadores = Object.keys(jugadorNames).length;
+
+    for (const key in jugadorNames) {
+      if (Object.hasOwnProperty.call(jugadorNames, key)) {
+        const jugadorInfo = jugadorNames[key];
+        const jugadorBB = new THREE.Box3().setFromObject(
+          cityScene.getObjectByName(jugadorInfo.name)
+        );
+
+        if (modelBBRobot.intersectsBox(jugadorBB)) {
+          jugadoresColisionados++;
+          console.log("Colisión con el jugador:", key);
+        }
+      }
+    }
+
+    if (jugadoresColisionados === totalJugadores) {
+      console.log("Todos los jugadores han colisionado con el modelo");
+    }
+
+    // Obtener el elemento <span> de la puntuación
+    const puntuacionTexto = document.getElementById("puntuacion-texto");
+
+    // Actualizar el contenido del elemento con la puntuación actual
+    puntuacionTexto.textContent = "Puntuación: " + puntuacion;
+  }
+}
+
+function followPlayer() {
+  const jugadorActual = cityScene.getObjectByName(currentUser.uid);
+  if (jugadorActual) {
+    const jugadorPosition = jugadorActual.position;
+    const direccion = new THREE.Vector3().subVectors(jugadorPosition, fbxRobot.position);
+    const distanciaAlJugador = direccion.length();
+    const distanciaMinima = 1.0; // Distancia mínima para considerar que el robot ha alcanzado al jugador
+
+    if (distanciaAlJugador > distanciaMinima) {
+      const velocidad = 0.5;
+      const desplazamiento = direccion.normalize().multiplyScalar(velocidad);
+
+      // Actualizar la posición del modelo del robot
+      fbxRobot.position.add(desplazamiento);
+
+      // Orientar el robot hacia el jugador
+      const direccionY = new THREE.Vector3(direccion.x, 0, direccion.z);
+      fbxRobot.lookAt(fbxRobot.position.clone().add(direccionY));
+
+      // Actualizar la posición de la caja de colisión del robot
+      modelBBRobot.setFromObject(fbxRobot);
+    }
   }
 }
 
@@ -3277,6 +3409,7 @@ animate();*/
 
 function animate() {
   const deltaTime = clock.getDelta();
+  requestAnimationFrame(animate);
   //createFogParticles ();
 
   // spongebobBB
@@ -3300,8 +3433,8 @@ function animate() {
   }
   //emitSnowParticles();
   //actualizarJugador();
+  followPlayer();
   renderer.render(cityScene, camera);
-  requestAnimationFrame(animate);
 }
 
 animate();

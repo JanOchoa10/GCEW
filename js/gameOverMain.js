@@ -429,7 +429,7 @@ class ParticleSystemDemo {
     audioLoader.load('./resources/audioBackground.mp3', function (buffer) {
       sound.setBuffer(buffer);
       sound.setLoop(true);
-      sound.setVolume(0.5);
+      sound.setVolume(0.1);
       sound.play();
     });
 
