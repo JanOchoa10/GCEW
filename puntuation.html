@@ -1,94 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taksi "Puntuaciones"</title>
+    <link rel="shortcut icon" type="x-icon" href="images/taxicon.png" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Taksi "Puntuaciones"</title>
-  <link rel="shortcut icon" type="x-icon" href="images/taxicon.png">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+      integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="css/stylePuntuation.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
-    integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="css/stylePuntuation.css" />
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
+  <body>
+    <div class="d-flex" id="wrapper">
+      <!-- Sidebar empieza aquí-->
 
-<body>
-  <div class="d-flex" id="wrapper">
-    <!-- Sidebar empieza aquí-->
-
-    <div class="bg-white" id="sidebar-wrapper">
-      <div class="sidebar-heading tex-center py-4 primary-text fs-4 fw-bold text-uppercase">
-        <i class="fas fa-taxi me-2"></i> Taksi
-      </div>
-
-      <div class="list-group list-group-flush my-3">
-        <a href="configuration.html" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
-          <i class="fas fa-code me-2"></i> Configuración
-        </a>
-
-        <a href="index.html" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
-          <i class="fas fa-home me-2"></i> Regresar al Menu
-        </a>
-
-      </div>
-    </div>
-    <!-- Sidebar termina aquí-->
-
-    <div id="page-content-wrapper">
-      <nav class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-align-left primary-text fs-4 me-3" id="menu-toggle"></i>
-          <h2 class="fs-2 m-0">Puntuaciones</h2>
+      <div class="bg-white" id="sidebar-wrapper">
+        <div
+          class="sidebar-heading tex-center py-4 primary-text fs-4 fw-bold text-uppercase"
+        >
+          <i class="fas fa-taxi me-2"></i> Taksi
         </div>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"> </span>
-        </button>
-      </nav>
+        <div class="list-group list-group-flush my-3">
+          <a
+            href="configuration.html"
+            class="list-group-item list-group-item-action bg-transparent second-text fw-bold"
+          >
+            <i class="fas fa-code me-2"></i> Configuración
+          </a>
 
-      <div class="container-fluid px-4">
-        <div class="row my-5">
-          <h3 class="fs-4 mb-3">
-            <i class="fas fa-users me-2"></i> Jugadores
-            <button class="btn btn-primary float-end">
-              <i class="fab fa-facebook-square"></i>
-              Compartir mi puntuación
-            </button>
-          </h3>
+          <a
+            href="index.html"
+            class="list-group-item list-group-item-action bg-transparent second-text fw-bold"
+          >
+            <i class="fas fa-home me-2"></i> Regresar al Menu
+          </a>
+        </div>
+      </div>
+      <!-- Sidebar termina aquí-->
 
+      <div id="page-content-wrapper">
+        <nav
+          class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4"
+        >
+          <div class="d-flex align-items-center">
+            <i
+              class="fas fa-align-left primary-text fs-4 me-3"
+              id="menu-toggle"
+            ></i>
+            <h2 class="fs-2 m-0">Puntuaciones</h2>
+          </div>
 
-          <div class="col">
-            <table class="table bg-white rounded shadow-sm table-hover">
-              <thead>
-                <tr>
-                  <th scope="col" width="50">#</th>
-                  <th scope="col">Jugador</th>
-                  <th scope="col">Puntuación</th>
-                  <th scope="col">Enviar mensaje</th>
-                </tr>
-              </thead>
-              <tbody id="bodyDeMiTabla">
-              </tbody>
-            </table>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"> </span>
+          </button>
+        </nav>
 
+        <div class="container-fluid px-4">
+          <div class="row my-5">
+            <h3 class="fs-4 mb-3">
+              <i class="fas fa-users me-2"></i> Jugadores
+              <form id="shareScoreFacebook">
+                <!-- <label for=""
+                  >Escribe un mensaje para publicarlo en mi página<a
+                    href="https://www.facebook.com/elsilenciodeVirginia"
+                    >El silencio de virginia</a
+                  ></label
+                >
+                <br />
+                <br />-->
+                <input
+                  type="text"
+                  placeholder="Escribe tu mensaje"
+                  id="gameScore"
+                  hidden
+                />
+                <!-- <br />
+                <br />
+                <button type="submit">
+                  Publicar en la página de El silencio de virginia
+                </button> -->
+                <button type="submit" class="btn btn-primary float-end" id="facebook">
+                  <i class="fab fa-facebook-square"></i>
+                  Compartir mi puntuación
+                </button>
+              </form>
+            </h3>
+
+            <div class="col">
+              <table class="table bg-white rounded shadow-sm table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col" width="50">#</th>
+                    <th scope="col">Jugador</th>
+                    <th scope="col">Puntuación</th>
+                    <th scope="col">Enviar mensaje</th>
+                  </tr>
+                </thead>
+                <tbody id="bodyDeMiTabla"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-    crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      async
+      defer
+      crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js"
+    ></script>
+    <script>
+      var idApp = "596548469029432";
+      var idPerfil = "1142457329777650";
+      //Ya lo cambie
+      var idPagina = "103046522388670";
+      var tokenComentario =
+        "EAAIejsOWejgBAAzIaBN6zpFq0ZCrJWm7G0HCZChZBndNysHdUVGEdIsrIvivtNfH4n9wdI3sLWjZAMfEsteRpxTH13kZBskbEpy6RG0neni6FbFm9x2R5qZAkWRCy2oZCXpozuczqDClJHKaXoTIuJkLBZAT5nUZBvhUMw6CD6MUfZCGmphhKS2ZCj6";
+      var tokenPerfil =
+        "EAAX1vsRKmGEBAMgKe22mP6UVExjDphzjcOrdMw2uFWSaSkud5gQDDFjKC4NOZA5FZAkz4PeOhZCRiCJCMGJq4pjV09GBGto0VmyHiaTp7J00dVGA5sdy9s8jZAZAl7nGVxd9SZAoJUZAkEetR0HQZAqwKAgQE4E26ZAb4nAM2lcXcjZAlupwIan4fN";
+      //ya lo modifique.
+        var tokenPagina =
+        "EAAIejsOWejgBAAah4lQ8Hg5hpmRDEzixuhVnJpLkWuGVHROVJTHfY6xQOMJrmwJt9Ws6tUKxthZCG8VArevGLgUY9hZCvpZAROIaj6J1wTZCI23epWwYH1Te9ach1xLapZBfEUTO3ZBFPT9uJopWKkghxNYCsoGzUS953lVZCawy4cG3jMDjO5x";
+      var idPublicacion = "206520115374643";
+      window.fbAsyncInit = function () {
+        // inicializa la conexion con facebooks
+        FB.init({
+          appId: idApp,
+          autoLogAppEvents: true,
+          xfbml: true,
+          version: "v16.0",
+        });
+      };
 
-  <script src="js/darkmode.js"></script>
-  <script type="module" src="js/puntuaciones.js"></script>
-</body>
+      document
+        .getElementById("shareScoreFacebook")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
 
+          var miMensaje = document.getElementById("gameScore").value;
+
+          // mandamos la nueva publicación con un post
+          FB.api(
+            "/" + idPagina + "/feed",
+            "POST",
+            {
+              message: miMensaje,
+              // Este nuevo token de acceso de larga duración caducará el 30 de abril de 2023
+              access_token: tokenPagina,
+            },
+            function (response) {
+              if (response && !response.error) {
+                console.log(response);
+              } else {
+                console.log("error", response.error);
+              }
+            }
+          );
+
+          Swal.fire({
+            icon: "success",
+            title: "¡Puntuación compartida con éxito!",
+            text: "Tu puntuacion: " + miMensaje + " ha sido publicado en la página.",
+            confirmButtonText: "Aceptar",
+            allowOutsideClick: false,
+          });
+
+          // alert(
+          //   "Tu puntuacion: " + miMensaje + " ha sido publicado en la página."
+          // );
+        });
+    </script>
+    <script src="js/darkmode.js"></script>
+    <script type="module" src="js/puntuaciones.js"></script>
+  </body>
 </html>
